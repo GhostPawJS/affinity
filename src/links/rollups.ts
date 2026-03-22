@@ -3,7 +3,6 @@ import type { AffinityDb } from "../database.ts";
 import type { OpaqueDerivation } from "../lib/types/derivation_opaque.ts";
 import type { OpaqueRollup } from "../lib/types/rollup_opaque.ts";
 import {
-  bridgeScore,
   driftPriority,
   edgeWeight,
   normalizedRank,
@@ -45,6 +44,7 @@ export function loadLinkRollup(
   driftPriority: number;
   readinessScore: number;
   radarScore: number;
+  bridgeScore: number;
   edgeWeight: number;
   rollup: OpaqueRollup;
   derivation: OpaqueDerivation;
@@ -64,6 +64,7 @@ export function loadLinkRollup(
          drift_priority,
          readiness_score,
          radar_score,
+         bridge_score,
          edge_weight,
          rollup_json,
          derivation_json
@@ -84,6 +85,7 @@ export function loadLinkRollup(
         drift_priority: number;
         readiness_score: number;
         radar_score: number;
+        bridge_score: number;
         edge_weight: number;
         rollup_json: string;
         derivation_json: string;
@@ -105,6 +107,7 @@ export function loadLinkRollup(
     driftPriority: row.drift_priority,
     readinessScore: row.readiness_score,
     radarScore: row.radar_score,
+    bridgeScore: row.bridge_score,
     edgeWeight: row.edge_weight,
     rollup: parseJsonObject<OpaqueRollup>(row.rollup_json),
     derivation: parseJsonObject<OpaqueDerivation>(row.derivation_json),
@@ -206,13 +209,22 @@ export function refreshLinkRollup(
     trust: link.trust ?? 0,
     rank: link.rank ?? 0,
   });
+  const existingBridgeScore =
+    (
+      db
+        .prepare("SELECT bridge_score FROM link_rollups WHERE link_id = ?")
+        .get(linkId) as { bridge_score: number } | undefined
+    )?.bridge_score ?? 0.1;
+  const reciprocityScoreValue = reciprocityScore(outboundCount, inboundCount);
   const radarScoreValue = radarScore({
     driftPriority: driftPriorityValue,
     recencyScore: recencyScoreValue,
     rank: link.rank ?? 0,
+    bridgeScore: existingBridgeScore,
+    reciprocityScore: reciprocityScoreValue,
   });
   const rollupJson = JSON.stringify({
-    bridgeScore: bridgeScore(),
+    bridgeScore: existingBridgeScore,
     positiveEventRatio: positiveEventRatio(
       positiveMeaningfulEvents,
       totalMeaningfulEvents,
@@ -221,7 +233,7 @@ export function refreshLinkRollup(
   });
   const derivationJson = JSON.stringify({
     normalizedRank: normalizedRankValue,
-    reciprocityScore: reciprocityScore(outboundCount, inboundCount),
+    reciprocityScore: reciprocityScoreValue,
     recencyScore: recencyScoreValue,
     driftPriority: driftPriorityValue,
   });
@@ -230,8 +242,8 @@ export function refreshLinkRollup(
        link_id, last_event_id, last_meaningful_event_at, total_meaningful_events,
        positive_meaningful_events, outbound_count, inbound_count, normalized_rank,
        reciprocity_score, recency_score, drift_priority, readiness_score, radar_score,
-       edge_weight, rollup_json, derivation_json, updated_at
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       bridge_score, edge_weight, rollup_json, derivation_json, updated_at
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(link_id) DO UPDATE SET
        last_event_id = excluded.last_event_id,
        last_meaningful_event_at = excluded.last_meaningful_event_at,
@@ -245,6 +257,7 @@ export function refreshLinkRollup(
        drift_priority = excluded.drift_priority,
        readiness_score = excluded.readiness_score,
        radar_score = excluded.radar_score,
+       bridge_score = excluded.bridge_score,
        edge_weight = excluded.edge_weight,
        rollup_json = excluded.rollup_json,
        derivation_json = excluded.derivation_json,
@@ -258,11 +271,12 @@ export function refreshLinkRollup(
     outboundCount,
     inboundCount,
     normalizedRankValue,
-    reciprocityScore(outboundCount, inboundCount),
+    reciprocityScoreValue,
     recencyScoreValue,
     driftPriorityValue,
     readinessScoreValue,
     radarScoreValue,
+    existingBridgeScore,
     edgeWeight({ trust: link.trust ?? 0, rank: link.rank ?? 0 }),
     rollupJson,
     derivationJson,

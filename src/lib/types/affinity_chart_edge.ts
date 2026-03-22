@@ -3,4 +3,5 @@ export interface AffinityChartEdge {
   fromContactId: number;
   toContactId: number;
   weight: number;
+  bridgeScore: number;
 }

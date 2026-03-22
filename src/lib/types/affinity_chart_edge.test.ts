@@ -9,7 +9,9 @@ describe("AffinityChartEdge", () => {
       fromContactId: 1,
       toContactId: 2,
       weight: 0.5,
+      bridgeScore: 0.1,
     };
     strictEqual(e.weight, 0.5);
+    strictEqual(e.bridgeScore, 0.1);
   });
 });

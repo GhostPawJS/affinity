@@ -3,6 +3,7 @@ import {
   requireOwnerContactId,
 } from "../contacts/queries.ts";
 import type { AffinityDb } from "../database.ts";
+import { refreshAllBridgeScores } from "../graph/bridge_scores.ts";
 import type { EventType } from "../events/types.ts";
 import type { DerivedLinkEffect } from "../lib/types/derived_link_effect.ts";
 import type { EntityRef } from "../lib/types/entity_ref.ts";
@@ -176,6 +177,9 @@ export function applyJournalEventMechanics(
   db.prepare(
     "UPDATE events SET moment_kind = ?, updated_at = ? WHERE id = ?",
   ).run(firstMomentKind, params.now, params.eventId);
+  if (created.length > 0) {
+    refreshAllBridgeScores(db, params.now);
+  }
   return {
     created,
     affectedLinks,

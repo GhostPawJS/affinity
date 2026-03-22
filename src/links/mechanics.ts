@@ -87,22 +87,21 @@ export function driftPriority(params: {
   );
 }
 
-/** `radar_score = 0.55 * drift_priority + 0.25 * (1 - recency_score) + 0.20 * normalized_rank`. */
+/** 5-factor radar score — CONCEPT.md. */
 export function radarScore(params: {
   driftPriority: number;
   recencyScore: number;
   rank: number;
+  bridgeScore: number;
+  reciprocityScore: number;
 }): number {
   return (
-    0.55 * params.driftPriority +
-    0.25 * (1 - params.recencyScore) +
-    0.2 * normalizedRank(params.rank)
+    0.45 * params.driftPriority +
+    0.2 * (1 - params.recencyScore) +
+    0.15 * normalizedRank(params.rank) +
+    0.1 * params.bridgeScore +
+    0.1 * (1 - params.reciprocityScore)
   );
-}
-
-/** `bridge_score` fallback when graph percentile is unavailable. */
-export function bridgeScore(): number {
-  return 0.1;
 }
 
 /** `cadence_floor(kind)` lookup — CONCEPT.md. */

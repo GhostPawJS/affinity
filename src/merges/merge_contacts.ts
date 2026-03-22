@@ -2,6 +2,7 @@ import { getContactRowById } from "../contacts/queries.ts";
 import { buildMergeMutationReceipt } from "../contacts/receipts.ts";
 import { refreshContactRollup } from "../contacts/rollups.ts";
 import type { AffinityDb } from "../database.ts";
+import { refreshAllBridgeScores } from "../graph/bridge_scores.ts";
 import { AffinityInvariantError } from "../lib/errors/affinity_invariant_error.ts";
 import { AffinityMergeError } from "../lib/errors/affinity_merge_error.ts";
 import { AffinityNotFoundError } from "../lib/errors/affinity_not_found_error.ts";
@@ -217,6 +218,7 @@ export function mergeContacts(
     }
     refreshContactRollup(db, winnerId, now);
     refreshContactRollup(db, loserId, now);
+    refreshAllBridgeScores(db, now);
 
     return buildMergeMutationReceipt(
       { winnerContactId: winnerId, loserContactId: loserId },

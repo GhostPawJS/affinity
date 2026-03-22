@@ -31,16 +31,8 @@ describe("listRadar", () => {
       summary: "recent",
       significance: 3,
       participants: [
-        {
-          contactId: owner.id,
-          role: "actor",
-          directionality: "owner_initiated",
-        },
-        {
-          contactId: b.id,
-          role: "recipient",
-          directionality: "other_initiated",
-        },
+        { contactId: owner.id, role: "actor", directionality: "mutual" },
+        { contactId: b.id, role: "recipient", directionality: "mutual" },
       ],
     });
     const rows = listRadar(db);

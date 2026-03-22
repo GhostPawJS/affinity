@@ -50,9 +50,11 @@ describe("links mechanics", () => {
           driftPriority: 0.375712,
           recencyScore: 0.4,
           rank: 4,
+          bridgeScore: 0.1,
+          reciprocityScore: 0.5,
         }).toFixed(6),
       ),
-      0.483066,
+      0.443888,
     );
     strictEqual(reciprocityScore(3, 1), 0.5);
     strictEqual(positiveEventRatio(3, 0), 3);

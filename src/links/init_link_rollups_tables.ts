@@ -19,6 +19,7 @@ export function initLinkRollupsTables(db: AffinityDb): void {
       drift_priority REAL NOT NULL DEFAULT 0,
       readiness_score REAL NOT NULL DEFAULT 0,
       radar_score REAL NOT NULL DEFAULT 0,
+      bridge_score REAL NOT NULL DEFAULT 0.1,
       edge_weight REAL NOT NULL DEFAULT 0,
       rollup_json TEXT NOT NULL DEFAULT '{}',
       derivation_json TEXT NOT NULL DEFAULT '{}',

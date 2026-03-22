@@ -1098,9 +1098,11 @@ readiness = 0.70 * affinity + 0.20 * trust + 0.10 * normalized_rank
 `Radar` ranking:
 
 ```text
-radar_score = 0.55 * drift_priority
-            + 0.25 * (1 - recency_score)
-            + 0.20 * normalized_rank
+radar_score = 0.45 * drift_priority
+            + 0.20 * (1 - recency_score)
+            + 0.15 * normalized_rank
+            + 0.10 * bridge_score
+            + 0.10 * (1 - reciprocity_score)
 ```
 
 ### 5. Graph and world view
@@ -1409,7 +1411,7 @@ Auto-creation rules:
 | `state_score` | `active 1.0`, `dormant 0.65`, `strained 0.3`, `broken 0.05`, `archived 0.0` |
 | `positive_event_ratio` | `positive_meaningful_events / max(total_meaningful_events, 1)` over trailing `180` days |
 | `reciprocity_score` | `1 - min(1, abs(outbound_count - inbound_count) / max(outbound_count + inbound_count, 1))` over trailing `180` days |
-| `bridge_score` | graph betweenness-like percentile if available, else `0.1` |
+| `bridge_score` | node betweenness centrality percentile of the counterparty contact |
 | `cadence_floor(kind)` | `family 3`, `personal 5`, `professional 5`, `romantic 2`, `care 3`, `service 30`, `observed 30`, `other_relational 14` |
 | `cadence_ceiling(kind)` | `family 60`, `personal 120`, `professional 90`, `romantic 45`, `care 90`, `service 365`, `observed 365`, `other_relational 180` |
 

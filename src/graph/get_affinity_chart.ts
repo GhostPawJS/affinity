@@ -41,7 +41,8 @@ export function getAffinityChart(
          l.to_contact_id,
          l.trust,
          l.rank,
-         lr.edge_weight
+         lr.edge_weight,
+         lr.bridge_score
        FROM links l
        LEFT JOIN link_rollups lr ON lr.link_id = l.id
        WHERE ${where}`,
@@ -53,6 +54,7 @@ export function getAffinityChart(
     trust: number | null;
     rank: number | null;
     edge_weight: number | null;
+    bridge_score: number | null;
   }[];
   const edges: AffinityChartEdge[] = linkRows.map((l) => {
     return {
@@ -60,6 +62,7 @@ export function getAffinityChart(
       fromContactId: l.from_contact_id,
       toContactId: l.to_contact_id,
       weight: l.edge_weight ?? 0,
+      bridgeScore: l.bridge_score ?? 0.1,
     };
   });
   return { nodes, edges };

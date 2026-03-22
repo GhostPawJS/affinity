@@ -10,7 +10,6 @@ export { listProgressionReadiness } from "./list_progression_readiness.ts";
 export { listRadar } from "./list_radar.ts";
 export {
   baselineCadenceDays,
-  bridgeScore,
   cadenceCeiling,
   cadenceFloor,
   driftPriority,

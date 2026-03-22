@@ -1,4 +1,5 @@
 import type { AffinityDb } from "../database.ts";
+import { refreshAllBridgeScores } from "../graph/bridge_scores.ts";
 import { AffinityInvariantError } from "../lib/errors/affinity_invariant_error.ts";
 import type { LinkMutationOptions } from "../lib/types/link_mutation_options.ts";
 import type { LinkMutationReceipt } from "../lib/types/mutation_receipt.ts";
@@ -43,6 +44,9 @@ export function overrideLinkState(
       linkId,
     );
     refreshLinkRollup(db, linkId, now);
+    if (state === "archived" || row.state === "archived") {
+      refreshAllBridgeScores(db, now);
+    }
     const next = getLinkRowById(db, linkId);
     if (!next) {
       throw new AffinityInvariantError("link not found after update");
