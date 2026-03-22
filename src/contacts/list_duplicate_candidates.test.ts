@@ -2,9 +2,9 @@ import { strictEqual } from "node:assert/strict";
 import { describe, it } from "node:test";
 import { addIdentity } from "../identities/add_identity.ts";
 import { createInitializedAffinityDb } from "../lib/testing/create_initialized_affinity_db.ts";
+import { mergeContacts } from "../merges/merge_contacts.ts";
 import { createContact } from "./create_contact.ts";
 import { listDuplicateCandidates } from "./list_duplicate_candidates.ts";
-import { mergeContacts } from "./merge_contacts.ts";
 
 describe("listDuplicateCandidates", () => {
   it("returns fuzzy name matches and honors exactOnly", async () => {

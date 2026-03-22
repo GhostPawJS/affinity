@@ -4,5 +4,5 @@ export interface MergeHistoryRecord {
   loserContactId: number;
   mergedAt: number;
   reasonSummary?: string | null;
-  manual?: boolean;
+  manual: boolean;
 }

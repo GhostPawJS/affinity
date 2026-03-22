@@ -42,11 +42,15 @@ describe("architecture guardrails", () => {
     ok(readSource.includes("./links/index.ts"));
     ok(readSource.includes("./events/index.ts"));
     ok(readSource.includes("./graph/index.ts"));
+    ok(readSource.includes("./dates/index.ts"));
+    ok(readSource.includes("./merges/index.ts"));
     ok(writeSource.includes("./contacts/index.ts"));
     ok(writeSource.includes("./links/index.ts"));
     ok(writeSource.includes("./events/index.ts"));
     ok(writeSource.includes("./identities/index.ts"));
     ok(writeSource.includes("./attributes/index.ts"));
+    ok(writeSource.includes("./dates/index.ts"));
+    ok(writeSource.includes("./merges/index.ts"));
   });
 
   it("keeps domain barrels free of legacy impl imports", () => {
@@ -56,6 +60,8 @@ describe("architecture guardrails", () => {
       "events/index.ts",
       "identities/index.ts",
       "attributes/index.ts",
+      "dates/index.ts",
+      "merges/index.ts",
     ]) {
       const source = read(relativePath);
       ok(
@@ -141,19 +147,33 @@ describe("architecture guardrails", () => {
     );
   });
 
-  it("keeps root infra files as thin shims into lib/core", () => {
-    strictEqual(
-      read("database.ts").trim(),
-      'export type { AffinityDb } from "./lib/core/affinity_db.ts";',
+  it("keeps root infra files as real implementations (no shims)", () => {
+    ok(
+      read("database.ts").includes("export type AffinityDb"),
+      "database.ts should define AffinityDb directly",
+    );
+    ok(
+      read("resolve_now.ts").includes("export function resolveNow"),
+      "resolve_now.ts should define resolveNow directly",
+    );
+    ok(
+      read("with_transaction.ts").includes("export function withTransaction"),
+      "with_transaction.ts should define withTransaction directly",
     );
     strictEqual(
-      read("resolve_now.ts").trim(),
-      'export { resolveNow } from "./lib/core/resolve_now.ts";',
+      existsSync(join(SRC_DIR, "lib/core")),
+      false,
+      "lib/core/ should not exist",
     );
-    strictEqual(
-      read("with_transaction.ts").trim(),
-      'export { withTransaction } from "./lib/core/with_transaction.ts";',
-    );
+  });
+
+  it("dates/ and merges/ concept folders exist", () => {
+    ok(existsSync(join(SRC_DIR, "dates/index.ts")));
+    ok(existsSync(join(SRC_DIR, "merges/index.ts")));
+  });
+
+  it("write.ts does not export rebuildUpcomingOccurrences", () => {
+    ok(!read("write.ts").includes("rebuildUpcomingOccurrences"));
   });
 
   it("keeps filenames uniformly snake_case", () => {

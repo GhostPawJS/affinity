@@ -1,14 +1,11 @@
 export { createContact } from "./create_contact.ts";
 export { getContactProfile } from "./get_contact_profile.ts";
-export { getMergeHistory } from "./get_merge_history.ts";
 export { getOwnerProfile } from "./get_owner_profile.ts";
 export { listContacts } from "./list_contacts.ts";
 export { listDuplicateCandidates } from "./list_duplicate_candidates.ts";
-export { mergeContacts } from "./merge_contacts.ts";
 export { reviseContact } from "./revise_contact.ts";
 export { searchContacts } from "./search_contacts.ts";
 export { setContactLifecycle } from "./set_contact_lifecycle.ts";
-export { initContactMergesTables } from "./init_contact_merges_tables.ts";
 export { initContactRollupsTables } from "./init_contact_rollups_tables.ts";
 export { initContactsTables } from "./init_contacts_tables.ts";
 export {
@@ -34,8 +31,6 @@ export type { CreateContactInput } from "../lib/types/create_contact_input.ts";
 export type { DuplicateCandidateRecord } from "../lib/types/duplicate_candidate_record.ts";
 export type { ListContactsFilters } from "../lib/types/list_contacts_filters.ts";
 export type { ListDuplicateCandidatesFilters } from "../lib/types/list_duplicate_candidates_filters.ts";
-export type { MergeContactsInput } from "../lib/types/merge_contacts_input.ts";
-export type { MergeHistoryRecord } from "../lib/types/merge_history_record.ts";
 export type { ReviseContactPatch } from "../lib/types/revise_contact_patch.ts";
 export type { SetContactLifecycleOptions } from "../lib/types/set_contact_lifecycle_options.ts";
 export { assertValidLifecycleTransition } from "./validators.ts";

@@ -1,8 +1,8 @@
 import { strictEqual } from "node:assert/strict";
 import { describe, it } from "node:test";
 import { createContact } from "./contacts/create_contact.ts";
-import { mergeContacts } from "./contacts/merge_contacts.ts";
 import { createInitializedAffinityDb } from "./lib/testing/create_initialized_affinity_db.ts";
+import { mergeContacts } from "./merges/merge_contacts.ts";
 import * as read from "./read.ts";
 
 describe("read barrel", () => {

@@ -1,5 +1,5 @@
 import { DatabaseSync } from "node:sqlite";
-import type { AffinityDb } from "../core/affinity_db.ts";
+import type { AffinityDb } from "../../database.ts";
 
 /** In-memory SQLite for tests — async for questlog-compatible harness patterns. */
 export async function openTestDatabase(): Promise<AffinityDb> {

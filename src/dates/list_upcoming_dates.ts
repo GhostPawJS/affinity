@@ -1,5 +1,7 @@
 import type { ContactKind } from "../contacts/types.ts";
 import type { AffinityDb } from "../database.ts";
+import { mapUpcomingRowToUpcomingDateRecord } from "../events/mappers.ts";
+import { assertValidRecurrenceKind } from "../events/validators.ts";
 import { AffinityValidationError } from "../lib/errors/affinity_validation_error.ts";
 import { assertDefaultOrdering } from "../lib/read/assert_default_ordering.ts";
 import { resolveListLimitOffset } from "../lib/read/resolve_list_limit_offset.ts";
@@ -7,8 +9,6 @@ import type { ListUpcomingDatesFilters } from "../lib/types/list_upcoming_dates_
 import type { AffinityListReadOptions } from "../lib/types/read_list_options.ts";
 import type { UpcomingDateRecord } from "../lib/types/upcoming_date_record.ts";
 import { utcStartOfDayMs } from "./calendar.ts";
-import { mapUpcomingRowToUpcomingDateRecord } from "./mappers.ts";
-import { assertValidRecurrenceKind } from "./validators.ts";
 
 const CONTACT_KINDS = new Set<string>([
   "human",

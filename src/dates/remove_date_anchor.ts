@@ -5,10 +5,10 @@ import {
 } from "../events/loaders.ts";
 import { mapEventRowToEventRecord } from "../events/mappers.ts";
 import { buildEventMutationReceipt } from "../events/receipts.ts";
-import { deleteUpcomingOccurrence } from "../events/upcoming_occurrences.ts";
 import type { EventMutationReceipt } from "../lib/types/mutation_receipt.ts";
 import { resolveNow } from "../resolve_now.ts";
 import { withTransaction } from "../with_transaction.ts";
+import { deleteUpcomingOccurrence } from "./upcoming_occurrences.ts";
 
 export function removeDateAnchor(
   db: AffinityDb,

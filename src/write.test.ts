@@ -25,7 +25,6 @@ describe("write barrel", () => {
     strictEqual(typeof write.addDateAnchor, "function");
     strictEqual(typeof write.reviseDateAnchor, "function");
     strictEqual(typeof write.removeDateAnchor, "function");
-    strictEqual(typeof write.rebuildUpcomingOccurrences, "function");
     strictEqual(typeof write.setAttribute, "function");
     strictEqual(typeof write.unsetAttribute, "function");
     strictEqual(typeof write.replaceAttributes, "function");

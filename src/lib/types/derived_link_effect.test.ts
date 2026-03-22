@@ -21,7 +21,7 @@ describe("DerivedLinkEffect", () => {
       rankAfter: 0,
       stateBefore: "active",
       stateAfter: "active",
-      cadenceBefore: null,
+      cadenceBefore: 14,
       cadenceAfter: 14,
       momentKind: null,
     };

@@ -3,7 +3,6 @@ import { loadEventRecord } from "../events/loaders.ts";
 import { insertDateAnchorEvent } from "../events/persistence.ts";
 import { findDuplicateDateAnchor } from "../events/queries.ts";
 import { buildEventMutationReceipt } from "../events/receipts.ts";
-import { upsertUpcomingOccurrence } from "../events/upcoming_occurrences.ts";
 import {
   assertParticipantContactsLive,
   assertValidRecurrenceKind,
@@ -18,6 +17,7 @@ import type { SocialEventParticipantInput } from "../lib/types/social_event_inpu
 import { getLinkRowById } from "../links/queries.ts";
 import { resolveNow } from "../resolve_now.ts";
 import { withTransaction } from "../with_transaction.ts";
+import { upsertUpcomingOccurrence } from "./upcoming_occurrences.ts";
 
 export function addDateAnchor(
   db: AffinityDb,

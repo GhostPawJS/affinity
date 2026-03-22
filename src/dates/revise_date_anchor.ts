@@ -2,7 +2,6 @@ import type { AffinityDb } from "../database.ts";
 import { loadEventRecord, requireDateAnchorEvent } from "../events/loaders.ts";
 import { findDuplicateDateAnchor } from "../events/queries.ts";
 import { buildEventMutationReceipt } from "../events/receipts.ts";
-import { upsertUpcomingOccurrence } from "../events/upcoming_occurrences.ts";
 import {
   assertValidRecurrenceKind,
   validateAnchorCalendar,
@@ -14,6 +13,7 @@ import type { ReviseDateAnchorOptions } from "../lib/types/revise_date_anchor_op
 import type { ReviseDateAnchorPatch } from "../lib/types/revise_date_anchor_patch.ts";
 import { resolveNow } from "../resolve_now.ts";
 import { withTransaction } from "../with_transaction.ts";
+import { upsertUpcomingOccurrence } from "./upcoming_occurrences.ts";
 
 export function reviseDateAnchor(
   db: AffinityDb,

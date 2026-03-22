@@ -1,8 +1,8 @@
 import { strictEqual } from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import { describe, it } from "node:test";
+import { initContactsTables } from "../contacts/init_contacts_tables.ts";
 import { initContactMergesTables } from "./init_contact_merges_tables.ts";
-import { initContactsTables } from "./init_contacts_tables.ts";
 
 describe("initContactMergesTables", () => {
   it("is idempotent once contacts exist", () => {

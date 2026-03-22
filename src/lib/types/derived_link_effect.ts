@@ -19,9 +19,9 @@ export interface DerivedLinkEffect {
   trustDelta: number;
   rankBefore: number;
   rankAfter: number;
-  stateBefore: LinkState | null;
-  stateAfter: LinkState | null;
-  cadenceBefore: number | null;
-  cadenceAfter: number | null;
+  stateBefore: LinkState;
+  stateAfter: LinkState;
+  cadenceBefore: number;
+  cadenceAfter: number;
   momentKind: EventMomentKind | null;
 }

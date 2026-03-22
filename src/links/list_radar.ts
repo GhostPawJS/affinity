@@ -6,6 +6,26 @@ import type { LinkListReadFilters } from "../lib/types/link_list_read_filters.ts
 import type { RadarRecord } from "../lib/types/radar_record.ts";
 import type { AffinityListReadOptions } from "../lib/types/read_list_options.ts";
 
+function deriveRadarReason(
+  drift: number,
+  recency: number,
+  normalizedRank: number,
+): string {
+  if (drift > 0.5) {
+    return "Significantly overdue for contact";
+  }
+  if (drift > 0.2) {
+    return "Drifting — approaching overdue";
+  }
+  if (recency < 0.3 && normalizedRank > 0.3) {
+    return "Important link losing recency";
+  }
+  if (normalizedRank > 0.5 && recency < 0.5) {
+    return "High-rank link needs attention";
+  }
+  return "Routine check-in recommended";
+}
+
 export function listRadar(
   db: AffinityDb,
   filters?: LinkListReadFilters,
@@ -76,6 +96,10 @@ export function listRadar(
     recencyScore: row.recency_score ?? 0,
     normalizedRank: row.normalized_rank ?? 0,
     trust: row.trust ?? 0,
-    recommendedReason: `trust ${(row.trust ?? 0).toFixed(2)}, rank ${row.rank ?? 0}`,
+    recommendedReason: deriveRadarReason(
+      row.drift_priority ?? 0,
+      row.recency_score ?? 0,
+      row.normalized_rank ?? 0,
+    ),
   }));
 }

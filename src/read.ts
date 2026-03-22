@@ -1,11 +1,11 @@
 export {
   getContactProfile,
-  getMergeHistory,
   getOwnerProfile,
   listContacts,
   listDuplicateCandidates,
   searchContacts,
 } from "./contacts/index.ts";
+export { listUpcomingDates } from "./dates/index.ts";
 export { getAffinityChart } from "./graph/index.ts";
 export {
   getLinkDetail,
@@ -15,9 +15,9 @@ export {
   listProgressionReadiness,
   listRadar,
 } from "./links/index.ts";
+export { getMergeHistory } from "./merges/index.ts";
 export {
   getContactJournal,
   listMoments,
   listOpenCommitments,
-  listUpcomingDates,
 } from "./events/index.ts";

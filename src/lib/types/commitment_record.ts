@@ -9,5 +9,5 @@ export interface CommitmentRecord {
   summary: string;
   participants: readonly EventParticipantView[];
   dueAt?: number | null;
-  resolutionState?: CommitmentResolutionState | null;
+  resolutionState: CommitmentResolutionState;
 }

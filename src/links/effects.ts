@@ -1,8 +1,9 @@
 import type { AffinityDb } from "../database.ts";
-import { utcStartOfDayMs } from "../events/calendar.ts";
+import { utcStartOfDayMs } from "../dates/calendar.ts";
 import {
   baseWeight,
   damageMultiplier,
+  dateSalienceBonus,
   directness,
   intimacyDepth,
   massPenalty,
@@ -11,6 +12,7 @@ import {
   preferenceMatch,
   reciprocitySignal,
   reliabilityMatch,
+  repairBonus,
   valence,
   violationFactor,
   warmthMatch,
@@ -71,6 +73,136 @@ function weeklyPositiveBaseWeight(
     )
     .get(linkId, weekStart, occurredAt) as { total?: number | null };
   return Number(row.total ?? 0);
+}
+
+function countRepairContext(
+  db: AffinityDb,
+  linkId: number,
+  occurredAt: number,
+): { eligible: boolean; consecutiveRepairEvents: number } {
+  const thirtyDaysAgo = occurredAt - 30 * DAY_MS;
+  const hasPriorDamage = db
+    .prepare(
+      `SELECT 1 FROM link_event_effects
+       WHERE link_id = ? AND trust_delta < 0
+       LIMIT 1`,
+    )
+    .get(linkId);
+  if (hasPriorDamage === undefined) {
+    return { eligible: false, consecutiveRepairEvents: 0 };
+  }
+  const recentNegative = db
+    .prepare(
+      `SELECT 1 FROM link_event_effects
+       WHERE link_id = ? AND trust_delta < 0 AND occurred_at >= ?
+       LIMIT 1`,
+    )
+    .get(linkId, thirtyDaysAgo);
+  if (recentNegative !== undefined) {
+    return { eligible: false, consecutiveRepairEvents: 0 };
+  }
+  const repairCount = db
+    .prepare(
+      `SELECT COUNT(*) AS c FROM link_event_effects
+       WHERE link_id = ? AND trust_delta > 0 AND occurred_at >= ?`,
+    )
+    .get(linkId, thirtyDaysAgo) as { c?: number };
+  const count = Number(repairCount.c ?? 0);
+  return { eligible: count >= 2, consecutiveRepairEvents: count };
+}
+
+function computePreferenceMatch(
+  db: AffinityDb,
+  linkId: number,
+  contactId: number,
+  eventType: EventType,
+  provenance: unknown,
+): number {
+  const attrs = db
+    .prepare(
+      `SELECT name, value FROM attributes
+       WHERE deleted_at IS NULL AND name LIKE 'pref.%'
+         AND (contact_id = ? OR link_id = ?)`,
+    )
+    .all(contactId, linkId) as { name: string; value: string | null }[];
+  if (attrs.length === 0) {
+    return preferenceMatch(0, 0);
+  }
+  const prefMap = new Map<string, string | null>();
+  for (const attr of attrs) {
+    prefMap.set(attr.name, attr.value);
+  }
+  const tags: string[] = [];
+  const dimensionMap: Record<string, string> = {
+    conversation: "channel",
+    activity: "activity",
+    gift: "gift",
+    support: "support",
+  };
+  const implicitDimension = dimensionMap[eventType];
+  if (implicitDimension !== undefined) {
+    tags.push(implicitDimension);
+  }
+  if (provenance !== null && typeof provenance === "object") {
+    for (const [key, val] of Object.entries(
+      provenance as Record<string, unknown>,
+    )) {
+      if (typeof val === "string") {
+        tags.push(`${key}.${val}`);
+      }
+    }
+  }
+  let liked = 0;
+  let disliked = 0;
+  for (const tag of tags) {
+    const full = `pref.${tag}`;
+    const val = prefMap.get(full);
+    if (val === undefined) {
+      continue;
+    }
+    const lower = val?.toLowerCase() ?? "";
+    if (lower === "disliked" || lower === "0" || lower === "false") {
+      disliked += 1;
+    } else {
+      liked += 1;
+    }
+  }
+  return preferenceMatch(liked, disliked);
+}
+
+function computeDateSalienceMultiplier(
+  db: AffinityDb,
+  contactId: number,
+  occurredAt: number,
+  significance: number,
+): number {
+  const windowBefore = 7 * DAY_MS;
+  const windowAfter = 2 * DAY_MS;
+  const row = db
+    .prepare(
+      `SELECT 1 FROM upcoming_occurrences uo
+       JOIN events e ON e.id = uo.event_id
+       LEFT JOIN links l ON l.id = e.anchor_link_id
+       WHERE e.deleted_at IS NULL AND e.type = 'date_anchor'
+         AND (
+           e.anchor_contact_id = ?
+           OR l.from_contact_id = ?
+           OR l.to_contact_id = ?
+         )
+         AND uo.occurs_on >= ? AND uo.occurs_on <= ?
+       LIMIT 1`,
+    )
+    .get(
+      contactId,
+      contactId,
+      contactId,
+      occurredAt - windowAfter,
+      occurredAt + windowBefore,
+    );
+  if (row !== undefined) {
+    return dateSalienceBonus(significance);
+  }
+  return 1;
 }
 
 function isObservedOnlyEvidence(
@@ -210,7 +342,13 @@ export function applyEventEffectToLink(
   const participantReciprocity = reciprocitySignal(
     params.participant.directionality,
   );
-  const prefMatch = preferenceMatch(0, 0);
+  const prefMatch = computePreferenceMatch(
+    db,
+    params.linkId,
+    params.participant.contactId,
+    params.eventType,
+    params.provenance,
+  );
   const noveltyScore = novelty(
     countSameDaySimilarEvents(
       db,
@@ -226,9 +364,18 @@ export function applyEventEffectToLink(
     preferenceMatch: prefMatch,
     novelty: noveltyScore,
   });
+  const salienceMultiplier = computeDateSalienceMultiplier(
+    db,
+    params.participant.contactId,
+    params.occurredAt,
+    params.significance,
+  );
   const weightedBase =
     base *
-    massPenalty(weeklyPositiveBaseWeight(db, params.linkId, params.occurredAt));
+    massPenalty(
+      weeklyPositiveBaseWeight(db, params.linkId, params.occurredAt),
+    ) *
+    salienceMultiplier;
   const affinityGain =
     weightedBase *
     Math.max(eventValence, 0) *
@@ -283,12 +430,23 @@ export function applyEventEffectToLink(
     trustBefore *
     damageMultiplier(params.eventType, params.provenance);
   let trustAfter = clamp(trustBefore + trustGain - trustLoss, 0, 1);
-  if (participantDirectness < 1) {
+  if (
+    isObservedOnlyEvidence(params.eventType, params.participant) ||
+    params.participant.role === "mentioned"
+  ) {
     if (trustBefore < 0.35) {
       trustAfter = Math.min(trustAfter, 0.35);
     } else {
       trustAfter = Math.min(trustAfter, trustBefore);
     }
+  }
+  const repair = countRepairContext(db, params.linkId, params.occurredAt);
+  if (repair.eligible) {
+    trustAfter = clamp(
+      trustAfter + repairBonus(repair.consecutiveRepairEvents),
+      0,
+      1,
+    );
   }
   const latest = db
     .prepare(

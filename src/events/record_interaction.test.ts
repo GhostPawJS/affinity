@@ -15,15 +15,17 @@ describe("recordInteraction", () => {
       bootstrapOwner: true,
     });
     const { primary: other } = createContact(db, { name: "A", kind: "human" });
+    const now = Date.now();
     const r = recordInteraction(db, {
       type: "conversation",
-      occurredAt: 10,
+      occurredAt: now - 1000,
       summary: "hello",
       significance: 5,
       participants: [
         { contactId: owner.id, role: "actor" },
         { contactId: other.id, role: "recipient" },
       ],
+      now,
     });
     strictEqual(r.primary.type, "conversation");
     const evCount = db

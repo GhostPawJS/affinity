@@ -142,15 +142,16 @@ export function refreshLinkRollup(
        LIMIT 1`,
     )
     .get(linkId) as { event_id: number; occurred_at: number } | undefined;
+  const trailingWindowStart = now - 180 * DAY_MS;
   const counts = db
     .prepare(
       `SELECT
          COUNT(*) AS total_meaningful_events,
          SUM(CASE WHEN affinity_delta > 0 OR trust_delta > 0 THEN 1 ELSE 0 END) AS positive_meaningful_events
        FROM link_event_effects
-       WHERE link_id = ?`,
+       WHERE link_id = ? AND occurred_at >= ?`,
     )
-    .get(linkId) as {
+    .get(linkId, trailingWindowStart) as {
     total_meaningful_events?: number;
     positive_meaningful_events?: number | null;
   };
@@ -160,9 +161,10 @@ export function refreshLinkRollup(
        FROM link_event_effects le
        INNER JOIN event_participants ep ON ep.event_id = le.event_id
        WHERE le.link_id = ? AND ep.contact_id = ?
-         AND ep.directionality IS NOT NULL`,
+         AND ep.directionality IS NOT NULL
+         AND le.occurred_at >= ?`,
     )
-    .all(linkId, link.from_contact_id) as {
+    .all(linkId, link.from_contact_id, trailingWindowStart) as {
     directionality:
       | "owner_initiated"
       | "other_initiated"

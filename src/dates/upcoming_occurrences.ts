@@ -1,10 +1,10 @@
 import type { AffinityDb } from "../database.ts";
+import { mapUpcomingRowToUpcomingDateRecord } from "../events/mappers.ts";
+import { getEventRowById } from "../events/queries.ts";
 import type { UpcomingDateRecord } from "../lib/types/upcoming_date_record.ts";
 import { resolveNow } from "../resolve_now.ts";
 import { withTransaction } from "../with_transaction.ts";
 import { computeNextAnchorOccursOn } from "./calendar.ts";
-import { mapUpcomingRowToUpcomingDateRecord } from "./mappers.ts";
-import { getEventRowById } from "./queries.ts";
 
 /**
  * Recomputes and stores the next occurrence for a date-anchor event, or no-ops if invalid.

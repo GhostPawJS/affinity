@@ -1,5 +1,5 @@
 import type { AffinityDb } from "../database.ts";
-import { rebuildUpcomingOccurrences as rebuildUpcomingOccurrencesInternal } from "../events/upcoming_occurrences.ts";
+import { rebuildUpcomingOccurrences as rebuildUpcomingOccurrencesInternal } from "./upcoming_occurrences.ts";
 
 /**
  * Clears `upcoming_occurrences` and repopulates from all live `date_anchor` events.

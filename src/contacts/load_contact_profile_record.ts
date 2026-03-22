@@ -1,5 +1,5 @@
 import type { AffinityDb } from "../database.ts";
-import { loadActiveDatesForContact } from "../events/upcoming_occurrences.ts";
+import { loadActiveDatesForContact } from "../dates/upcoming_occurrences.ts";
 import { mapIdentityRowToIdentityRecord } from "../identities/mappers.ts";
 import type { AttributeEntry } from "../lib/types/attribute_entry.ts";
 import type { ContactProfileRecord } from "../lib/types/contact_profile_record.ts";

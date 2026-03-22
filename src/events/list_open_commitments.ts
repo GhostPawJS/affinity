@@ -14,7 +14,7 @@ const DAY_MS = 86_400_000;
 function mapResolution(
   resolvedAt: number | null,
   resolution: string | null,
-): CommitmentResolutionState | null {
+): CommitmentResolutionState {
   if (resolvedAt === null) {
     return "open";
   }

@@ -1,9 +1,13 @@
 export {
   createContact,
-  mergeContacts,
   reviseContact,
   setContactLifecycle,
 } from "./contacts/index.ts";
+export {
+  addDateAnchor,
+  removeDateAnchor,
+  reviseDateAnchor,
+} from "./dates/index.ts";
 export {
   overrideLinkState,
   removeStructuralTie,
@@ -11,17 +15,14 @@ export {
   seedSocialLink,
   setStructuralTie,
 } from "./links/index.ts";
+export { mergeContacts } from "./merges/index.ts";
 export {
-  addDateAnchor,
   recordCommitment,
   recordInteraction,
   recordMilestone,
   recordObservation,
   recordTransaction,
-  rebuildUpcomingOccurrences,
-  removeDateAnchor,
   resolveCommitment,
-  reviseDateAnchor,
 } from "./events/index.ts";
 export {
   addIdentity,

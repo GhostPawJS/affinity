@@ -1,8 +1,8 @@
 import { strictEqual, throws } from "node:assert/strict";
 import { describe, it } from "node:test";
+import { createContact } from "../contacts/create_contact.ts";
 import { AffinityMergeError } from "../lib/errors/affinity_merge_error.ts";
 import { createInitializedAffinityDb } from "../lib/testing/create_initialized_affinity_db.ts";
-import { createContact } from "./create_contact.ts";
 import { mergeContacts } from "./merge_contacts.ts";
 
 describe("mergeContacts", () => {

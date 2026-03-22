@@ -27,15 +27,17 @@ describe("support table integration", () => {
       .get(other.id) as { warning_count: number };
     strictEqual(rollup.warning_count, 0);
 
+    const now = Date.now();
     const receipt = recordInteraction(db, {
       type: "conversation",
-      occurredAt: 10,
+      occurredAt: now - 1000,
       summary: "checked in",
       significance: 7,
       participants: [
         { contactId: owner.id, role: "actor", directionality: "mutual" },
         { contactId: other.id, role: "recipient", directionality: "mutual" },
       ],
+      now,
     });
 
     const linkId = receipt.affectedLinks[0] as number;
