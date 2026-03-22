@@ -33,4 +33,25 @@ describe("contacts receipts", () => {
     deepStrictEqual(receipt.created, [{ kind: "event", id: 9 }]);
     deepStrictEqual(receipt.removed, [{ kind: "contact", id: 2 }]);
   });
+
+  it("keeps first entity-ref order while removing duplicates", () => {
+    const primary: ContactListItem = {
+      id: 1,
+      name: "A",
+      kind: "human",
+      lifecycleState: "active",
+      isOwner: false,
+    };
+    const receipt = buildContactMutationReceipt(primary, {
+      updated: [
+        { kind: "contact", id: 1 },
+        { kind: "contact", id: 1 },
+        { kind: "identity", id: 4 },
+      ],
+    });
+    deepStrictEqual(receipt.updated, [
+      { kind: "contact", id: 1 },
+      { kind: "identity", id: 4 },
+    ]);
+  });
 });

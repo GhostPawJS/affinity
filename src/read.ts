@@ -1,19 +1,23 @@
 export {
-  getAffinityChart,
-  getContactJournal,
   getContactProfile,
-  getLinkDetail,
-  getLinkTimeline,
   getMergeHistory,
   getOwnerProfile,
   listContacts,
   listDuplicateCandidates,
-  listMoments,
+  searchContacts,
+} from "./contacts/index.ts";
+export { getAffinityChart } from "./graph/index.ts";
+export {
+  getLinkDetail,
+  getLinkTimeline,
   listObservedLinks,
-  listOpenCommitments,
   listOwnerSocialLinks,
   listProgressionReadiness,
   listRadar,
+} from "./links/index.ts";
+export {
+  getContactJournal,
+  listMoments,
+  listOpenCommitments,
   listUpcomingDates,
-  searchContacts,
-} from "./read_impl/index.ts";
+} from "./events/index.ts";

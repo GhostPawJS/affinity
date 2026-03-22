@@ -17,15 +17,20 @@ describe("events persistence", () => {
       summary: "hello",
       significance: 5,
       momentKind: null,
-      participants: [{ contactId: 1, role: "actor" }],
+      participants: [
+        { contactId: 1, role: "actor", directionality: "owner_initiated" },
+      ],
     });
     strictEqual(eventId, 1);
-    const count = db
+    const row = db
       .prepare(
-        "SELECT COUNT(*) AS c FROM event_participants WHERE event_id = ?",
+        `SELECT COUNT(*) AS c, MIN(directionality) AS directionality
+         FROM event_participants
+         WHERE event_id = ?`,
       )
-      .get(eventId) as { c?: number };
-    strictEqual(Number(count.c ?? 0), 1);
+      .get(eventId) as { c?: number; directionality?: string | null };
+    strictEqual(Number(row.c ?? 0), 1);
+    strictEqual(row.directionality ?? null, "owner_initiated");
     db.close();
   });
 
@@ -44,12 +49,29 @@ describe("events persistence", () => {
       anchorDay: 15,
       anchorContactId: 1,
       anchorLinkId: null,
-      participants: [{ contactId: 1, role: "subject" }],
+      participants: [
+        { contactId: 1, role: "subject", directionality: "mutual" },
+      ],
     });
     const row = db
-      .prepare("SELECT anchor_contact_id AS contactId FROM events WHERE id = ?")
-      .get(eventId) as { contactId?: number | null };
+      .prepare(
+        `SELECT
+           anchor_contact_id AS contactId,
+           (
+             SELECT directionality
+             FROM event_participants
+             WHERE event_id = events.id
+             LIMIT 1
+           ) AS directionality
+         FROM events
+         WHERE id = ?`,
+      )
+      .get(eventId) as {
+      contactId?: number | null;
+      directionality?: string | null;
+    };
     strictEqual(Number(row.contactId ?? 0), 1);
+    strictEqual(row.directionality ?? null, "mutual");
     db.close();
   });
 });

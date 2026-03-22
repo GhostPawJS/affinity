@@ -1,12 +1,12 @@
 import { strictEqual } from "node:assert/strict";
 import { describe, it } from "node:test";
-import { createInitializedAffinityDb } from "./lib/test-db.ts";
+import { createContact } from "./contacts/create_contact.ts";
+import { mergeContacts } from "./contacts/merge_contacts.ts";
+import { createInitializedAffinityDb } from "./lib/testing/create_initialized_affinity_db.ts";
 import * as read from "./read.ts";
-import { createContact } from "./write_impl/create_contact.ts";
-import { mergeContacts } from "./write_impl/merge_contacts.ts";
 
 describe("read barrel", () => {
-  it("exports all 18 read operations", () => {
+  it("exports all 17 documented read operations", () => {
     strictEqual(typeof read.getOwnerProfile, "function");
     strictEqual(typeof read.getContactProfile, "function");
     strictEqual(typeof read.listContacts, "function");

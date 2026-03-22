@@ -38,10 +38,17 @@ export function insertJournalEvent(
     );
   const eventId = Number(result.lastInsertRowid);
   const insertParticipant = db.prepare(
-    "INSERT INTO event_participants (event_id, contact_id, role) VALUES (?, ?, ?)",
+    `INSERT INTO event_participants (
+       event_id, contact_id, role, directionality
+     ) VALUES (?, ?, ?, ?)`,
   );
   for (const participant of params.participants) {
-    insertParticipant.run(eventId, participant.contactId, participant.role);
+    insertParticipant.run(
+      eventId,
+      participant.contactId,
+      participant.role,
+      participant.directionality ?? null,
+    );
   }
   const row = getEventRowById(db, eventId);
   if (!row) {
@@ -90,10 +97,17 @@ export function insertDateAnchorEvent(
     );
   const eventId = Number(result.lastInsertRowid);
   const insertParticipant = db.prepare(
-    "INSERT INTO event_participants (event_id, contact_id, role) VALUES (?, ?, ?)",
+    `INSERT INTO event_participants (
+       event_id, contact_id, role, directionality
+     ) VALUES (?, ?, ?, ?)`,
   );
   for (const participant of params.participants) {
-    insertParticipant.run(eventId, participant.contactId, participant.role);
+    insertParticipant.run(
+      eventId,
+      participant.contactId,
+      participant.role,
+      participant.directionality ?? null,
+    );
   }
   const row = getEventRowById(db, eventId);
   if (!row) {

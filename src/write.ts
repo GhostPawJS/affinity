@@ -1,28 +1,36 @@
 export {
-  addDateAnchor,
-  addIdentity,
   createContact,
   mergeContacts,
+  reviseContact,
+  setContactLifecycle,
+} from "./contacts/index.ts";
+export {
   overrideLinkState,
-  rebuildUpcomingOccurrences,
+  removeStructuralTie,
+  reviseBond,
+  seedSocialLink,
+  setStructuralTie,
+} from "./links/index.ts";
+export {
+  addDateAnchor,
   recordCommitment,
   recordInteraction,
   recordMilestone,
   recordObservation,
   recordTransaction,
+  rebuildUpcomingOccurrences,
   removeDateAnchor,
-  removeIdentity,
-  removeStructuralTie,
-  replaceAttributes,
   resolveCommitment,
-  reviseBond,
-  reviseContact,
   reviseDateAnchor,
+} from "./events/index.ts";
+export {
+  addIdentity,
+  removeIdentity,
   reviseIdentity,
-  seedSocialLink,
-  setAttribute,
-  setContactLifecycle,
-  setStructuralTie,
-  unsetAttribute,
   verifyIdentity,
-} from "./write_impl/index.ts";
+} from "./identities/index.ts";
+export {
+  replaceAttributes,
+  setAttribute,
+  unsetAttribute,
+} from "./attributes/index.ts";

@@ -13,6 +13,12 @@ const PARTICIPANT_ROLES = new Set([
   "observer",
   "mentioned",
 ]);
+const PARTICIPANT_DIRECTIONALITIES = new Set([
+  "owner_initiated",
+  "other_initiated",
+  "mutual",
+  "observed",
+]);
 const RECURRENCE_KINDS = new Set<string>([
   "birthday",
   "anniversary",
@@ -67,6 +73,12 @@ export function validateSocialEventInput(input: SocialEventInput): void {
     ids.add(participant.contactId);
     if (!PARTICIPANT_ROLES.has(participant.role)) {
       throw new AffinityValidationError("invalid participant role");
+    }
+    if (
+      participant.directionality !== undefined &&
+      !PARTICIPANT_DIRECTIONALITIES.has(participant.directionality)
+    ) {
+      throw new AffinityValidationError("invalid participant directionality");
     }
   }
 }

@@ -1,9 +1,9 @@
 import { strictEqual } from "node:assert/strict";
 import { describe, it } from "node:test";
-import { createInitializedAffinityDb } from "../lib/test-db.ts";
-import { addDateAnchor } from "../write_impl/add_date_anchor.ts";
-import { createContact } from "../write_impl/create_contact.ts";
-import { seedSocialLink } from "../write_impl/seed_social_link.ts";
+import { createContact } from "../contacts/create_contact.ts";
+import { createInitializedAffinityDb } from "../lib/testing/create_initialized_affinity_db.ts";
+import { seedSocialLink } from "../links/seed_social_link.ts";
+import { addDateAnchor } from "./add_date_anchor.ts";
 import {
   deleteUpcomingOccurrence,
   loadActiveDatesForContact,

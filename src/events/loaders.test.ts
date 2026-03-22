@@ -24,13 +24,17 @@ describe("events loaders", () => {
       "INSERT INTO events (type, occurred_at, summary, significance, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
     ).run("conversation", 1, "hello", 5, 1, 1);
     db.prepare(
-      "INSERT INTO event_participants (event_id, contact_id, role) VALUES (?, ?, ?), (?, ?, ?)",
-    ).run(1, 1, "actor", 1, 2, "recipient");
+      `INSERT INTO event_participants (
+         event_id, contact_id, role, directionality
+       ) VALUES (?, ?, ?, ?), (?, ?, ?, ?)`,
+    ).run(1, 1, "actor", "owner_initiated", 1, 2, "recipient", "mutual");
     const participants = loadEventParticipantViews(db, 1);
     strictEqual(participants.length, 2);
+    strictEqual(participants[0]?.directionality, "owner_initiated");
     const record = loadEventRecord(db, 1);
     strictEqual(record.summary, "hello");
     strictEqual(record.participants.length, 2);
+    strictEqual(record.participants[1]?.directionality, "mutual");
     db.close();
   });
 

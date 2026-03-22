@@ -1,7 +1,15 @@
+export { addIdentity } from "./add_identity.ts";
 export { initIdentitiesTables } from "./init_identities_tables.ts";
 export { mapIdentityRowToIdentityRecord } from "./mappers.ts";
 export { normalizeIdentityKey } from "./normalize.ts";
 export { getIdentityRowById } from "./queries.ts";
+export { removeIdentity } from "./remove_identity.ts";
+export { reviseIdentity } from "./revise_identity.ts";
 export { buildIdentityMutationReceipt } from "./receipts.ts";
+export type { AddIdentityInput } from "../lib/types/add_identity_input.ts";
+export type { IdentityRecord } from "../lib/types/identity_record.ts";
+export type { IdentityRow } from "../lib/types/identity_row.ts";
+export type { ReviseIdentityPatch } from "../lib/types/revise_identity_patch.ts";
 export type { IdentityType } from "./types.ts";
 export { assertNoIdentityCollision } from "./validators.ts";
+export { verifyIdentity } from "./verify_identity.ts";

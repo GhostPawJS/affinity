@@ -14,12 +14,26 @@ export function loadEventParticipantViews(
 ): EventParticipantView[] {
   const rows = db
     .prepare(
-      "SELECT contact_id, role FROM event_participants WHERE event_id = ?",
+      `SELECT contact_id, role, directionality
+       FROM event_participants
+       WHERE event_id = ?`,
     )
-    .all(eventId) as { contact_id: number; role: string }[];
+    .all(eventId) as {
+    contact_id: number;
+    role: string;
+    directionality:
+      | "owner_initiated"
+      | "other_initiated"
+      | "mutual"
+      | "observed"
+      | null;
+  }[];
   return rows.map((row) => ({
     contactId: row.contact_id,
     role: row.role as EventParticipantRole,
+    ...(row.directionality === null
+      ? {}
+      : { directionality: row.directionality }),
   }));
 }
 

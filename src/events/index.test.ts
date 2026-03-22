@@ -8,6 +8,7 @@ describe("events barrel", () => {
     strictEqual(typeof events.initOpenCommitmentsTables, "function");
     strictEqual(typeof events.initEventParticipantsTables, "function");
     strictEqual(typeof events.initUpcomingOccurrencesTables, "function");
+    strictEqual(typeof events.baseWeight, "function");
     strictEqual(typeof events.getEventRowById, "function");
     strictEqual(typeof events.loadEventRecord, "function");
     strictEqual(typeof events.buildEventMutationReceipt, "function");

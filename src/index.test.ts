@@ -1,24 +1,12 @@
 import { strictEqual } from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import { describe, it } from "node:test";
-import {
-  AffinityNotFoundError,
-  errors,
-  initAffinityTables,
-  read,
-  resolveNow,
-  types,
-  withTransaction,
-  write,
-} from "./index.ts";
+import { initAffinityTables, read, types, write } from "./index.ts";
 
 describe("package entry", () => {
-  it("exports initAffinityTables, types, errors, plumbing, read, and write", () => {
+  it("exports only the documented package surface", () => {
     strictEqual(typeof initAffinityTables, "function");
     strictEqual(typeof types, "object");
-    strictEqual(new AffinityNotFoundError("x").code, "NOT_FOUND");
-    strictEqual(resolveNow(1), 1);
-    strictEqual(typeof withTransaction, "function");
     strictEqual(typeof write.createContact, "function");
     strictEqual(typeof write.reviseContact, "function");
     strictEqual(typeof write.setContactLifecycle, "function");
@@ -40,7 +28,6 @@ describe("package entry", () => {
     strictEqual(typeof write.addDateAnchor, "function");
     strictEqual(typeof write.reviseDateAnchor, "function");
     strictEqual(typeof write.removeDateAnchor, "function");
-    strictEqual(typeof write.rebuildUpcomingOccurrences, "function");
     strictEqual(typeof write.setAttribute, "function");
     strictEqual(typeof write.unsetAttribute, "function");
     strictEqual(typeof write.replaceAttributes, "function");
@@ -48,8 +35,6 @@ describe("package entry", () => {
     strictEqual(typeof read.getOwnerProfile, "function");
     strictEqual(typeof read.listContacts, "function");
     strictEqual(typeof read.getMergeHistory, "function");
-    strictEqual(typeof errors.AffinityNotFoundError, "function");
-    strictEqual(typeof errors.isAffinityError, "function");
   });
 
   it("initializes schema on a DatabaseSync instance", () => {

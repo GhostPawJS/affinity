@@ -74,6 +74,22 @@ describe("events validators", () => {
       (error: unknown) => error instanceof AffinityValidationError,
     );
     throws(
+      () =>
+        validateSocialEventInput({
+          occurredAt: 1,
+          summary: "hello",
+          significance: 5,
+          participants: [
+            {
+              contactId: 1,
+              role: "actor",
+              directionality: "sideways" as never,
+            },
+          ],
+        }),
+      (error: unknown) => error instanceof AffinityValidationError,
+    );
+    throws(
       () => assertValidRecurrenceKind("weekly"),
       (error: unknown) => error instanceof AffinityValidationError,
     );

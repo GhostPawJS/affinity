@@ -56,4 +56,41 @@ describe("initEventParticipantsTables", () => {
     );
     db.close();
   });
+
+  it("stores directionality and rejects invalid values", () => {
+    const db = new DatabaseSync(":memory:");
+    db.exec("PRAGMA foreign_keys = ON");
+    initContactsTables(db);
+    initLinksTables(db);
+    initEventsTables(db);
+    initEventParticipantsTables(db);
+    db.prepare(
+      "INSERT INTO contacts (name, kind, created_at, updated_at) VALUES (?, ?, ?, ?)",
+    ).run("A", "human", 1, 1);
+    db.prepare(
+      `INSERT INTO events (type, occurred_at, summary, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?)`,
+    ).run("conversation", 1, "hi", 1, 1);
+    db.prepare(
+      `INSERT INTO event_participants (
+         event_id, contact_id, role, directionality
+       ) VALUES (?, ?, ?, ?)`,
+    ).run(1, 1, "actor", "mutual");
+    const row = db
+      .prepare(
+        "SELECT directionality FROM event_participants WHERE event_id = ? AND contact_id = ?",
+      )
+      .get(1, 1) as { directionality: string | null };
+    strictEqual(row.directionality, "mutual");
+    throws(() =>
+      db
+        .prepare(
+          `INSERT INTO event_participants (
+               event_id, contact_id, role, directionality
+             ) VALUES (?, ?, ?, ?)`,
+        )
+        .run(1, 1, "actor", "sideways"),
+    );
+    db.close();
+  });
 });
