@@ -1,0 +1,10 @@
+import type { AffinityDb } from "../database.ts";
+import { initAffinityTables } from "../init_affinity_tables.ts";
+import { openTestDatabase } from "./open-test-database.ts";
+
+/** In-memory DB with full affinity schema — shared by tests. */
+export async function createInitializedAffinityDb(): Promise<AffinityDb> {
+  const db = await openTestDatabase();
+  initAffinityTables(db);
+  return db;
+}

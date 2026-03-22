@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Check
+        run: npm run check
+
+      - name: Test
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+
+      - name: Pack (dry run)
+        run: npm pack --dry-run
+
+      - name: Dist size guard
+        run: |
+          SIZE=$(du -sb dist | cut -f1)
+          MAX=$((5 * 1024 * 1024))
+          echo "dist size: ${SIZE} bytes (max ${MAX})"
+          if [ "$SIZE" -gt "$MAX" ]; then
+            echo "dist exceeds size budget"
+            exit 1
+          fi

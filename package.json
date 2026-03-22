@@ -1,0 +1,63 @@
+{
+  "name": "@ghostpaw/affinity",
+  "version": "0.0.0",
+  "description": "Standalone social CRM core — SQL-grounded relationship mechanics with RPG-native ergonomics.",
+  "license": "MIT",
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GhostPawJS/affinity.git"
+  },
+  "bugs": {
+    "url": "https://github.com/GhostPawJS/affinity/issues"
+  },
+  "homepage": "https://github.com/GhostPawJS/affinity#readme",
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=24"
+  },
+  "volta": {
+    "node": "24.14.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": ["dist"],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "node --experimental-strip-types --test",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run lint && npm run typecheck",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build",
+    "release:patch": "npm version patch -m \"release %s\"",
+    "release:minor": "npm version minor -m \"release %s\"",
+    "release:major": "npm version major -m \"release %s\""
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/node": "^24.12.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.2"
+  }
+}
