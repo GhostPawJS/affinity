@@ -1,8 +1,10 @@
+import { getContactRowById } from "../contacts/queries.ts";
 import type { AffinityDb } from "../database.ts";
 import { mapIdentityRowToIdentityRecord } from "../identities/mappers.ts";
 import { getIdentityRowById } from "../identities/queries.ts";
 import { buildIdentityMutationReceipt } from "../identities/receipts.ts";
 import { AffinityNotFoundError } from "../lib/errors/affinity_not_found_error.ts";
+import { AffinityStateError } from "../lib/errors/affinity_state_error.ts";
 import type { IdentityMutationReceipt } from "../lib/types/mutation_receipt.ts";
 import { resolveNow } from "../resolve_now.ts";
 import { withTransaction } from "../with_transaction.ts";
@@ -16,6 +18,10 @@ export function verifyIdentity(
     const row = getIdentityRowById(db, identityId);
     if (!row) {
       throw new AffinityNotFoundError("identity not found");
+    }
+    const contact = getContactRowById(db, row.contact_id);
+    if (contact?.lifecycle_state === "merged") {
+      throw new AffinityStateError("merged contact is read-only");
     }
     const at = resolveNow(verifiedAt);
     const now = resolveNow();

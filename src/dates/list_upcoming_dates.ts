@@ -79,6 +79,16 @@ export function listUpcomingDates(
     params.push(filters.contactKind, filters.contactKind, filters.contactKind);
   }
 
+  clauses.push(`(
+    (e.anchor_contact_id IS NULL OR (
+      c_anchor.deleted_at IS NULL AND c_anchor.lifecycle_state != 'merged'
+    ))
+    AND (e.anchor_link_id IS NULL OR (
+      l.removed_at IS NULL
+      AND c_from.deleted_at IS NULL AND c_from.lifecycle_state != 'merged'
+      AND c_to.deleted_at IS NULL AND c_to.lifecycle_state != 'merged'
+    ))
+  )`);
   const where = clauses.join(" AND ");
   const rows = db
     .prepare(

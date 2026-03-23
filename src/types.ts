@@ -15,6 +15,7 @@ export type {
 } from "./links/types.ts";
 
 export type { AffinityChartEdge } from "./lib/types/affinity_chart_edge.ts";
+export type { AffinityChartReadOptions } from "./lib/types/affinity_chart_read_options.ts";
 export type { AffinityChartNode } from "./lib/types/affinity_chart_node.ts";
 export type { AffinityChartRecord } from "./lib/types/affinity_chart_record.ts";
 export type { AttributeEntry } from "./lib/types/attribute_entry.ts";

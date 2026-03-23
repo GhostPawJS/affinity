@@ -15,17 +15,17 @@ export function listObservedLinks(
   assertDefaultOrdering("listObservedLinks", options);
   const { limit, offset } = resolveListLimitOffset(options);
   const clauses: string[] = [
-    "removed_at IS NULL",
-    "is_structural = 0",
-    "kind = 'observed'",
+    "l.removed_at IS NULL",
+    "l.is_structural = 0",
+    "l.kind = 'observed'",
   ];
   const params: (string | number)[] = [];
   if (filters?.state !== undefined) {
-    clauses.push("state = ?");
+    clauses.push("l.state = ?");
     params.push(filters.state);
   }
   if (options?.includeArchived !== true) {
-    clauses.push("state != 'archived'");
+    clauses.push("l.state != 'archived'");
   }
   const where = clauses.join(" AND ");
   const rows = db
@@ -34,6 +34,10 @@ export function listObservedLinks(
               l.rank, l.affinity, l.trust, l.state, l.cadence_days, l.bond,
               l.created_at, l.updated_at, l.removed_at
        FROM links l
+       INNER JOIN contacts c_from ON c_from.id = l.from_contact_id
+         AND c_from.deleted_at IS NULL AND c_from.lifecycle_state != 'merged'
+       INNER JOIN contacts c_to ON c_to.id = l.to_contact_id
+         AND c_to.deleted_at IS NULL AND c_to.lifecycle_state != 'merged'
        LEFT JOIN link_rollups lr ON lr.link_id = l.id
        WHERE ${where}
        ORDER BY lr.last_meaningful_event_at DESC, l.updated_at DESC

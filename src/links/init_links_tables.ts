@@ -53,4 +53,7 @@ export function initLinksTables(db: AffinityDb): void {
   db.exec(
     "CREATE INDEX IF NOT EXISTS idx_links_kind_state ON links(kind, state) WHERE removed_at IS NULL AND is_structural = 0",
   );
+  db.exec(
+    "CREATE UNIQUE INDEX IF NOT EXISTS idx_links_unique_relational ON links(from_contact_id, to_contact_id, kind) WHERE removed_at IS NULL AND is_structural = 0",
+  );
 }

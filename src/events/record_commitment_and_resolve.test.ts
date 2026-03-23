@@ -2,6 +2,7 @@ import { ok, strictEqual, throws } from "node:assert/strict";
 import { describe, it } from "node:test";
 import { createContact } from "../contacts/create_contact.ts";
 import { AffinityStateError } from "../lib/errors/affinity_state_error.ts";
+import { AffinityValidationError } from "../lib/errors/affinity_validation_error.ts";
 import { createInitializedAffinityDb } from "../lib/testing/create_initialized_affinity_db.ts";
 import { recordCommitment } from "./record_commitment.ts";
 import { resolveCommitment } from "./resolve_commitment.ts";
@@ -123,6 +124,57 @@ describe("recordCommitment + resolveCommitment", () => {
       .get(resolvingEventId) as { type: string; summary: string };
     strictEqual(row.type, "support");
     strictEqual(row.summary, "followed through");
+    db.close();
+  });
+
+  it("rejects invalid resolution string at app level", async () => {
+    const db = await createInitializedAffinityDb();
+    const { primary: owner } = createContact(db, {
+      name: "Me",
+      kind: "human",
+      bootstrapOwner: true,
+    });
+    const { primary: other } = createContact(db, { name: "A", kind: "human" });
+    const { primary: ev } = recordCommitment(db, {
+      commitmentType: "promise",
+      occurredAt: 1,
+      summary: "will do",
+      significance: 5,
+      participants: [
+        { contactId: owner.id, role: "actor" },
+        { contactId: other.id, role: "recipient" },
+      ],
+    });
+    throws(
+      () => resolveCommitment(db, ev.id, "invalid" as never),
+      (e: unknown) => e instanceof AffinityValidationError,
+    );
+    db.close();
+  });
+
+  it("rejects non-finite dueAt", async () => {
+    const db = await createInitializedAffinityDb();
+    const { primary: owner } = createContact(db, {
+      name: "Me",
+      kind: "human",
+      bootstrapOwner: true,
+    });
+    const { primary: other } = createContact(db, { name: "A", kind: "human" });
+    throws(
+      () =>
+        recordCommitment(db, {
+          commitmentType: "promise",
+          occurredAt: 1,
+          summary: "will do",
+          significance: 5,
+          dueAt: Infinity,
+          participants: [
+            { contactId: owner.id, role: "actor" },
+            { contactId: other.id, role: "recipient" },
+          ],
+        }),
+      (e: unknown) => e instanceof AffinityValidationError,
+    );
     db.close();
   });
 });

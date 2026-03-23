@@ -26,4 +26,27 @@ describe("searchContacts", () => {
     );
     db.close();
   });
+
+  it("respects options.includeDormant = false", async () => {
+    const db = await createInitializedAffinityDb();
+    const { primary: active } = createContact(db, {
+      name: "Bob Active",
+      kind: "human",
+    });
+    const { primary: dormant } = createContact(db, {
+      name: "Bob Dormant",
+      kind: "human",
+    });
+    db.prepare(
+      "UPDATE contacts SET lifecycle_state = 'dormant' WHERE id = ?",
+    ).run(dormant.id);
+    const all = searchContacts(db, "Bob");
+    strictEqual(all.length, 2);
+    const filtered = searchContacts(db, "Bob", undefined, {
+      includeDormant: false,
+    });
+    strictEqual(filtered.length, 1);
+    strictEqual(filtered[0]?.id, active.id);
+    db.close();
+  });
 });

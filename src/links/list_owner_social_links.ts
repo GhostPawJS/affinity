@@ -20,24 +20,24 @@ export function listOwnerSocialLinks(
   }
   const { limit, offset } = resolveListLimitOffset(options);
   const clauses: string[] = [
-    "removed_at IS NULL",
-    "is_structural = 0",
-    "from_contact_id = ?",
+    "l.removed_at IS NULL",
+    "l.is_structural = 0",
+    "l.from_contact_id = ?",
   ];
   const params: (string | number)[] = [ownerId];
   if (filters?.kind !== undefined) {
-    clauses.push("kind = ?");
+    clauses.push("l.kind = ?");
     params.push(filters.kind);
   }
   if (filters?.state !== undefined) {
-    clauses.push("state = ?");
+    clauses.push("l.state = ?");
     params.push(filters.state);
   }
   if (options?.includeArchived !== true) {
-    clauses.push("state != 'archived'");
+    clauses.push("l.state != 'archived'");
   }
   if (options?.includeDormant !== true) {
-    clauses.push("state != 'dormant'");
+    clauses.push("l.state != 'dormant'");
   }
   const where = clauses.join(" AND ");
   const rows = db
@@ -46,6 +46,8 @@ export function listOwnerSocialLinks(
               l.rank, l.affinity, l.trust, l.state, l.cadence_days, l.bond,
               l.created_at, l.updated_at, l.removed_at
        FROM links l
+       INNER JOIN contacts c_to ON c_to.id = l.to_contact_id
+         AND c_to.deleted_at IS NULL AND c_to.lifecycle_state != 'merged'
        LEFT JOIN link_rollups lr ON lr.link_id = l.id
        WHERE ${where}
        ORDER BY COALESCE(lr.normalized_rank, 0) DESC, l.trust DESC

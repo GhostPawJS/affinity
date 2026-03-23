@@ -4,6 +4,7 @@ import { loadEventRecord } from "../events/loaders.ts";
 import { insertJournalEvent } from "../events/persistence.ts";
 import { buildEventMutationReceipt } from "../events/receipts.ts";
 import {
+  assertFiniteTimestamp,
   assertOwnerParticipates,
   assertParticipantContactsLive,
   validateSocialEventInput,
@@ -28,6 +29,9 @@ export function recordCommitment(
       throw new AffinityValidationError(
         "commitmentType must be promise or agreement",
       );
+    }
+    if (input.dueAt != null) {
+      assertFiniteTimestamp(input.dueAt, "dueAt");
     }
     const ownerId = requireOwnerContactId(db);
     const ids = input.participants.map((p) => p.contactId);

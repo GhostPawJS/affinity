@@ -6,7 +6,7 @@ import type { CommitmentRecord } from "../lib/types/commitment_record.ts";
 import type { CommitmentResolutionState } from "../lib/types/commitment_resolution_state.ts";
 import type { ListOpenCommitmentsFilters } from "../lib/types/list_open_commitments_filters.ts";
 import type { AffinityListReadOptions } from "../lib/types/read_list_options.ts";
-import { loadEventParticipantViews } from "./loaders.ts";
+import { batchLoadEventParticipantViews } from "./loaders.ts";
 import type { EventType } from "./types.ts";
 
 const DAY_MS = 86_400_000;
@@ -94,17 +94,14 @@ export function listOpenCommitments(
     type: string;
     summary: string;
   }[];
-  const out: CommitmentRecord[] = [];
-  for (const r of rows) {
-    const participants = loadEventParticipantViews(db, r.event_id);
-    out.push({
-      eventId: r.event_id,
-      type: r.type as EventType,
-      summary: r.summary,
-      participants,
-      dueAt: r.due_at,
-      resolutionState: mapResolution(r.resolved_at, r.resolution),
-    });
-  }
-  return out;
+  const eventIds = rows.map((r) => r.event_id);
+  const partsByEvent = batchLoadEventParticipantViews(db, eventIds);
+  return rows.map((r) => ({
+    eventId: r.event_id,
+    type: r.type as EventType,
+    summary: r.summary,
+    participants: partsByEvent.get(r.event_id) ?? [],
+    dueAt: r.due_at,
+    resolutionState: mapResolution(r.resolved_at, r.resolution),
+  }));
 }

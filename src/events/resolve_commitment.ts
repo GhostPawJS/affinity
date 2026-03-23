@@ -15,6 +15,7 @@ import {
 import { AffinityInvariantError } from "../lib/errors/affinity_invariant_error.ts";
 import { AffinityNotFoundError } from "../lib/errors/affinity_not_found_error.ts";
 import { AffinityStateError } from "../lib/errors/affinity_state_error.ts";
+import { AffinityValidationError } from "../lib/errors/affinity_validation_error.ts";
 import type { CommitmentResolutionKind } from "../lib/types/commitment_resolution_kind.ts";
 import type { DerivedLinkEffect } from "../lib/types/derived_link_effect.ts";
 import type { EntityRef } from "../lib/types/entity_ref.ts";
@@ -47,6 +48,12 @@ export function resolveCommitment(
   options?: ResolveCommitmentOptions,
 ): EventMutationReceipt {
   return withTransaction(db, () => {
+    const VALID_RESOLUTIONS = new Set(["kept", "cancelled", "broken"]);
+    if (!VALID_RESOLUTIONS.has(resolution)) {
+      throw new AffinityValidationError(
+        "resolution must be kept, cancelled, or broken",
+      );
+    }
     const row = getEventRowById(db, commitmentEventId);
     if (!row) {
       throw new AffinityNotFoundError("event not found");

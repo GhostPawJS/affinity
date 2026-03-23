@@ -88,7 +88,7 @@ export function mergeContacts(
     if (winner.is_owner === 1 && loser.is_owner === 1) {
       throw new AffinityInvariantError("multiple owner rows");
     }
-    const now = resolveNow();
+    const now = resolveNow(input.now);
     const reasonSummary =
       input.reasonSummary === undefined || input.reasonSummary === null
         ? null

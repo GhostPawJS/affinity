@@ -1,5 +1,5 @@
 import type { AffinityDb } from "../database.ts";
-import { loadEventRecord } from "../events/loaders.ts";
+import { batchLoadEventRecords } from "../events/loaders.ts";
 import { assertDefaultOrdering } from "../lib/read/assert_default_ordering.ts";
 import { resolveListLimitOffset } from "../lib/read/resolve_list_limit_offset.ts";
 import type { ContactJournalReadOptions } from "../lib/types/contact_journal_read_options.ts";
@@ -43,9 +43,5 @@ export function getLinkTimeline(
        LIMIT ? OFFSET ?`,
     )
     .all(...params, limit, offset) as { id: number }[];
-  const out: EventRecord[] = [];
-  for (const r of rows) {
-    out.push(loadEventRecord(db, r.id));
-  }
-  return out;
+  return batchLoadEventRecords(db, rows.map((r) => r.id));
 }

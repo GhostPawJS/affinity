@@ -52,6 +52,7 @@ export function assertParticipantContactsLive(
 }
 
 export function validateSocialEventInput(input: SocialEventInput): void {
+  assertFiniteTimestamp(input.occurredAt, "occurredAt");
   const summary = input.summary.trim();
   if (summary.length === 0) {
     throw new AffinityValidationError("summary must be non-empty");
@@ -92,6 +93,16 @@ export function assertValidRecurrenceKind(
   return true;
 }
 
+export function assertFiniteTimestamp(value: number, label: string): void {
+  if (!Number.isFinite(value) || value < 0) {
+    throw new AffinityValidationError(
+      `${label} must be a finite non-negative number`,
+    );
+  }
+}
+
+const MAX_DAYS_PER_MONTH = [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
 export function validateAnchorCalendar(
   anchorMonth: number,
   anchorDay: number,
@@ -101,5 +112,10 @@ export function validateAnchorCalendar(
   }
   if (!Number.isInteger(anchorDay) || anchorDay < 1 || anchorDay > 31) {
     throw new AffinityValidationError("anchorDay must be 1..31");
+  }
+  if (anchorDay > MAX_DAYS_PER_MONTH[anchorMonth]!) {
+    throw new AffinityValidationError(
+      `anchorDay ${anchorDay} is invalid for month ${anchorMonth}`,
+    );
   }
 }

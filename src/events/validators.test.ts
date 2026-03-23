@@ -6,6 +6,7 @@ import { AffinityNotFoundError } from "../lib/errors/affinity_not_found_error.ts
 import { AffinityStateError } from "../lib/errors/affinity_state_error.ts";
 import { AffinityValidationError } from "../lib/errors/affinity_validation_error.ts";
 import {
+  assertFiniteTimestamp,
   assertOwnerParticipates,
   assertParticipantContactsLive,
   assertValidRecurrenceKind,
@@ -98,5 +99,51 @@ describe("events validators", () => {
       (error: unknown) => error instanceof AffinityValidationError,
     );
     strictEqual(true, true);
+  });
+
+  it("assertFiniteTimestamp rejects NaN, Infinity, and negative", () => {
+    assertFiniteTimestamp(0, "test");
+    assertFiniteTimestamp(42, "test");
+    throws(
+      () => assertFiniteTimestamp(NaN, "test"),
+      (e: unknown) => e instanceof AffinityValidationError,
+    );
+    throws(
+      () => assertFiniteTimestamp(Infinity, "test"),
+      (e: unknown) => e instanceof AffinityValidationError,
+    );
+    throws(
+      () => assertFiniteTimestamp(-1, "test"),
+      (e: unknown) => e instanceof AffinityValidationError,
+    );
+  });
+
+  it("validateSocialEventInput rejects non-finite occurredAt", () => {
+    throws(
+      () =>
+        validateSocialEventInput({
+          occurredAt: NaN,
+          summary: "hello",
+          significance: 5,
+          participants: [{ contactId: 1, role: "actor" }],
+        }),
+      (e: unknown) => e instanceof AffinityValidationError,
+    );
+  });
+
+  it("validateAnchorCalendar rejects impossible dates like Feb 30 and Apr 31", () => {
+    validateAnchorCalendar(2, 29);
+    throws(
+      () => validateAnchorCalendar(2, 30),
+      (e: unknown) => e instanceof AffinityValidationError,
+    );
+    throws(
+      () => validateAnchorCalendar(4, 31),
+      (e: unknown) => e instanceof AffinityValidationError,
+    );
+    throws(
+      () => validateAnchorCalendar(6, 31),
+      (e: unknown) => e instanceof AffinityValidationError,
+    );
   });
 });

@@ -3,7 +3,7 @@ import { assertDefaultOrdering } from "../lib/read/assert_default_ordering.ts";
 import { resolveListLimitOffset } from "../lib/read/resolve_list_limit_offset.ts";
 import type { ContactJournalReadOptions } from "../lib/types/contact_journal_read_options.ts";
 import type { EventRecord } from "../lib/types/event_record.ts";
-import { loadEventRecord } from "./loaders.ts";
+import { batchLoadEventRecords } from "./loaders.ts";
 
 export function getContactJournal(
   db: AffinityDb,
@@ -37,9 +37,5 @@ export function getContactJournal(
        LIMIT ? OFFSET ?`,
     )
     .all(...params, limit, offset) as { id: number }[];
-  const out: EventRecord[] = [];
-  for (const r of rows) {
-    out.push(loadEventRecord(db, r.id));
-  }
-  return out;
+  return batchLoadEventRecords(db, rows.map((r) => r.id));
 }

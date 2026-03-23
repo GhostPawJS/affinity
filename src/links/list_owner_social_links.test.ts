@@ -49,4 +49,42 @@ describe("listOwnerSocialLinks", () => {
     strictEqual(rows[1]?.toContactId, b.id);
     db.close();
   });
+
+  it("excludes links to merged contacts", async () => {
+    const db = await createInitializedAffinityDb();
+    const { primary: owner } = createContact(db, {
+      name: "Me",
+      kind: "human",
+      bootstrapOwner: true,
+    });
+    const { primary: a } = createContact(db, { name: "A", kind: "human" });
+    const { primary: b } = createContact(db, { name: "B", kind: "human" });
+    recordInteraction(db, {
+      type: "conversation",
+      occurredAt: 10,
+      summary: "hi",
+      significance: 5,
+      participants: [
+        { contactId: owner.id, role: "actor", directionality: "mutual" },
+        { contactId: a.id, role: "recipient", directionality: "mutual" },
+      ],
+    });
+    recordInteraction(db, {
+      type: "conversation",
+      occurredAt: 11,
+      summary: "bye",
+      significance: 5,
+      participants: [
+        { contactId: owner.id, role: "actor", directionality: "mutual" },
+        { contactId: b.id, role: "recipient", directionality: "mutual" },
+      ],
+    });
+    db.prepare(
+      "UPDATE contacts SET lifecycle_state = 'merged' WHERE id = ?",
+    ).run(b.id);
+    const rows = listOwnerSocialLinks(db);
+    strictEqual(rows.length, 1);
+    strictEqual(rows[0]?.toContactId, a.id);
+    db.close();
+  });
 });

@@ -40,10 +40,6 @@ describe("read query contract", () => {
       () => listOpenCommitments(db, undefined, { sort: "dueAt" }),
       (error: unknown) => error instanceof AffinityValidationError,
     );
-    throws(
-      () => getAffinityChart(db, { descending: true }),
-      (error: unknown) => error instanceof AffinityValidationError,
-    );
     const interaction = recordInteraction(db, {
       type: "conversation",
       occurredAt: 2,

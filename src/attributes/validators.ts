@@ -6,6 +6,7 @@ import { AffinityValidationError } from "../lib/errors/affinity_validation_error
 import type { AttributeEntry } from "../lib/types/attribute_entry.ts";
 import type { AttributeTarget } from "../lib/types/attribute_target.ts";
 import { getLinkRowById } from "../links/queries.ts";
+import { assertLinkEndpointsNotMerged } from "../links/validators.ts";
 import { normalizeAttributeValue } from "./normalize.ts";
 
 export function validateAttributeName(name: string): string {
@@ -53,4 +54,5 @@ export function assertAttributeTargetWritable(
   if (!link) {
     throw new AffinityNotFoundError("link not found");
   }
+  assertLinkEndpointsNotMerged(db, link);
 }

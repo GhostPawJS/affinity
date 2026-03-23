@@ -51,7 +51,7 @@ export function searchContacts(
   if (filters?.includeOwner === false) {
     clauses.push("c.is_owner = 0");
   }
-  if (filters?.includeDormant === false) {
+  if (filters?.includeDormant === false || options?.includeDormant === false) {
     clauses.push("c.lifecycle_state != 'dormant'");
   }
   const where = clauses.join(" AND ");

@@ -1,6 +1,7 @@
-import { strictEqual } from "node:assert/strict";
+import { strictEqual, throws } from "node:assert/strict";
 import { describe, it } from "node:test";
 import { createContact } from "../contacts/create_contact.ts";
+import { AffinityStateError } from "../lib/errors/affinity_state_error.ts";
 import { createInitializedAffinityDb } from "../lib/testing/create_initialized_affinity_db.ts";
 import { addIdentity } from "./add_identity.ts";
 import { verifyIdentity } from "./verify_identity.ts";
@@ -16,6 +17,23 @@ describe("verifyIdentity", () => {
     const r = verifyIdentity(db, id.id, 42);
     strictEqual(r.primary.verified, true);
     strictEqual(r.primary.verifiedAt, 42);
+    db.close();
+  });
+
+  it("rejects verification of identity on merged contact", async () => {
+    const db = await createInitializedAffinityDb();
+    const { primary: c } = createContact(db, { name: "A", kind: "human" });
+    const { primary: id } = addIdentity(db, c.id, {
+      type: "email",
+      value: "a@b",
+    });
+    db.prepare(
+      "UPDATE contacts SET lifecycle_state = 'merged' WHERE id = ?",
+    ).run(c.id);
+    throws(
+      () => verifyIdentity(db, id.id),
+      (e: unknown) => e instanceof AffinityStateError,
+    );
     db.close();
   });
 });

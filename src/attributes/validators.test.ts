@@ -48,4 +48,26 @@ describe("attributes validators", () => {
     );
     db.close();
   });
+
+  it("rejects link target when link endpoint is merged", () => {
+    const db = new DatabaseSync(":memory:");
+    initAffinityTables(db);
+    db.prepare(
+      `INSERT INTO contacts (name, kind, lifecycle_state, created_at, updated_at)
+       VALUES (?, ?, 'active', ?, ?)`,
+    ).run("A", "human", 1, 1);
+    db.prepare(
+      `INSERT INTO contacts (name, kind, lifecycle_state, created_at, updated_at)
+       VALUES (?, ?, 'merged', ?, ?)`,
+    ).run("B", "human", 1, 1);
+    db.prepare(
+      `INSERT INTO links (from_contact_id, to_contact_id, kind, role, is_structural, rank, affinity, trust, state, cadence_days, created_at, updated_at)
+       VALUES (1, 2, 'personal', 'friend', 0, 0, 0, 0, 'active', NULL, 1, 1)`,
+    ).run();
+    throws(
+      () => assertAttributeTargetWritable(db, { kind: "link", id: 1 }),
+      (error: unknown) => error instanceof AffinityStateError,
+    );
+    db.close();
+  });
 });
