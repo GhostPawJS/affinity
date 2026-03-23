@@ -1,0 +1,11 @@
+export const searchAffinityToolName = "search_affinity";
+export const reviewAffinityToolName = "review_affinity";
+export const inspectAffinityItemToolName = "inspect_affinity_item";
+export const manageContactToolName = "manage_contact";
+export const mergeContactsToolName = "merge_contacts";
+export const manageIdentityToolName = "manage_identity";
+export const manageRelationshipToolName = "manage_relationship";
+export const recordEventToolName = "record_event";
+export const manageCommitmentToolName = "manage_commitment";
+export const manageDateAnchorToolName = "manage_date_anchor";
+export const manageAttributeToolName = "manage_attribute";

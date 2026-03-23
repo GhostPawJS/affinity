@@ -1,0 +1,180 @@
+import type { AffinityDb } from "../database.ts";
+import { addIdentity } from "../identities/add_identity.ts";
+import { removeIdentity } from "../identities/remove_identity.ts";
+import { reviseIdentity } from "../identities/revise_identity.ts";
+import { verifyIdentity } from "../identities/verify_identity.ts";
+import type { IdentityRecord } from "../lib/types/identity_record.ts";
+import type { AddIdentityInput } from "../lib/types/add_identity_input.ts";
+import type { ReviseIdentityPatch } from "../lib/types/revise_identity_patch.ts";
+import {
+  defineAffinityTool,
+  booleanSchema,
+  integerSchema,
+  literalSchema,
+  objectSchema,
+  oneOfSchema,
+  stringSchema,
+} from "./tool_metadata.ts";
+import { manageIdentityToolName } from "./tool_names.ts";
+import { mutationToolResult, type MutationToolData } from "./tool_mutation.ts";
+import {
+  resolveContactLocator,
+  type ContactLocator,
+  withToolHandling,
+} from "./tool_resolvers.ts";
+import type { ToolResult } from "./tool_types.ts";
+
+export type ManageIdentityToolInput =
+  | { action: "add"; contact: ContactLocator; input: AddIdentityInput }
+  | { action: "revise"; identityId: number; patch: ReviseIdentityPatch }
+  | { action: "verify"; identityId: number; verifiedAt?: number }
+  | { action: "remove"; identityId: number; removedAt?: number };
+
+export type ManageIdentityToolResult = ToolResult<
+  MutationToolData<IdentityRecord>
+>;
+
+function contactLocatorSchema(description: string) {
+  return oneOfSchema(
+    [
+      objectSchema(
+        { contactId: integerSchema("Exact contact id.") },
+        ["contactId"],
+      ),
+      objectSchema(
+        {
+          identity: objectSchema(
+            {
+              type: stringSchema("Identity type."),
+              value: stringSchema("Identity value."),
+            },
+            ["type", "value"],
+          ),
+        },
+        ["identity"],
+      ),
+    ],
+    description,
+  );
+}
+
+export function manageIdentityToolHandler(
+  db: AffinityDb,
+  input: ManageIdentityToolInput,
+): ManageIdentityToolResult {
+  return withToolHandling<MutationToolData<IdentityRecord>>(() => {
+    switch (input.action) {
+      case "add": {
+        const contact = resolveContactLocator(db, input.contact, "contact");
+        if (!contact.ok) {
+          return contact.result;
+        }
+        return mutationToolResult(
+          "add",
+          addIdentity(db, contact.value.id, input.input),
+          "identity",
+        );
+      }
+      case "revise":
+        return mutationToolResult(
+          "revise",
+          reviseIdentity(db, input.identityId, input.patch),
+          "identity",
+        );
+      case "verify":
+        return mutationToolResult(
+          "verify",
+          verifyIdentity(db, input.identityId, input.verifiedAt),
+          "identity",
+        );
+      case "remove":
+        return mutationToolResult(
+          "remove",
+          removeIdentity(db, input.identityId, input.removedAt),
+          "identity",
+        );
+    }
+  }, "Identity tool failed.");
+}
+
+export const manageIdentityTool = defineAffinityTool<
+  ManageIdentityToolInput,
+  ManageIdentityToolResult
+>({
+  name: manageIdentityToolName,
+  description:
+    "Add, revise, verify, or remove one routing identity on a contact.",
+  whenToUse:
+    "Use this for contact identity management such as email, handle, or phone routing keys.",
+  whenNotToUse:
+    "Do not use this for contact core fields, links, or attributes.",
+  sideEffects: "writes_state",
+  readOnly: false,
+  supportsClarification: true,
+  targetKinds: ["contact", "identity"],
+  inputDescriptions: {
+    action: "Which identity action to perform.",
+    contact: "Target contact locator for identity creation.",
+    input: "Creation payload for a new identity.",
+    identityId: "Exact identity id for revise, verify, or remove actions.",
+    patch: "Allowed identity patch fields.",
+    verifiedAt: "Optional verification timestamp.",
+    removedAt: "Optional removal timestamp.",
+  },
+  outputDescription:
+    "Returns the primary identity plus the mutation receipt fields needed to understand what changed.",
+  inputSchema: oneOfSchema(
+    [
+      objectSchema(
+        {
+          action: literalSchema("add"),
+          contact: contactLocatorSchema("Target contact."),
+          input: objectSchema(
+            {
+              type: stringSchema("Identity type."),
+              value: stringSchema("Identity value."),
+              label: stringSchema("Optional label."),
+              verified: booleanSchema("Whether the identity starts verified."),
+              now: integerSchema("Optional timestamp."),
+            },
+            ["type", "value"],
+          ),
+        },
+        ["action", "contact", "input"],
+      ),
+      objectSchema(
+        {
+          action: literalSchema("revise"),
+          identityId: integerSchema("Identity id."),
+          patch: objectSchema(
+            {
+              type: stringSchema("Optional identity type."),
+              value: stringSchema("Optional identity value."),
+              label: stringSchema("Optional label."),
+            },
+            [],
+          ),
+        },
+        ["action", "identityId", "patch"],
+      ),
+      objectSchema(
+        {
+          action: literalSchema("verify"),
+          identityId: integerSchema("Identity id."),
+          verifiedAt: integerSchema("Optional verification timestamp."),
+        },
+        ["action", "identityId"],
+      ),
+      objectSchema(
+        {
+          action: literalSchema("remove"),
+          identityId: integerSchema("Identity id."),
+          removedAt: integerSchema("Optional removal timestamp."),
+        },
+        ["action", "identityId"],
+      ),
+    ],
+    "Manage identities.",
+  ),
+  handler: manageIdentityToolHandler,
+});

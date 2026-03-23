@@ -49,7 +49,7 @@ Per-operation write inputs (`CreateContactInput`, identity patches, link seeds, 
 
 ---
 
-## 4. Write API (`write` namespace) — 26 operations
+## 4. Write API (`write` namespace) — 25 operations
 
 Public barrel: [`src/write.ts`](../src/write.ts) (`export * as write` from [`src/index.ts`](../src/index.ts)). Implementations live under [`src/write_impl/`](../src/write_impl/).
 
@@ -91,7 +91,7 @@ Public barrel: [`src/write.ts`](../src/write.ts) (`export * as write` from [`src
 - `[x]` `addDateAnchor` — `events.type = date_anchor` + target columns; duplicate `(recurrence, month, day, target)` → `AffinityConflictError` unless `force`
 - `[x]` `reviseDateAnchor` — patch recurrence/summary/significance; same duplicate rule; recomputes `upcoming_occurrences`
 - `[x]` `removeDateAnchor` — soft-delete (`events.deleted_at`)
-- `[x]` `rebuildUpcomingOccurrences` — transactional wipe + repopulate from live `date_anchor` rows (migration / repair); optional `now` for next-occurrence reference
+- `[ ]` `rebuildUpcomingOccurrences` — internal repair helper, intentionally not exported from the public `write` namespace
 
 **Attributes**
 
@@ -107,7 +107,7 @@ Public barrel: [`src/write.ts`](../src/write.ts) (`export * as write` from [`src
 
 ---
 
-## 5. Read API (`read` namespace) — 18 operations
+## 5. Read API (`read` namespace) — 17 operations
 
 **Portfolio**
 
@@ -146,9 +146,36 @@ Public barrel: [`src/write.ts`](../src/write.ts) (`export * as write` from [`src
 
 ---
 
-## 6. Package entry
+## 6. Tool API (`tools` namespace) — 11 tools
 
-- `[x]` Root `index.ts` exports: `initAffinityTables`, `read`, `write`, `types`, thrown error classes (`export * from "./errors.ts"`), and optional `errors` namespace (`export * as errors from "./errors.ts"`).
+Public barrel: `src/tools/index.ts` (`export * as tools` from `src/index.ts`).
+This is an additive LLM-facing facade layered on top of `read` and `write`.
+
+- `[x]` `search_affinity`
+- `[x]` `review_affinity`
+- `[x]` `inspect_affinity_item`
+- `[x]` `manage_contact`
+- `[x]` `merge_contacts`
+- `[x]` `manage_identity`
+- `[x]` `manage_relationship`
+- `[x]` `record_event`
+- `[x]` `manage_commitment`
+- `[x]` `manage_date_anchor`
+- `[x]` `manage_attribute`
+
+Canonical reconciliation is tracked in `src/tools/tool_mapping.ts`.
+
+The tool layer keeps these invariants:
+
+- fewer than 12 tools total
+- strict schemas with no generic catchall payloads
+- explicit action and view discriminators
+- consistent outcomes: `success`, `no_op`, `needs_clarification`, `error`
+- every direct public `read` and `write` operation remains reachable through one mapped tool path
+
+## 7. Package entry
+
+- `[x]` Root `index.ts` exports: `initAffinityTables`, `read`, `write`, `types`, `tools`, thrown error classes (`export * from "./errors.ts"`), and optional `errors` namespace (`export * as errors from "./errors.ts"`).
 
 ---
 
