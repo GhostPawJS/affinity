@@ -1754,5 +1754,4 @@ Which API functions each angle exercises:
 Every write function appears in at least one angle. Read functions without a
 mark (`reviseContact`, `setContactLifecycle`, `overrideLinkState`, etc.) are
 exercised implicitly through other narratives or are intentionally left for the
-operator to discover — they are documented in the entity docs and API surface
-reference.
+operator to discover — they are documented in the entity docs.

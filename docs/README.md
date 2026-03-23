@@ -3,13 +3,24 @@
 Affinity is a standalone singleplayer social CRM core for personal contact
 management, solo-business CRM, hybrid life CRM, and later Ghostpaw integration.
 
-This document describes the package architecture, data model, mechanics
-pipeline, invariants, and support infrastructure. See `CONCEPT.md` at the
-repository root for the full authoritative specification.
+This document is the documentation hub: architecture, data model, mechanics,
+invariants, and navigation. See `CONCEPT.md` at the repository root for the
+full authoritative specification.
 
-## Package Surface
+## Docs Guide
 
-Consumers interact with seven entry points:
+- [`HUMAN.md`](HUMAN.md): direct-code usage for human operators working with
+  `initAffinityTables`, `read`, `write`, `types`, and `errors`
+- [`LLM.md`](LLM.md): additive `soul`, `tools`, and `skills` runtime for
+  harnesses
+- [`USECASES.md`](USECASES.md): long-form lifecycle stories across personal,
+  business, and AI-memory angles
+- [`entities/`](entities/): concept manuals with exact public APIs inlined per
+  entity
+
+## Public Surface
+
+Consumers interact with seven root entry points:
 
 | Export | Purpose |
 |---|---|
@@ -27,7 +38,8 @@ async layer, and no external dependencies.
 The direct-code surface remains the authoritative human API. The additive AI
 runtime stack sits above it in three layers: `soul` for prompt-foundation
 posture, `tools` for execution, and `skills` for reusable workflows built from
-tools. See `docs/LLM.md` for the full soul, tool, and skill contract.
+tools. Use `HUMAN.md` for direct library usage and `LLM.md` for the additive
+runtime.
 
 ## Core Separations
 
@@ -236,6 +248,9 @@ src/
 | Dates | [entities/DATES.md](entities/DATES.md) | when are the important recurring occasions? |
 | Merges | [entities/MERGES.md](entities/MERGES.md) | which contacts are the same entity? |
 | Graph | [entities/GRAPH.md](entities/GRAPH.md) | what does my network look like? |
+
+If you need exact public calls for a specific concept, use the corresponding
+entity manual.
 
 ## Use-Case Lifecycle Narratives
 

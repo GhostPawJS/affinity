@@ -32,12 +32,19 @@ const owner = read.getOwnerProfile(db);
 console.log(owner?.contact.name);
 ```
 
-`initAffinityTables` installs the public schema; `write` covers contacts, identities, links, journal, anchors, attributes, and merge; `read` covers portfolio, journal, links, maintenance, graph, and merge history. Import `types` for shared domain types. Error classes are available at the package root or under the `errors` namespace. See `CONCEPT.md`, `docs/API_SURFACES.md`, and `docs/HUMAN.md`.
+`initAffinityTables` installs the public schema; `write` covers contacts,
+identities, links, journal, anchors, attributes, and merge; `read` covers
+portfolio, journal, links, maintenance, graph, and merge history. Import
+`types` for shared domain types. Error classes are available at the package
+root or under the `errors` namespace. See `CONCEPT.md`, `docs/README.md`,
+`docs/HUMAN.md`, and `docs/LLM.md`.
 
 ## Docs
 
 - [Architecture & mechanics](docs/README.md)
 - [Direct-code usage](docs/HUMAN.md)
+- [LLM runtime](docs/LLM.md)
+- [Use cases](docs/USECASES.md)
 - [Entity manuals](docs/entities/)
 
 ## Node version pins
