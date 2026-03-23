@@ -232,3 +232,9 @@ src/
 | Dates | [entities/DATES.md](entities/DATES.md) | when are the important recurring occasions? |
 | Merges | [entities/MERGES.md](entities/MERGES.md) | which contacts are the same entity? |
 | Graph | [entities/GRAPH.md](entities/GRAPH.md) | what does my network look like? |
+
+## Use-Case Lifecycle Narratives
+
+[USECASES.md](USECASES.md) contains 10 nontrivial day-by-day scenarios — from a
+personal relationship keeper to a solo recruiter to an AI agent memory layer —
+showing how each angle exercises the system from bootstrap to mature scale.
