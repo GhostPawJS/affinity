@@ -4,17 +4,18 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   check:
+    name: Lint · Typecheck · Test · Build
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -22,11 +23,11 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
+          cache-dependency-path: package-lock.json
 
-      - name: Install
-        run: npm ci
+      - run: npm ci
 
-      - name: Check
+      - name: Lint & typecheck
         run: npm run check
 
       - name: Test
@@ -35,15 +36,16 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Pack (dry run)
+      - name: Verify package contents
         run: npm pack --dry-run
 
-      - name: Dist size guard
+      - name: Package size guard
         run: |
+          MAX_KB=1024
           SIZE=$(du -sb dist | cut -f1)
-          MAX=$((5 * 1024 * 1024))
-          echo "dist size: ${SIZE} bytes (max ${MAX})"
-          if [ "$SIZE" -gt "$MAX" ]; then
-            echo "dist exceeds size budget"
+          SIZE_KB=$((SIZE / 1024))
+          echo "Package size: ${SIZE_KB} KB (max: ${MAX_KB} KB)"
+          if [ "$SIZE_KB" -gt "$MAX_KB" ]; then
+            echo "::error::Package too large: ${SIZE_KB} KB exceeds ${MAX_KB} KB limit"
             exit 1
           fi

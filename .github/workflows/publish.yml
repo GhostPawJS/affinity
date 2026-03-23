@@ -1,4 +1,4 @@
-name: Publish
+name: Release
 
 on:
   push:
@@ -10,7 +10,8 @@ permissions:
   id-token: write
 
 jobs:
-  publish:
+  release:
+    name: Verify · Publish · Release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,22 +19,23 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-          registry-url: https://registry.npmjs.org
           cache: npm
+          cache-dependency-path: package-lock.json
+          registry-url: "https://registry.npmjs.org"
 
-      - name: Install
-        run: npm ci
+      - run: npm ci
 
       - name: Verify version matches tag
         run: |
           TAG="${GITHUB_REF_NAME#v}"
           PKG=$(node -p "require('./package.json').version")
           if [ "$TAG" != "$PKG" ]; then
-            echo "Tag v$TAG does not match package.json version $PKG"
+            echo "::error::Version mismatch: package.json=$PKG tag=$TAG"
             exit 1
           fi
+          echo "Version verified: $PKG"
 
-      - name: Check
+      - name: Lint & typecheck
         run: npm run check
 
       - name: Test
@@ -42,7 +44,7 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Pack (dry run)
+      - name: Verify package contents
         run: npm pack --dry-run
 
       - name: Publish to npm
@@ -50,7 +52,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: GitHub release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
