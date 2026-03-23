@@ -10,7 +10,6 @@
   },
   "formatter": {
     "enabled": true,
-    "include": ["**", "!package.json"],
     "indentStyle": "space",
     "indentWidth": 2
   },

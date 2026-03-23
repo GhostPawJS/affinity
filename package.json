@@ -47,9 +47,7 @@
     "typescript",
     "zero-dependencies"
   ],
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -75,6 +73,7 @@
     "typecheck": "tsc --noEmit",
     "check": "biome check && tsc --noEmit",
     "clean": "rm -rf dist",
+    "version": "biome format --write package.json package-lock.json && git add package.json package-lock.json",
     "prepublishOnly": "npm run check && npm run build",
     "release:patch": "npm version patch && git push && git push --tags",
     "release:minor": "npm version minor && git push && git push --tags",
