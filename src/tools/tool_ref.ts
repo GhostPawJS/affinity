@@ -1,7 +1,7 @@
-import type { ContactRow } from "../lib/types/contact_row.ts";
 import type { AttributeRecord } from "../lib/types/attribute_record.ts";
 import type { ContactCore } from "../lib/types/contact_core.ts";
 import type { ContactListItem } from "../lib/types/contact_list_item.ts";
+import type { ContactRow } from "../lib/types/contact_row.ts";
 import type { EntityRef } from "../lib/types/entity_ref.ts";
 import type { EventRecord } from "../lib/types/event_record.ts";
 import type { IdentityRecord } from "../lib/types/identity_record.ts";
@@ -11,10 +11,7 @@ import type { MutationReceipt } from "../lib/types/mutation_receipt.ts";
 import type { ToolEntityRef, ToolListItem } from "./tool_types.ts";
 
 function contactState(
-  value:
-    | ContactCore
-    | ContactListItem
-    | ContactRow,
+  value: ContactCore | ContactListItem | ContactRow,
 ): string | null | undefined {
   if ("lifecycleState" in value) {
     return value.lifecycleState;
@@ -72,13 +69,12 @@ export function toLinkEntityRef(value: LinkListItem | LinkRow): ToolEntityRef {
   };
 }
 
-export function toLinkListToolItem(value: LinkListItem | LinkRow): ToolListItem {
+export function toLinkListToolItem(
+  value: LinkListItem | LinkRow,
+): ToolListItem {
   return {
     ...toLinkEntityRef(value),
-    snippet:
-      "bond" in value && value.bond != null
-        ? value.bond
-        : undefined,
+    snippet: "bond" in value && value.bond != null ? value.bond : undefined,
   };
 }
 

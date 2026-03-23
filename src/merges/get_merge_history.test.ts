@@ -33,7 +33,7 @@ describe("getMergeHistory", () => {
     });
     const all = getMergeHistory(db, owner.id);
     strictEqual(all.length, 3);
-    strictEqual(all[0]!.mergedAt, 300);
+    strictEqual(all[0]?.mergedAt, 300);
     const page = getMergeHistory(db, owner.id, { limit: 2 });
     strictEqual(page.length, 2);
     const next = getMergeHistory(db, owner.id, { limit: 2, offset: 2 });

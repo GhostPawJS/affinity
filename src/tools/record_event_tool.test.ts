@@ -12,7 +12,10 @@ describe("record_event_tool", () => {
       kind: "human",
       bootstrapOwner: true,
     });
-    const { primary: other } = createContact(db, { name: "Ada", kind: "human" });
+    const { primary: other } = createContact(db, {
+      name: "Ada",
+      kind: "human",
+    });
 
     const result = recordEventToolHandler(db, {
       kind: "interaction",

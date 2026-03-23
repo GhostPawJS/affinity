@@ -5,9 +5,9 @@ import { importHistoryWithoutFakingEvidenceSkill } from "./import_history_withou
 import { managePromisesAndAgreementsSkill } from "./manage_promises_and_agreements.ts";
 import { manageRecurringDatesAndRemindersSkill } from "./manage_recurring_dates_and_reminders.ts";
 import { modelStructureOrgsAndHouseholdsSkill } from "./model_structure_orgs_and_households.ts";
+import { reconcileDuplicatesAndMergeSafelySkill } from "./reconcile_duplicates_and_merge_safely.ts";
 import { recordDirectEvidenceWellSkill } from "./record_direct_evidence_well.ts";
 import { recordObservationsAndReferralsSkill } from "./record_observations_and_referrals.ts";
-import { reconcileDuplicatesAndMergeSafelySkill } from "./reconcile_duplicates_and_merge_safely.ts";
 import { reviewRadarProgressionAndGraphSkill } from "./review_radar_progression_and_graph.ts";
 import type { AffinitySkillRegistry } from "./skill_types.ts";
 

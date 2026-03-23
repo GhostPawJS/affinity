@@ -7,7 +7,10 @@ import { manageDateAnchorToolHandler } from "./manage_date_anchor_tool.ts";
 describe("manage_date_anchor_tool", () => {
   it("adds, revises, and removes a contact date anchor", async () => {
     const db = await createInitializedAffinityDb();
-    const { primary: contact } = createContact(db, { name: "Ada", kind: "human" });
+    const { primary: contact } = createContact(db, {
+      name: "Ada",
+      kind: "human",
+    });
 
     const added = manageDateAnchorToolHandler(db, {
       action: "add",

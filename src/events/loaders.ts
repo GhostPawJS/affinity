@@ -73,7 +73,12 @@ export function batchLoadEventRecords(
     event_id: number;
     contact_id: number;
     role: string;
-    directionality: "owner_initiated" | "other_initiated" | "mutual" | "observed" | null;
+    directionality:
+      | "owner_initiated"
+      | "other_initiated"
+      | "mutual"
+      | "observed"
+      | null;
   }[];
   const partsByEvent = new Map<number, EventParticipantView[]>();
   for (const p of partRows) {
@@ -85,7 +90,9 @@ export function batchLoadEventRecords(
     arr.push({
       contactId: p.contact_id,
       role: p.role as EventParticipantRole,
-      ...(p.directionality === null ? {} : { directionality: p.directionality }),
+      ...(p.directionality === null
+        ? {}
+        : { directionality: p.directionality }),
     });
   }
   const rowById = new Map(eventRows.map((r) => [r.id, r]));
@@ -118,7 +125,12 @@ export function batchLoadEventParticipantViews(
     event_id: number;
     contact_id: number;
     role: string;
-    directionality: "owner_initiated" | "other_initiated" | "mutual" | "observed" | null;
+    directionality:
+      | "owner_initiated"
+      | "other_initiated"
+      | "mutual"
+      | "observed"
+      | null;
   }[];
   for (const row of rows) {
     let arr = result.get(row.event_id);
@@ -129,7 +141,9 @@ export function batchLoadEventParticipantViews(
     arr.push({
       contactId: row.contact_id,
       role: row.role as EventParticipantRole,
-      ...(row.directionality === null ? {} : { directionality: row.directionality }),
+      ...(row.directionality === null
+        ? {}
+        : { directionality: row.directionality }),
     });
   }
   return result;

@@ -1,18 +1,18 @@
-import type { AffinityDb } from "../database.ts";
 import { getContactRowById } from "../contacts/queries.ts";
-import { AffinityError } from "../lib/errors/affinity_error.ts";
+import type { AffinityDb } from "../database.ts";
+import { normalizeIdentityKey } from "../identities/normalize.ts";
+import type { AffinityError } from "../lib/errors/affinity_error.ts";
 import { isAffinityError } from "../lib/errors/is_affinity_error.ts";
 import type { ContactRow } from "../lib/types/contact_row.ts";
 import type { LinkRow } from "../lib/types/link_row.ts";
-import { normalizeIdentityKey } from "../identities/normalize.ts";
 import { getLinkRowById } from "../links/queries.ts";
 import { toContactEntityRef, toLinkEntityRef } from "./tool_ref.ts";
 import {
-  toolFailure,
-  toolNeedsClarification,
   type ToolFailure,
   type ToolNeedsClarification,
   type ToolResult,
+  toolFailure,
+  toolNeedsClarification,
 } from "./tool_types.ts";
 
 export type ContactLocator =
@@ -100,7 +100,19 @@ export function resolveContactLocator(
       ),
     };
   }
-  return { ok: true, value: row[0]! };
+  const matchedContact = row[0];
+  if (matchedContact === undefined) {
+    return {
+      ok: false,
+      result: toolFailure(
+        "system",
+        "system_error",
+        "Contact resolution failed.",
+        "Expected one contact match but none could be loaded.",
+      ),
+    };
+  }
+  return { ok: true, value: matchedContact };
 }
 
 export function resolveLinkLocator(
@@ -185,7 +197,19 @@ export function resolveLinkLocator(
       ),
     };
   }
-  return { ok: true, value: rows[0]! };
+  const matchedLink = rows[0];
+  if (matchedLink === undefined) {
+    return {
+      ok: false,
+      result: toolFailure(
+        "system",
+        "system_error",
+        "Link resolution failed.",
+        "Expected one link match but none could be loaded.",
+      ),
+    };
+  }
+  return { ok: true, value: matchedLink };
 }
 
 export function mapErrorToToolFailure(

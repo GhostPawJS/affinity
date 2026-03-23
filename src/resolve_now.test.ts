@@ -19,11 +19,11 @@ describe("resolveNow", () => {
 
   it("rejects NaN, Infinity, and negative values", () => {
     throws(
-      () => resolveNow(NaN),
+      () => resolveNow(Number.NaN),
       (e: unknown) => e instanceof AffinityValidationError,
     );
     throws(
-      () => resolveNow(Infinity),
+      () => resolveNow(Number.POSITIVE_INFINITY),
       (e: unknown) => e instanceof AffinityValidationError,
     );
     throws(

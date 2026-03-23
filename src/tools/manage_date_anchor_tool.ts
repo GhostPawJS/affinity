@@ -2,11 +2,11 @@ import type { AffinityDb } from "../database.ts";
 import { addDateAnchor } from "../dates/add_date_anchor.ts";
 import { removeDateAnchor } from "../dates/remove_date_anchor.ts";
 import { reviseDateAnchor } from "../dates/revise_date_anchor.ts";
-import type { EventRecord } from "../lib/types/event_record.ts";
 import type {
   AddDateAnchorInput,
   DateAnchorTarget,
 } from "../lib/types/add_date_anchor_input.ts";
+import type { EventRecord } from "../lib/types/event_record.ts";
 import type { ReviseDateAnchorOptions } from "../lib/types/revise_date_anchor_options.ts";
 import type { ReviseDateAnchorPatch } from "../lib/types/revise_date_anchor_patch.ts";
 import {
@@ -19,13 +19,13 @@ import {
   oneOfSchema,
   stringSchema,
 } from "./tool_metadata.ts";
+import { type MutationToolData, mutationToolResult } from "./tool_mutation.ts";
 import { manageDateAnchorToolName } from "./tool_names.ts";
-import { mutationToolResult, type MutationToolData } from "./tool_mutation.ts";
 import {
-  resolveContactLocator,
-  resolveLinkLocator,
   type ContactLocator,
   type LinkLocator,
+  resolveContactLocator,
+  resolveLinkLocator,
   withToolHandling,
 } from "./tool_resolvers.ts";
 import type {
@@ -41,7 +41,9 @@ type DateAnchorTargetInput =
 export type ManageDateAnchorToolInput =
   | {
       action: "add";
-      input: Omit<AddDateAnchorInput, "target"> & { target: DateAnchorTargetInput };
+      input: Omit<AddDateAnchorInput, "target"> & {
+        target: DateAnchorTargetInput;
+      };
     }
   | {
       action: "revise";
@@ -58,10 +60,9 @@ export type ManageDateAnchorToolResult = ToolResult<
 function contactLocatorSchema(description: string) {
   return oneOfSchema(
     [
-      objectSchema(
-        { contactId: integerSchema("Exact contact id.") },
-        ["contactId"],
-      ),
+      objectSchema({ contactId: integerSchema("Exact contact id.") }, [
+        "contactId",
+      ]),
       objectSchema(
         {
           identity: objectSchema(
@@ -106,16 +107,21 @@ function linkLocatorSchema(description: string) {
 function resolveDateAnchorTarget(
   db: AffinityDb,
   target: DateAnchorTargetInput,
-): { kind: "ok"; target: DateAnchorTarget } | {
-  kind: "error";
-  result: ToolFailure | ToolNeedsClarification;
-} {
+):
+  | { kind: "ok"; target: DateAnchorTarget }
+  | {
+      kind: "error";
+      result: ToolFailure | ToolNeedsClarification;
+    } {
   if (target.kind === "contact") {
     const contact = resolveContactLocator(db, target.contact, "target.contact");
     if (!contact.ok) {
       return { kind: "error", result: contact.result };
     }
-    return { kind: "ok", target: { kind: "contact", contactId: contact.value.id } };
+    return {
+      kind: "ok",
+      target: { kind: "contact", contactId: contact.value.id },
+    };
   }
   const link = resolveLinkLocator(db, target.link, "target.link");
   if (!link.ok) {
@@ -207,14 +213,20 @@ export const manageDateAnchorTool = defineAffinityTool<
                 "Date-anchor target.",
               ),
               recurrenceKind: enumSchema("Recurrence kind.", [
-                "birthday", "anniversary", "renewal", "memorial", "custom_yearly",
+                "birthday",
+                "anniversary",
+                "renewal",
+                "memorial",
+                "custom_yearly",
               ]),
               anchorMonth: integerSchema("Anchor month."),
               anchorDay: integerSchema("Anchor day."),
               summary: stringSchema("Summary."),
               significance: integerSchema("Significance."),
               now: integerSchema("Optional timestamp."),
-              force: booleanSchema("Whether duplicate checks should be bypassed."),
+              force: booleanSchema(
+                "Whether duplicate checks should be bypassed.",
+              ),
             },
             [
               "target",
@@ -235,7 +247,11 @@ export const manageDateAnchorTool = defineAffinityTool<
           patch: objectSchema(
             {
               recurrenceKind: enumSchema("Optional recurrence kind.", [
-                "birthday", "anniversary", "renewal", "memorial", "custom_yearly",
+                "birthday",
+                "anniversary",
+                "renewal",
+                "memorial",
+                "custom_yearly",
               ]),
               anchorMonth: integerSchema("Optional month."),
               anchorDay: integerSchema("Optional day."),
@@ -247,7 +263,9 @@ export const manageDateAnchorTool = defineAffinityTool<
           options: objectSchema(
             {
               now: integerSchema("Optional timestamp."),
-              force: booleanSchema("Whether duplicate checks should be bypassed."),
+              force: booleanSchema(
+                "Whether duplicate checks should be bypassed.",
+              ),
             },
             [],
           ),

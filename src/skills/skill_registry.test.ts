@@ -1,6 +1,10 @@
 import { ok, strictEqual } from "node:assert/strict";
 import { describe, it } from "node:test";
-import { affinitySkills, getAffinitySkillByName, listAffinitySkills } from "./index.ts";
+import {
+  affinitySkills,
+  getAffinitySkillByName,
+  listAffinitySkills,
+} from "./index.ts";
 
 const directApiNames = [
   "createContact",
@@ -76,7 +80,9 @@ describe("skill registry", () => {
       ok(skill.name.trim().length > 0);
       ok(skill.description.trim().length > 0);
       ok(skill.content.trim().length > 0);
-      ok(toolNames.some((toolName) => skill.content.includes(`\`${toolName}\``)));
+      ok(
+        toolNames.some((toolName) => skill.content.includes(`\`${toolName}\``)),
+      );
       strictEqual(getAffinitySkillByName(skill.name), skill);
 
       for (const apiName of directApiNames) {

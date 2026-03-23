@@ -2,14 +2,17 @@ import { strictEqual } from "node:assert/strict";
 import { describe, it } from "node:test";
 import { createContact } from "../contacts/create_contact.ts";
 import { addIdentity } from "../identities/add_identity.ts";
-import { seedSocialLink } from "../links/seed_social_link.ts";
 import { createInitializedAffinityDb } from "../lib/testing/create_initialized_affinity_db.ts";
+import { seedSocialLink } from "../links/seed_social_link.ts";
 import { inspectAffinityItemToolHandler } from "./inspect_affinity_item_tool.ts";
 
 describe("inspect_affinity_item_tool", () => {
   it("loads a contact profile via identity locator", async () => {
     const db = await createInitializedAffinityDb();
-    const { primary: contact } = createContact(db, { name: "Ada", kind: "human" });
+    const { primary: contact } = createContact(db, {
+      name: "Ada",
+      kind: "human",
+    });
     addIdentity(db, contact.id, {
       type: "email",
       value: "ada@example.com",

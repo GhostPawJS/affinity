@@ -47,19 +47,39 @@ export function computeNodeBetweenness(
     let head = 0;
 
     while (head < queue.length) {
-      const v = queue[head++]!;
+      const v = queue[head];
+      head += 1;
+      if (v === undefined) {
+        continue;
+      }
       stack.push(v);
-      const dv = dist.get(v)!;
+      const dv = dist.get(v);
+      if (dv === undefined) {
+        continue;
+      }
 
       for (const w of adjacency.get(v) ?? []) {
-        const dw = dist.get(w)!;
+        const dw = dist.get(w);
+        if (dw === undefined) {
+          continue;
+        }
         if (dw < 0) {
           dist.set(w, dv + 1);
           queue.push(w);
         }
         if (dist.get(w) === dv + 1) {
-          sigma.set(w, sigma.get(w)! + sigma.get(v)!);
-          pred.get(w)!.push(v);
+          const sigmaW = sigma.get(w);
+          const sigmaV = sigma.get(v);
+          const predecessors = pred.get(w);
+          if (
+            sigmaW === undefined ||
+            sigmaV === undefined ||
+            predecessors === undefined
+          ) {
+            continue;
+          }
+          sigma.set(w, sigmaW + sigmaV);
+          predecessors.push(v);
         }
       }
     }
@@ -70,22 +90,47 @@ export function computeNodeBetweenness(
     }
 
     while (stack.length > 0) {
-      const w = stack.pop()!;
-      const sigmaW = sigma.get(w)!;
-      const deltaW = delta.get(w)!;
-      for (const v of pred.get(w)!) {
-        const share = (sigma.get(v)! / sigmaW) * (1 + deltaW);
-        delta.set(v, delta.get(v)! + share);
+      const w = stack.pop();
+      if (w === undefined) {
+        continue;
+      }
+      const sigmaW = sigma.get(w);
+      const deltaW = delta.get(w);
+      const predecessors = pred.get(w);
+      if (
+        sigmaW === undefined ||
+        deltaW === undefined ||
+        predecessors === undefined
+      ) {
+        continue;
+      }
+      for (const v of predecessors) {
+        const sigmaV = sigma.get(v);
+        const deltaV = delta.get(v);
+        if (sigmaV === undefined || deltaV === undefined) {
+          continue;
+        }
+        const share = (sigmaV / sigmaW) * (1 + deltaW);
+        delta.set(v, deltaV + share);
       }
       if (w !== s) {
-        cb.set(w, cb.get(w)! + delta.get(w)!);
+        const current = cb.get(w);
+        const contribution = delta.get(w);
+        if (current === undefined || contribution === undefined) {
+          continue;
+        }
+        cb.set(w, current + contribution);
       }
     }
   }
 
   // Undirected graph: each pair counted twice, divide by 2
   for (const v of nodes) {
-    cb.set(v, cb.get(v)! / 2);
+    const score = cb.get(v);
+    if (score === undefined) {
+      continue;
+    }
+    cb.set(v, score / 2);
   }
 
   return cb;
@@ -115,12 +160,24 @@ export function normalizeToPercentiles(
   let i = 0;
   while (i < n) {
     let j = i;
-    while (j < n && entries[j]![1] === entries[i]![1]) {
+    const entry = entries[i];
+    if (entry === undefined) {
+      break;
+    }
+    while (j < n) {
+      const candidate = entries[j];
+      if (candidate === undefined || candidate[1] !== entry[1]) {
+        break;
+      }
       j++;
     }
-    const tiePercentile = ((i + j - 1) / 2) / (n - 1);
+    const tiePercentile = (i + j - 1) / 2 / (n - 1);
     for (let k = i; k < j; k++) {
-      result.set(entries[k]![0], tiePercentile);
+      const tiedEntry = entries[k];
+      if (tiedEntry === undefined) {
+        continue;
+      }
+      result.set(tiedEntry[0], tiePercentile);
     }
     i = j;
   }

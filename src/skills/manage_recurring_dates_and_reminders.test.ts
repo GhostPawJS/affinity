@@ -24,7 +24,10 @@ describe("manage_recurring_dates_and_reminders skill scenario", () => {
       manageDateAnchorToolHandler(db, {
         action: "add",
         input: {
-          target: { kind: "contact", contact: { contactId: contact.data.primary.id } },
+          target: {
+            kind: "contact",
+            contact: { contactId: contact.data.primary.id },
+          },
           recurrenceKind: "birthday",
           anchorMonth: 6,
           anchorDay: 1,

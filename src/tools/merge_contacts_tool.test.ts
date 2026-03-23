@@ -8,8 +8,14 @@ import { mergeContactsToolHandler } from "./merge_contacts_tool.ts";
 describe("merge_contacts_tool", () => {
   it("merges contacts through contact locators", async () => {
     const db = await createInitializedAffinityDb();
-    const { primary: winner } = createContact(db, { name: "Ada", kind: "human" });
-    const { primary: loser } = createContact(db, { name: "A. Lovelace", kind: "human" });
+    const { primary: winner } = createContact(db, {
+      name: "Ada",
+      kind: "human",
+    });
+    const { primary: loser } = createContact(db, {
+      name: "A. Lovelace",
+      kind: "human",
+    });
     addIdentity(db, winner.id, { type: "email", value: "ada@example.com" });
     addIdentity(db, loser.id, { type: "email", value: "lovelace@example.com" });
 

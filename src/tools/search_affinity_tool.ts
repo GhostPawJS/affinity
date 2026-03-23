@@ -2,8 +2,8 @@ import { searchContacts } from "../contacts/search_contacts.ts";
 import type { ContactKind, ContactLifecycleState } from "../contacts/types.ts";
 import type { AffinityDb } from "../database.ts";
 import {
-  defineAffinityTool,
   booleanSchema,
+  defineAffinityTool,
   enumSchema,
   integerSchema,
   objectSchema,
@@ -105,10 +105,19 @@ export const searchAffinityTool = defineAffinityTool<
     {
       query: stringSchema("Free-text or natural-key query."),
       kind: enumSchema("Optional contact kind filter.", [
-        "human", "group", "company", "team", "pet", "service", "other",
+        "human",
+        "group",
+        "company",
+        "team",
+        "pet",
+        "service",
+        "other",
       ]),
       lifecycleState: enumSchema("Optional lifecycle state filter.", [
-        "active", "dormant", "merged", "lost",
+        "active",
+        "dormant",
+        "merged",
+        "lost",
       ]),
       includeOwner: booleanSchema("Whether owner contacts are included."),
       includeDormant: booleanSchema("Whether dormant contacts are included."),

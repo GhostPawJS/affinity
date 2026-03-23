@@ -47,7 +47,9 @@ describe("identify_and_locate_contacts skill scenario", () => {
     );
     strictEqual(exact.data.items.length, 1);
 
-    const fuzzy = expectSuccess(searchAffinityToolHandler(db, { query: "Ada" }));
+    const fuzzy = expectSuccess(
+      searchAffinityToolHandler(db, { query: "Ada" }),
+    );
     strictEqual(fuzzy.data.items.length >= 2, true);
 
     const profile = expectSuccess(

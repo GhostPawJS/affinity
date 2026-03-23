@@ -60,7 +60,10 @@ describe("reconcile_duplicates_and_merge_safely skill scenario", () => {
         contact: { contactId: loser.data.primary.id },
       }),
     );
-    if (winnerProfile.data.kind !== "contact_profile" || loserProfile.data.kind !== "contact_profile") {
+    if (
+      winnerProfile.data.kind !== "contact_profile" ||
+      loserProfile.data.kind !== "contact_profile"
+    ) {
       throw new Error("expected contact profiles");
     }
 

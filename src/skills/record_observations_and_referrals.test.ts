@@ -4,10 +4,7 @@ import { inspectAffinityItemToolHandler } from "../tools/inspect_affinity_item_t
 import { manageContactToolHandler } from "../tools/manage_contact_tool.ts";
 import { recordEventToolHandler } from "../tools/record_event_tool.ts";
 import { reviewAffinityToolHandler } from "../tools/review_affinity_tool.ts";
-import {
-  createSkillTestDb,
-  expectSuccess,
-} from "./skill_test_utils.ts";
+import { createSkillTestDb, expectSuccess } from "./skill_test_utils.ts";
 
 describe("record_observations_and_referrals skill scenario", () => {
   it("captures third-party observational evidence without over-inferring group structure", async () => {

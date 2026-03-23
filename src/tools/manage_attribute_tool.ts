@@ -1,9 +1,9 @@
-import type { AffinityDb } from "../database.ts";
 import { replaceAttributes } from "../attributes/replace_attributes.ts";
 import { setAttribute } from "../attributes/set_attribute.ts";
 import { unsetAttribute } from "../attributes/unset_attribute.ts";
-import type { AttributeRecord } from "../lib/types/attribute_record.ts";
+import type { AffinityDb } from "../database.ts";
 import type { AttributeEntry } from "../lib/types/attribute_entry.ts";
+import type { AttributeRecord } from "../lib/types/attribute_record.ts";
 import type { AttributeTarget } from "../lib/types/attribute_target.ts";
 import {
   arraySchema,
@@ -16,13 +16,13 @@ import {
   oneOfSchema,
   stringSchema,
 } from "./tool_metadata.ts";
+import { type MutationToolData, mutationToolResult } from "./tool_mutation.ts";
 import { manageAttributeToolName } from "./tool_names.ts";
-import { mutationToolResult, type MutationToolData } from "./tool_mutation.ts";
 import {
-  resolveContactLocator,
-  resolveLinkLocator,
   type ContactLocator,
   type LinkLocator,
+  resolveContactLocator,
+  resolveLinkLocator,
   withToolHandling,
 } from "./tool_resolvers.ts";
 import type {
@@ -61,10 +61,9 @@ export type ManageAttributeToolResult = ToolResult<
 function contactLocatorSchema(description: string) {
   return oneOfSchema(
     [
-      objectSchema(
-        { contactId: integerSchema("Exact contact id.") },
-        ["contactId"],
-      ),
+      objectSchema({ contactId: integerSchema("Exact contact id.") }, [
+        "contactId",
+      ]),
       objectSchema(
         {
           identity: objectSchema(
@@ -109,10 +108,12 @@ function linkLocatorSchema(description: string) {
 function resolveAttributeTarget(
   db: AffinityDb,
   target: AttributeTargetInput,
-): { kind: "ok"; target: AttributeTarget } | {
-  kind: "error";
-  result: ToolFailure | ToolNeedsClarification;
-} {
+):
+  | { kind: "ok"; target: AttributeTarget }
+  | {
+      kind: "error";
+      result: ToolFailure | ToolNeedsClarification;
+    } {
   if (target.kind === "contact") {
     const contact = resolveContactLocator(db, target.contact, "target.contact");
     if (!contact.ok) {
@@ -164,8 +165,7 @@ export const manageAttributeTool = defineAffinityTool<
   ManageAttributeToolResult
 >({
   name: manageAttributeToolName,
-  description:
-    "Set, unset, or replace attributes on contacts and links.",
+  description: "Set, unset, or replace attributes on contacts and links.",
   whenToUse:
     "Use this for metadata such as tags, notes, or small labeled facts attached to a contact or link.",
   whenNotToUse:
@@ -209,7 +209,9 @@ export const manageAttributeTool = defineAffinityTool<
             "Attribute target.",
           ),
           name: stringSchema("Attribute name."),
-          value: nullableStringSchema("Attribute value, or null for presence/tag semantics."),
+          value: nullableStringSchema(
+            "Attribute value, or null for presence/tag semantics.",
+          ),
         },
         ["action", "target", "name"],
       ),
@@ -266,7 +268,9 @@ export const manageAttributeTool = defineAffinityTool<
             objectSchema(
               {
                 name: stringSchema("Attribute name."),
-                value: nullableStringSchema("Attribute value, or null for presence/tag semantics."),
+                value: nullableStringSchema(
+                  "Attribute value, or null for presence/tag semantics.",
+                ),
               },
               ["name"],
             ),

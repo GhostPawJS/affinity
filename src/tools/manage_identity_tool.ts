@@ -3,23 +3,23 @@ import { addIdentity } from "../identities/add_identity.ts";
 import { removeIdentity } from "../identities/remove_identity.ts";
 import { reviseIdentity } from "../identities/revise_identity.ts";
 import { verifyIdentity } from "../identities/verify_identity.ts";
-import type { IdentityRecord } from "../lib/types/identity_record.ts";
 import type { AddIdentityInput } from "../lib/types/add_identity_input.ts";
+import type { IdentityRecord } from "../lib/types/identity_record.ts";
 import type { ReviseIdentityPatch } from "../lib/types/revise_identity_patch.ts";
 import {
-  defineAffinityTool,
   booleanSchema,
+  defineAffinityTool,
   integerSchema,
   literalSchema,
   objectSchema,
   oneOfSchema,
   stringSchema,
 } from "./tool_metadata.ts";
+import { type MutationToolData, mutationToolResult } from "./tool_mutation.ts";
 import { manageIdentityToolName } from "./tool_names.ts";
-import { mutationToolResult, type MutationToolData } from "./tool_mutation.ts";
 import {
-  resolveContactLocator,
   type ContactLocator,
+  resolveContactLocator,
   withToolHandling,
 } from "./tool_resolvers.ts";
 import type { ToolResult } from "./tool_types.ts";
@@ -37,10 +37,9 @@ export type ManageIdentityToolResult = ToolResult<
 function contactLocatorSchema(description: string) {
   return oneOfSchema(
     [
-      objectSchema(
-        { contactId: integerSchema("Exact contact id.") },
-        ["contactId"],
-      ),
+      objectSchema({ contactId: integerSchema("Exact contact id.") }, [
+        "contactId",
+      ]),
       objectSchema(
         {
           identity: objectSchema(

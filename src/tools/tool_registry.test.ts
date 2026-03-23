@@ -29,7 +29,10 @@ describe("tool_registry", () => {
 
   it("lists definitions and resolves by name", () => {
     strictEqual(listAffinityToolDefinitions().length, 11);
-    strictEqual(getAffinityToolByName("review_affinity")?.name, "review_affinity");
+    strictEqual(
+      getAffinityToolByName("review_affinity")?.name,
+      "review_affinity",
+    );
     strictEqual(getAffinityToolByName("missing_tool"), null);
   });
 });

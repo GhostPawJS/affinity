@@ -34,8 +34,16 @@ describe("capture_transactions_and_commercial_events skill scenario", () => {
           summary: "Northwind paid the discovery invoice",
           significance: 6,
           participants: [
-            { contactId: owner.data.primary.id, role: "actor", directionality: "mutual" },
-            { contactId: client.data.primary.id, role: "recipient", directionality: "mutual" },
+            {
+              contactId: owner.data.primary.id,
+              role: "actor",
+              directionality: "mutual",
+            },
+            {
+              contactId: client.data.primary.id,
+              role: "recipient",
+              directionality: "mutual",
+            },
           ],
         },
       }),

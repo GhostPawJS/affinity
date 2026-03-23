@@ -1,10 +1,10 @@
 import type { AffinityDb } from "../database.ts";
 import { recordCommitment } from "../events/record_commitment.ts";
 import { resolveCommitment } from "../events/resolve_commitment.ts";
+import type { CommitmentResolutionKind } from "../lib/types/commitment_resolution_kind.ts";
 import type { EventRecord } from "../lib/types/event_record.ts";
 import type { RecordCommitmentInput } from "../lib/types/record_commitment_input.ts";
 import type { ResolveCommitmentOptions } from "../lib/types/resolve_commitment_options.ts";
-import type { CommitmentResolutionKind } from "../lib/types/commitment_resolution_kind.ts";
 import {
   arraySchema,
   defineAffinityTool,
@@ -15,8 +15,8 @@ import {
   oneOfSchema,
   stringSchema,
 } from "./tool_metadata.ts";
+import { type MutationToolData, mutationToolResult } from "./tool_mutation.ts";
 import { manageCommitmentToolName } from "./tool_names.ts";
-import { mutationToolResult, type MutationToolData } from "./tool_mutation.ts";
 import { withToolHandling } from "./tool_resolvers.ts";
 import type { ToolResult } from "./tool_types.ts";
 
@@ -36,7 +36,10 @@ export type ManageCommitmentToolResult = ToolResult<
 function commitmentInputSchema() {
   return objectSchema(
     {
-      commitmentType: enumSchema("Promise or agreement.", ["promise", "agreement"]),
+      commitmentType: enumSchema("Promise or agreement.", [
+        "promise",
+        "agreement",
+      ]),
       occurredAt: integerSchema("When the commitment was made."),
       summary: stringSchema("Commitment summary."),
       significance: integerSchema("Commitment significance."),
@@ -120,16 +123,24 @@ export const manageCommitmentTool = defineAffinityTool<
         {
           action: literalSchema("resolve"),
           commitmentEventId: integerSchema("Commitment event id."),
-          resolution: enumSchema("Commitment resolution.", ["kept", "cancelled", "broken"]),
+          resolution: enumSchema("Commitment resolution.", [
+            "kept",
+            "cancelled",
+            "broken",
+          ]),
           options: objectSchema(
             {
               now: integerSchema("Optional timestamp."),
               resolvingEvent: objectSchema(
                 {
                   type: stringSchema("Optional resolving event type."),
-                  occurredAt: integerSchema("Optional resolving event timestamp."),
+                  occurredAt: integerSchema(
+                    "Optional resolving event timestamp.",
+                  ),
                   summary: stringSchema("Optional resolving event summary."),
-                  significance: integerSchema("Optional resolving event significance."),
+                  significance: integerSchema(
+                    "Optional resolving event significance.",
+                  ),
                 },
                 [],
               ),

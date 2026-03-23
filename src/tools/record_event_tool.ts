@@ -18,8 +18,8 @@ import {
   oneOfSchema,
   stringSchema,
 } from "./tool_metadata.ts";
+import { type MutationToolData, mutationToolResult } from "./tool_mutation.ts";
 import { recordEventToolName } from "./tool_names.ts";
-import { mutationToolResult, type MutationToolData } from "./tool_mutation.ts";
 import { withToolHandling } from "./tool_resolvers.ts";
 import type { ToolResult } from "./tool_types.ts";
 
@@ -35,10 +35,17 @@ const participantSchema = objectSchema(
   {
     contactId: integerSchema("Participant contact id."),
     role: enumSchema("Participant role.", [
-      "actor", "recipient", "subject", "observer", "mentioned",
+      "actor",
+      "recipient",
+      "subject",
+      "observer",
+      "mentioned",
     ]),
     directionality: enumSchema("Optional participant directionality.", [
-      "owner_initiated", "other_initiated", "mutual", "observed",
+      "owner_initiated",
+      "other_initiated",
+      "mutual",
+      "observed",
     ]),
   },
   ["contactId", "role"],
@@ -48,7 +55,12 @@ function interactionInputSchema() {
   return objectSchema(
     {
       type: enumSchema("Interaction subtype.", [
-        "conversation", "activity", "gift", "support", "conflict", "correction",
+        "conversation",
+        "activity",
+        "gift",
+        "support",
+        "conflict",
+        "correction",
       ]),
       occurredAt: integerSchema("When the event occurred."),
       summary: stringSchema("Event summary."),
@@ -124,7 +136,8 @@ export const recordEventTool = defineAffinityTool<
   targetKinds: ["event", "contact", "link"],
   inputDescriptions: {
     kind: "Which event family to record: interaction (requires type subtype), observation, milestone, or transaction.",
-    input: "The event payload for that family. Interaction events require a `type` subtype; the others do not.",
+    input:
+      "The event payload for that family. Interaction events require a `type` subtype; the others do not.",
   },
   outputDescription:
     "Returns the primary event plus the mutation receipt fields and any affected links or derived effects.",

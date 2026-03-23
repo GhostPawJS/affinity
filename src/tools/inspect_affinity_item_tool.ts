@@ -1,9 +1,9 @@
 import { getContactProfile } from "../contacts/get_contact_profile.ts";
 import { getOwnerProfile } from "../contacts/get_owner_profile.ts";
 import type { AffinityDb } from "../database.ts";
-import { getLinkDetail } from "../links/get_link_detail.ts";
 import type { ContactProfileRecord } from "../lib/types/contact_profile_record.ts";
 import type { LinkDetailRecord } from "../lib/types/link_detail_record.ts";
+import { getLinkDetail } from "../links/get_link_detail.ts";
 import {
   defineAffinityTool,
   integerSchema,
@@ -15,10 +15,10 @@ import {
 import { inspectAffinityItemToolName } from "./tool_names.ts";
 import { toContactEntityRef, toLinkEntityRef } from "./tool_ref.ts";
 import {
-  resolveContactLocator,
-  resolveLinkLocator,
   type ContactLocator,
   type LinkLocator,
+  resolveContactLocator,
+  resolveLinkLocator,
   withToolHandling,
 } from "./tool_resolvers.ts";
 import type { ToolResult } from "./tool_types.ts";
@@ -48,10 +48,9 @@ export type InspectAffinityItemToolResult =
 function contactLocatorSchema(description: string) {
   return oneOfSchema(
     [
-      objectSchema(
-        { contactId: integerSchema("Exact contact id.") },
-        ["contactId"],
-      ),
+      objectSchema({ contactId: integerSchema("Exact contact id.") }, [
+        "contactId",
+      ]),
       objectSchema(
         {
           identity: objectSchema(

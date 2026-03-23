@@ -105,11 +105,11 @@ describe("events validators", () => {
     assertFiniteTimestamp(0, "test");
     assertFiniteTimestamp(42, "test");
     throws(
-      () => assertFiniteTimestamp(NaN, "test"),
+      () => assertFiniteTimestamp(Number.NaN, "test"),
       (e: unknown) => e instanceof AffinityValidationError,
     );
     throws(
-      () => assertFiniteTimestamp(Infinity, "test"),
+      () => assertFiniteTimestamp(Number.POSITIVE_INFINITY, "test"),
       (e: unknown) => e instanceof AffinityValidationError,
     );
     throws(
@@ -122,7 +122,7 @@ describe("events validators", () => {
     throws(
       () =>
         validateSocialEventInput({
-          occurredAt: NaN,
+          occurredAt: Number.NaN,
           summary: "hello",
           significance: 5,
           participants: [{ contactId: 1, role: "actor" }],

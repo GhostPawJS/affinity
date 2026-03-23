@@ -8,7 +8,10 @@ import { searchAffinityToolHandler } from "./search_affinity_tool.ts";
 describe("search_affinity_tool", () => {
   it("finds contacts by natural-key identity", async () => {
     const db = await createInitializedAffinityDb();
-    const { primary: contact } = createContact(db, { name: "Ada", kind: "human" });
+    const { primary: contact } = createContact(db, {
+      name: "Ada",
+      kind: "human",
+    });
     addIdentity(db, contact.id, {
       type: "email",
       value: "ada@example.com",

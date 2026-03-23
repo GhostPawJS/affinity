@@ -3,8 +3,8 @@ import { describe, it } from "node:test";
 import { createContact } from "../contacts/create_contact.ts";
 import { setContactLifecycle } from "../contacts/set_contact_lifecycle.ts";
 import { recordInteraction } from "../events/record_interaction.ts";
-import { seedSocialLink } from "../links/seed_social_link.ts";
 import { createInitializedAffinityDb } from "../lib/testing/create_initialized_affinity_db.ts";
+import { seedSocialLink } from "../links/seed_social_link.ts";
 import { getAffinityChart } from "./get_affinity_chart.ts";
 
 describe("getAffinityChart", () => {

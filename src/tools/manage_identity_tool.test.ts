@@ -7,7 +7,10 @@ import { manageIdentityToolHandler } from "./manage_identity_tool.ts";
 describe("manage_identity_tool", () => {
   it("adds, verifies, and removes an identity", async () => {
     const db = await createInitializedAffinityDb();
-    const { primary: contact } = createContact(db, { name: "Ada", kind: "human" });
+    const { primary: contact } = createContact(db, {
+      name: "Ada",
+      kind: "human",
+    });
 
     const added = manageIdentityToolHandler(db, {
       action: "add",

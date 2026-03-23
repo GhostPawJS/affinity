@@ -18,11 +18,11 @@ import {
   oneOfSchema,
   stringSchema,
 } from "./tool_metadata.ts";
+import { type MutationToolData, mutationToolResult } from "./tool_mutation.ts";
 import { manageContactToolName } from "./tool_names.ts";
-import { mutationToolResult, type MutationToolData } from "./tool_mutation.ts";
 import {
-  resolveContactLocator,
   type ContactLocator,
+  resolveContactLocator,
   withToolHandling,
 } from "./tool_resolvers.ts";
 import type { ToolResult } from "./tool_types.ts";
@@ -44,10 +44,9 @@ export type ManageContactToolResult = ToolResult<
 function contactLocatorSchema(description: string) {
   return oneOfSchema(
     [
-      objectSchema(
-        { contactId: integerSchema("Exact contact id.") },
-        ["contactId"],
-      ),
+      objectSchema({ contactId: integerSchema("Exact contact id.") }, [
+        "contactId",
+      ]),
       objectSchema(
         {
           identity: objectSchema(
@@ -72,7 +71,11 @@ export function manageContactToolHandler(
 ): ManageContactToolResult {
   return withToolHandling<MutationToolData<ContactListItem>>(() => {
     if (input.action === "create") {
-      return mutationToolResult("create", createContact(db, input.input), "contact");
+      return mutationToolResult(
+        "create",
+        createContact(db, input.input),
+        "contact",
+      );
     }
     const contact = resolveContactLocator(db, input.contact, "contact");
     if (!contact.ok) {
@@ -107,8 +110,7 @@ export const manageContactTool = defineAffinityTool<
     "Create a contact, revise one contact's core fields, or change lifecycle state.",
   whenToUse:
     "Use this for contact creation and lifecycle-safe contact maintenance.",
-  whenNotToUse:
-    "Do not use this for identities, links, attributes, or merges.",
+  whenNotToUse: "Do not use this for identities, links, attributes, or merges.",
   sideEffects: "writes_state",
   readOnly: false,
   supportsClarification: true,
@@ -132,10 +134,18 @@ export const manageContactTool = defineAffinityTool<
             {
               name: stringSchema("Contact name."),
               kind: enumSchema("Contact kind.", [
-                "human", "group", "company", "team", "pet", "service", "other",
+                "human",
+                "group",
+                "company",
+                "team",
+                "pet",
+                "service",
+                "other",
               ]),
               now: integerSchema("Optional timestamp."),
-              bootstrapOwner: booleanSchema("Whether this contact should be the owner."),
+              bootstrapOwner: booleanSchema(
+                "Whether this contact should be the owner.",
+              ),
             },
             ["name", "kind"],
             "New contact payload.",
@@ -162,7 +172,10 @@ export const manageContactTool = defineAffinityTool<
           action: literalSchema("set_lifecycle"),
           contact: contactLocatorSchema("Target contact."),
           lifecycleState: enumSchema("Target lifecycle state.", [
-            "active", "dormant", "merged", "lost",
+            "active",
+            "dormant",
+            "merged",
+            "lost",
           ]),
           options: objectSchema(
             {

@@ -1,6 +1,6 @@
 import type { AffinityDb } from "../database.ts";
-import { mergeContacts } from "../merges/merge_contacts.ts";
 import type { MergePrimary } from "../lib/types/merge_primary.ts";
+import { mergeContacts } from "../merges/merge_contacts.ts";
 import {
   defineAffinityTool,
   integerSchema,
@@ -8,11 +8,11 @@ import {
   oneOfSchema,
   stringSchema,
 } from "./tool_metadata.ts";
+import { type MutationToolData, mutationToolResult } from "./tool_mutation.ts";
 import { mergeContactsToolName } from "./tool_names.ts";
-import { mutationToolResult, type MutationToolData } from "./tool_mutation.ts";
 import {
-  resolveContactLocator,
   type ContactLocator,
+  resolveContactLocator,
   withToolHandling,
 } from "./tool_resolvers.ts";
 import type { ToolResult } from "./tool_types.ts";
@@ -24,15 +24,16 @@ export interface MergeContactsToolInput {
   now?: number;
 }
 
-export type MergeContactsToolResult = ToolResult<MutationToolData<MergePrimary>>;
+export type MergeContactsToolResult = ToolResult<
+  MutationToolData<MergePrimary>
+>;
 
 function contactLocatorSchema(description: string) {
   return oneOfSchema(
     [
-      objectSchema(
-        { contactId: integerSchema("Exact contact id.") },
-        ["contactId"],
-      ),
+      objectSchema({ contactId: integerSchema("Exact contact id.") }, [
+        "contactId",
+      ]),
       objectSchema(
         {
           identity: objectSchema(

@@ -43,9 +43,21 @@ describe("record_direct_evidence_well skill scenario", () => {
           summary: "Coffee catch-up with Ada and Bob",
           significance: 6,
           participants: [
-            { contactId: owner.data.primary.id, role: "actor", directionality: "mutual" },
-            { contactId: ada.data.primary.id, role: "recipient", directionality: "mutual" },
-            { contactId: bob.data.primary.id, role: "recipient", directionality: "mutual" },
+            {
+              contactId: owner.data.primary.id,
+              role: "actor",
+              directionality: "mutual",
+            },
+            {
+              contactId: ada.data.primary.id,
+              role: "recipient",
+              directionality: "mutual",
+            },
+            {
+              contactId: bob.data.primary.id,
+              role: "recipient",
+              directionality: "mutual",
+            },
           ],
         },
       }),
@@ -63,8 +75,16 @@ describe("record_direct_evidence_well skill scenario", () => {
           summary: "Ada introduced a major client",
           significance: 9,
           participants: [
-            { contactId: owner.data.primary.id, role: "actor", directionality: "mutual" },
-            { contactId: ada.data.primary.id, role: "recipient", directionality: "mutual" },
+            {
+              contactId: owner.data.primary.id,
+              role: "actor",
+              directionality: "mutual",
+            },
+            {
+              contactId: ada.data.primary.id,
+              role: "recipient",
+              directionality: "mutual",
+            },
           ],
         },
       }),
@@ -95,7 +115,10 @@ describe("record_direct_evidence_well skill scenario", () => {
     if (detail.data.kind !== "link") {
       throw new Error("expected link detail");
     }
-    strictEqual(detail.data.detail.link.bond, "Trusted collaborator after several strong interactions");
+    strictEqual(
+      detail.data.detail.link.bond,
+      "Trusted collaborator after several strong interactions",
+    );
 
     const missingTarget = expectClarification(
       reviewAffinityToolHandler(db, { view: "events.contact_journal" }),

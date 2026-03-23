@@ -12,7 +12,10 @@ describe("manage_commitment_tool", () => {
       kind: "human",
       bootstrapOwner: true,
     });
-    const { primary: other } = createContact(db, { name: "Ada", kind: "human" });
+    const { primary: other } = createContact(db, {
+      name: "Ada",
+      kind: "human",
+    });
 
     const recorded = manageCommitmentToolHandler(db, {
       action: "record",

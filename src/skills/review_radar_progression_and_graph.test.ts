@@ -43,8 +43,16 @@ describe("review_radar_progression_and_graph skill scenario", () => {
           summary: "Helped Ada prepare for a major meeting",
           significance: 7,
           participants: [
-            { contactId: owner.data.primary.id, role: "actor", directionality: "mutual" },
-            { contactId: ada.data.primary.id, role: "recipient", directionality: "mutual" },
+            {
+              contactId: owner.data.primary.id,
+              role: "actor",
+              directionality: "mutual",
+            },
+            {
+              contactId: ada.data.primary.id,
+              role: "recipient",
+              directionality: "mutual",
+            },
           ],
         },
       }),
@@ -58,8 +66,16 @@ describe("review_radar_progression_and_graph skill scenario", () => {
           summary: "Weekly check-in with Ben",
           significance: 5,
           participants: [
-            { contactId: owner.data.primary.id, role: "actor", directionality: "mutual" },
-            { contactId: ben.data.primary.id, role: "recipient", directionality: "mutual" },
+            {
+              contactId: owner.data.primary.id,
+              role: "actor",
+              directionality: "mutual",
+            },
+            {
+              contactId: ben.data.primary.id,
+              role: "recipient",
+              directionality: "mutual",
+            },
           ],
         },
       }),

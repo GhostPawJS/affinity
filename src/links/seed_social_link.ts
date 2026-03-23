@@ -31,7 +31,13 @@ export function seedSocialLink(
       throw new AffinityValidationError("from and to contacts must differ");
     }
     assertContactEndpointsNotMerged(db, input.fromContactId, input.toContactId);
-    if (findLiveRelationalLinkAnyDirection(db, input.fromContactId, input.toContactId)) {
+    if (
+      findLiveRelationalLinkAnyDirection(
+        db,
+        input.fromContactId,
+        input.toContactId,
+      )
+    ) {
       throw new AffinityConflictError(
         "relational link already exists between these contacts",
       );
@@ -45,7 +51,10 @@ export function seedSocialLink(
     const roleNormalized = roleRaw.length === 0 ? null : roleRaw;
     const cadenceDays =
       input.cadenceDays === undefined ? null : input.cadenceDays;
-    if (cadenceDays !== null && (!Number.isInteger(cadenceDays) || cadenceDays < 1)) {
+    if (
+      cadenceDays !== null &&
+      (!Number.isInteger(cadenceDays) || cadenceDays < 1)
+    ) {
       throw new AffinityValidationError(
         "cadenceDays must be a positive integer",
       );

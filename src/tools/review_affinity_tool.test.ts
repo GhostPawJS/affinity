@@ -2,9 +2,9 @@ import { strictEqual } from "node:assert/strict";
 import { describe, it } from "node:test";
 import { createContact } from "../contacts/create_contact.ts";
 import { recordInteraction } from "../events/record_interaction.ts";
+import { createInitializedAffinityDb } from "../lib/testing/create_initialized_affinity_db.ts";
 import { seedSocialLink } from "../links/seed_social_link.ts";
 import { setStructuralTie } from "../links/set_structural_tie.ts";
-import { createInitializedAffinityDb } from "../lib/testing/create_initialized_affinity_db.ts";
 import { reviewAffinityToolHandler } from "./review_affinity_tool.ts";
 
 describe("review_affinity_tool", () => {
@@ -54,7 +54,10 @@ describe("review_affinity_tool", () => {
       kind: "human",
       bootstrapOwner: true,
     });
-    const { primary: other } = createContact(db, { name: "Ada", kind: "human" });
+    const { primary: other } = createContact(db, {
+      name: "Ada",
+      kind: "human",
+    });
     recordInteraction(db, {
       type: "conversation",
       occurredAt: 10,

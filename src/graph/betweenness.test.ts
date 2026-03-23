@@ -1,6 +1,9 @@
 import { deepStrictEqual, ok, strictEqual } from "node:assert/strict";
 import { describe, it } from "node:test";
-import { computeNodeBetweenness, normalizeToPercentiles } from "./betweenness.ts";
+import {
+  computeNodeBetweenness,
+  normalizeToPercentiles,
+} from "./betweenness.ts";
 
 describe("computeNodeBetweenness", () => {
   it("returns empty map for empty graph", () => {
@@ -35,10 +38,15 @@ describe("computeNodeBetweenness", () => {
     ]);
     const result = computeNodeBetweenness(adj);
     const scores = [...result.entries()].sort((a, b) => b[1] - a[1]);
-    strictEqual(scores[0]![0], 3);
-    ok(result.get(3)! > result.get(2)!);
-    ok(result.get(3)! > result.get(4)!);
-    ok(result.get(2)! > result.get(1)!);
+    const topScore = scores[0];
+    strictEqual(topScore?.[0], 3);
+    const node3 = result.get(3);
+    const node2 = result.get(2);
+    const node4 = result.get(4);
+    const node1 = result.get(1);
+    ok(node3 !== undefined && node2 !== undefined && node3 > node2);
+    ok(node3 !== undefined && node4 !== undefined && node3 > node4);
+    ok(node2 !== undefined && node1 !== undefined && node2 > node1);
   });
 
   it("gives highest betweenness to center of star graph", () => {
@@ -51,7 +59,8 @@ describe("computeNodeBetweenness", () => {
       [5, [1]],
     ]);
     const result = computeNodeBetweenness(adj);
-    ok(result.get(1)! > 0);
+    const centerScore = result.get(1);
+    ok(centerScore !== undefined && centerScore > 0);
     strictEqual(result.get(2), 0);
     strictEqual(result.get(3), 0);
     strictEqual(result.get(4), 0);
@@ -72,9 +81,14 @@ describe("computeNodeBetweenness", () => {
       [7, [5, 6]],
     ]);
     const result = computeNodeBetweenness(adj);
-    const bridge = result.get(4)!;
+    const bridge = result.get(4);
+    ok(bridge !== undefined);
     for (const id of [1, 2, 6, 7]) {
-      ok(bridge > result.get(id)!, `bridge (${bridge}) > node ${id} (${result.get(id)})`);
+      const score = result.get(id);
+      ok(
+        bridge !== undefined && score !== undefined && bridge > score,
+        `bridge (${bridge}) > node ${id} (${result.get(id)})`,
+      );
     }
   });
 

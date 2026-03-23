@@ -51,10 +51,7 @@ export type ToolDefinitionRegistry = readonly AffinityToolDefinition<
   ToolResult<unknown>
 >[];
 
-export function defineAffinityTool<
-  TInput,
-  TResult extends ToolResult<unknown>,
->(
+export function defineAffinityTool<TInput, TResult extends ToolResult<unknown>>(
   definition: AffinityToolDefinition<TInput, TResult>,
 ): AffinityToolDefinition<TInput, TResult> {
   return definition;
@@ -123,7 +120,10 @@ export function literalSchema(
   return schema;
 }
 
-export function arraySchema(items: JsonSchema, description: string): JsonSchema {
+export function arraySchema(
+  items: JsonSchema,
+  description: string,
+): JsonSchema {
   return {
     type: "array",
     description,
@@ -148,9 +148,7 @@ export function objectSchema(
   return schema;
 }
 
-export function nullableStringSchema(
-  description: string,
-): JsonSchema {
+export function nullableStringSchema(description: string): JsonSchema {
   return { anyOf: [{ type: "string" }, { type: "null" }], description };
 }
 

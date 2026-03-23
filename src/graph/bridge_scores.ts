@@ -1,7 +1,14 @@
 import { findOwnerContactId } from "../contacts/queries.ts";
 import type { AffinityDb } from "../database.ts";
-import { normalizedRank, radarScore, reciprocityScore } from "../links/mechanics.ts";
-import { computeNodeBetweenness, normalizeToPercentiles } from "./betweenness.ts";
+import {
+  normalizedRank,
+  radarScore,
+  reciprocityScore,
+} from "../links/mechanics.ts";
+import {
+  computeNodeBetweenness,
+  normalizeToPercentiles,
+} from "./betweenness.ts";
 
 /**
  * Recompute bridge scores for all relational links by running Brandes
@@ -42,8 +49,13 @@ export function refreshAllBridgeScores(db: AffinityDb, now: number): void {
   for (const link of linkRows) {
     ensureNode(link.from_contact_id);
     ensureNode(link.to_contact_id);
-    adjacency.get(link.from_contact_id)!.push(link.to_contact_id);
-    adjacency.get(link.to_contact_id)!.push(link.from_contact_id);
+    const fromNeighbors = adjacency.get(link.from_contact_id);
+    const toNeighbors = adjacency.get(link.to_contact_id);
+    if (fromNeighbors === undefined || toNeighbors === undefined) {
+      continue;
+    }
+    fromNeighbors.push(link.to_contact_id);
+    toNeighbors.push(link.from_contact_id);
   }
 
   const rawScores = computeNodeBetweenness(adjacency);
@@ -84,9 +96,7 @@ export function refreshAllBridgeScores(db: AffinityDb, now: number): void {
 
   for (const row of rollupRows) {
     const counterpartyId =
-      row.from_contact_id === ownerId
-        ? row.to_contact_id
-        : row.from_contact_id;
+      row.from_contact_id === ownerId ? row.to_contact_id : row.from_contact_id;
     const bridgeScoreValue = percentiles.get(counterpartyId) ?? 0.1;
     const newRadar = radarScore({
       driftPriority: row.drift_priority,

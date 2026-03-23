@@ -45,10 +45,12 @@ describe("refreshAllBridgeScores", () => {
     refreshAllBridgeScores(db, now);
 
     const rollups = db
-      .prepare(
-        "SELECT link_id, bridge_score, radar_score FROM link_rollups",
-      )
-      .all() as { link_id: number; bridge_score: number; radar_score: number }[];
+      .prepare("SELECT link_id, bridge_score, radar_score FROM link_rollups")
+      .all() as {
+      link_id: number;
+      bridge_score: number;
+      radar_score: number;
+    }[];
 
     ok(rollups.length > 0, "rollups should exist");
     for (const row of rollups) {
@@ -56,7 +58,10 @@ describe("refreshAllBridgeScores", () => {
         typeof row.bridge_score === "number",
         "bridge_score should be a number",
       );
-      ok(row.bridge_score >= 0 && row.bridge_score <= 1, "bridge_score in [0, 1]");
+      ok(
+        row.bridge_score >= 0 && row.bridge_score <= 1,
+        "bridge_score in [0, 1]",
+      );
     }
     db.close();
   });

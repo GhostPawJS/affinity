@@ -37,5 +37,8 @@ export function getContactJournal(
        LIMIT ? OFFSET ?`,
     )
     .all(...params, limit, offset) as { id: number }[];
-  return batchLoadEventRecords(db, rows.map((r) => r.id));
+  return batchLoadEventRecords(
+    db,
+    rows.map((r) => r.id),
+  );
 }

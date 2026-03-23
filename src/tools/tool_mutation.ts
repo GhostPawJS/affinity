@@ -1,7 +1,7 @@
 import type { MutationReceipt } from "../lib/types/mutation_receipt.ts";
 import { toReceiptEntityRefs } from "./tool_ref.ts";
 import { summarizeCount } from "./tool_summary.ts";
-import { toolNoOp, toolSuccess, type ToolResult } from "./tool_types.ts";
+import { type ToolResult, toolNoOp, toolSuccess } from "./tool_types.ts";
 
 export interface MutationToolData<TPrimary> {
   action: string;

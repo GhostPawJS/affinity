@@ -167,7 +167,7 @@ describe("recordCommitment + resolveCommitment", () => {
           occurredAt: 1,
           summary: "will do",
           significance: 5,
-          dueAt: Infinity,
+          dueAt: Number.POSITIVE_INFINITY,
           participants: [
             { contactId: owner.id, role: "actor" },
             { contactId: other.id, role: "recipient" },

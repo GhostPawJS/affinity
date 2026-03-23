@@ -10,7 +10,10 @@ import {
 describe("skills barrel", () => {
   it("re-exports the runtime helpers and skill constants", () => {
     strictEqual(typeof bootstrapAndColdStartSkill.name, "string");
-    strictEqual(getAffinitySkillByName("bootstrap-and-cold-start"), bootstrapAndColdStartSkill);
+    strictEqual(
+      getAffinitySkillByName("bootstrap-and-cold-start"),
+      bootstrapAndColdStartSkill,
+    );
     strictEqual(listAffinitySkills().length, affinitySkills.length);
   });
 });

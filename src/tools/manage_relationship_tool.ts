@@ -1,13 +1,13 @@
 import type { AffinityDb } from "../database.ts";
+import type { LinkListItem } from "../lib/types/link_list_item.ts";
+import type { LinkMutationOptions } from "../lib/types/link_mutation_options.ts";
+import type { SeedSocialLinkInput } from "../lib/types/seed_social_link_input.ts";
+import type { SetStructuralTieInput } from "../lib/types/set_structural_tie_input.ts";
 import { overrideLinkState } from "../links/override_link_state.ts";
 import { removeStructuralTie } from "../links/remove_structural_tie.ts";
 import { reviseBond } from "../links/revise_bond.ts";
 import { seedSocialLink } from "../links/seed_social_link.ts";
 import { setStructuralTie } from "../links/set_structural_tie.ts";
-import type { LinkListItem } from "../lib/types/link_list_item.ts";
-import type { LinkMutationOptions } from "../lib/types/link_mutation_options.ts";
-import type { SeedSocialLinkInput } from "../lib/types/seed_social_link_input.ts";
-import type { SetStructuralTieInput } from "../lib/types/set_structural_tie_input.ts";
 import type { LinkState } from "../links/types.ts";
 import {
   booleanSchema,
@@ -21,13 +21,13 @@ import {
   oneOfSchema,
   stringSchema,
 } from "./tool_metadata.ts";
+import { type MutationToolData, mutationToolResult } from "./tool_mutation.ts";
 import { manageRelationshipToolName } from "./tool_names.ts";
-import { mutationToolResult, type MutationToolData } from "./tool_mutation.ts";
 import {
-  resolveContactLocator,
-  resolveLinkLocator,
   type ContactLocator,
   type LinkLocator,
+  resolveContactLocator,
+  resolveLinkLocator,
   withToolHandling,
 } from "./tool_resolvers.ts";
 import type { ToolResult } from "./tool_types.ts";
@@ -70,10 +70,9 @@ export type ManageRelationshipToolResult = ToolResult<
 function contactLocatorSchema(description: string) {
   return oneOfSchema(
     [
-      objectSchema(
-        { contactId: integerSchema("Exact contact id.") },
-        ["contactId"],
-      ),
+      objectSchema({ contactId: integerSchema("Exact contact id.") }, [
+        "contactId",
+      ]),
       objectSchema(
         {
           identity: objectSchema(
@@ -234,15 +233,25 @@ export const manageRelationshipTool = defineAffinityTool<
           input: objectSchema(
             {
               kind: enumSchema("Relational link kind.", [
-                "personal", "family", "professional", "romantic",
-                "care", "service", "observed", "other_relational",
+                "personal",
+                "family",
+                "professional",
+                "romantic",
+                "care",
+                "service",
+                "observed",
+                "other_relational",
               ]),
               role: stringSchema("Optional role."),
               rank: integerSchema("Optional rank."),
               affinity: numberSchema("Optional affinity score 0–1."),
               trust: numberSchema("Optional trust score 0–1."),
               state: enumSchema("Optional initial state.", [
-                "active", "dormant", "strained", "broken", "archived",
+                "active",
+                "dormant",
+                "strained",
+                "broken",
+                "archived",
               ]),
               cadenceDays: integerSchema("Optional cadence days."),
               bond: stringSchema("Optional bond."),
@@ -257,7 +266,9 @@ export const manageRelationshipTool = defineAffinityTool<
         {
           action: literalSchema("revise_bond"),
           link: linkLocatorSchema("Target link."),
-          bond: nullableStringSchema("Replacement bond text, or null to clear."),
+          bond: nullableStringSchema(
+            "Replacement bond text, or null to clear.",
+          ),
           options: objectSchema(
             { now: integerSchema("Optional timestamp.") },
             [],
@@ -270,7 +281,11 @@ export const manageRelationshipTool = defineAffinityTool<
           action: literalSchema("override_state"),
           link: linkLocatorSchema("Target link."),
           state: enumSchema("Replacement link state.", [
-            "active", "dormant", "strained", "broken", "archived",
+            "active",
+            "dormant",
+            "strained",
+            "broken",
+            "archived",
           ]),
           options: objectSchema(
             { now: integerSchema("Optional timestamp.") },
@@ -287,10 +302,20 @@ export const manageRelationshipTool = defineAffinityTool<
           input: objectSchema(
             {
               kind: enumSchema("Structural link kind.", [
-                "works_at", "manages", "member_of", "married_to",
-                "partner_of", "parent_of", "child_of", "sibling_of",
-                "friend_of", "client_of", "vendor_of", "reports_to",
-                "belongs_to", "other_structural",
+                "works_at",
+                "manages",
+                "member_of",
+                "married_to",
+                "partner_of",
+                "parent_of",
+                "child_of",
+                "sibling_of",
+                "friend_of",
+                "client_of",
+                "vendor_of",
+                "reports_to",
+                "belongs_to",
+                "other_structural",
               ]),
               role: stringSchema("Optional role."),
               now: integerSchema("Optional timestamp."),

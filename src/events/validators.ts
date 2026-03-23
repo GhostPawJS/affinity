@@ -113,7 +113,11 @@ export function validateAnchorCalendar(
   if (!Number.isInteger(anchorDay) || anchorDay < 1 || anchorDay > 31) {
     throw new AffinityValidationError("anchorDay must be 1..31");
   }
-  if (anchorDay > MAX_DAYS_PER_MONTH[anchorMonth]!) {
+  const maxDays = MAX_DAYS_PER_MONTH[anchorMonth];
+  if (maxDays === undefined) {
+    throw new AffinityValidationError(`anchorMonth ${anchorMonth} is invalid`);
+  }
+  if (anchorDay > maxDays) {
     throw new AffinityValidationError(
       `anchorDay ${anchorDay} is invalid for month ${anchorMonth}`,
     );

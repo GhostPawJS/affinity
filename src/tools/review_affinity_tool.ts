@@ -2,6 +2,7 @@ import { listContacts } from "../contacts/list_contacts.ts";
 import { listDuplicateCandidates } from "../contacts/list_duplicate_candidates.ts";
 import type { ContactKind, ContactLifecycleState } from "../contacts/types.ts";
 import type { AffinityDb } from "../database.ts";
+import { listUpcomingDates } from "../dates/list_upcoming_dates.ts";
 import { getContactJournal } from "../events/get_contact_journal.ts";
 import { listMoments } from "../events/list_moments.ts";
 import { listOpenCommitments } from "../events/list_open_commitments.ts";
@@ -11,6 +12,7 @@ import type {
   EventType,
 } from "../events/types.ts";
 import { getAffinityChart } from "../graph/get_affinity_chart.ts";
+import type { AffinityChartRecord } from "../lib/types/affinity_chart_record.ts";
 import { getLinkTimeline } from "../links/get_link_timeline.ts";
 import { listObservedLinks } from "../links/list_observed_links.ts";
 import { listOwnerSocialLinks } from "../links/list_owner_social_links.ts";
@@ -18,8 +20,6 @@ import { listProgressionReadiness } from "../links/list_progression_readiness.ts
 import { listRadar } from "../links/list_radar.ts";
 import type { LinkKind, LinkState } from "../links/types.ts";
 import { getMergeHistory } from "../merges/get_merge_history.ts";
-import type { AffinityChartRecord } from "../lib/types/affinity_chart_record.ts";
-import { listUpcomingDates } from "../dates/list_upcoming_dates.ts";
 import {
   arraySchema,
   booleanSchema,
@@ -38,10 +38,10 @@ import {
   toLinkListToolItem,
 } from "./tool_ref.ts";
 import {
-  resolveContactLocator,
-  resolveLinkLocator,
   type ContactLocator,
   type LinkLocator,
+  resolveContactLocator,
+  resolveLinkLocator,
   withToolHandling,
 } from "./tool_resolvers.ts";
 import { summarizeCount } from "./tool_summary.ts";
@@ -136,10 +136,9 @@ function buildChartOptions(input: ReviewAffinityToolInput) {
 function contactLocatorSchema(description: string) {
   return oneOfSchema(
     [
-      objectSchema(
-        { contactId: integerSchema("Exact contact id.") },
-        ["contactId"],
-      ),
+      objectSchema({ contactId: integerSchema("Exact contact id.") }, [
+        "contactId",
+      ]),
       objectSchema(
         {
           identity: objectSchema(
@@ -363,7 +362,9 @@ function mergeHistoryItem(record: {
   };
 }
 
-function compactFilters(input: ReviewAffinityToolInput): Record<string, unknown> {
+function compactFilters(
+  input: ReviewAffinityToolInput,
+): Record<string, unknown> {
   return Object.fromEntries(
     Object.entries(input).filter(
       ([key, value]) => key !== "view" && value !== undefined,
@@ -390,7 +391,9 @@ export function reviewAffinityToolHandler(
         items = listContacts(
           db,
           {
-            ...(input.kind === undefined ? {} : { kind: input.kind as ContactKind }),
+            ...(input.kind === undefined
+              ? {}
+              : { kind: input.kind as ContactKind }),
             ...(input.lifecycleState === undefined
               ? {}
               : { lifecycleState: input.lifecycleState }),
@@ -408,41 +411,61 @@ export function reviewAffinityToolHandler(
         items = listDuplicateCandidates(
           db,
           {
-            ...(input.contactIds === undefined ? {} : { contactIds: input.contactIds }),
-            ...(input.exactOnly === undefined ? {} : { exactOnly: input.exactOnly }),
-            ...(input.minScore === undefined ? {} : { minScore: input.minScore }),
+            ...(input.contactIds === undefined
+              ? {}
+              : { contactIds: input.contactIds }),
+            ...(input.exactOnly === undefined
+              ? {}
+              : { exactOnly: input.exactOnly }),
+            ...(input.minScore === undefined
+              ? {}
+              : { minScore: input.minScore }),
           },
           options,
         ).map(duplicateCandidateItem);
         break;
       case "events.contact_journal": {
-        const contact = resolveContactLocator(db, input.contact!, "contact");
+        const locator = input.contact;
+        if (locator === undefined) {
+          return toolFailure(
+            "protocol",
+            "invalid_input",
+            "Contact locator is required.",
+            "Provide `contact` when `view` is `events.contact_journal`.",
+          );
+        }
+        const contact = resolveContactLocator(db, locator, "contact");
         if (!contact.ok) {
           return contact.result;
         }
-        items = getContactJournal(
-          db,
-          contact.value.id,
-          {
-            ...options,
-            ...(input.eventTypes === undefined ? {} : { eventTypes: input.eventTypes }),
-          },
-        ).map(toEventListToolItem);
+        items = getContactJournal(db, contact.value.id, {
+          ...options,
+          ...(input.eventTypes === undefined
+            ? {}
+            : { eventTypes: input.eventTypes }),
+        }).map(toEventListToolItem);
         break;
       }
       case "events.link_timeline": {
-        const link = resolveLinkLocator(db, input.link!, "link");
+        const locator = input.link;
+        if (locator === undefined) {
+          return toolFailure(
+            "protocol",
+            "invalid_input",
+            "Link locator is required.",
+            "Provide `link` when `view` is `events.link_timeline`.",
+          );
+        }
+        const link = resolveLinkLocator(db, locator, "link");
         if (!link.ok) {
           return link.result;
         }
-        items = getLinkTimeline(
-          db,
-          link.value.id,
-          {
-            ...options,
-            ...(input.eventTypes === undefined ? {} : { eventTypes: input.eventTypes }),
-          },
-        ).map(toEventListToolItem);
+        items = getLinkTimeline(db, link.value.id, {
+          ...options,
+          ...(input.eventTypes === undefined
+            ? {}
+            : { eventTypes: input.eventTypes }),
+        }).map(toEventListToolItem);
         break;
       }
       case "events.moments":
@@ -463,15 +486,17 @@ export function reviewAffinityToolHandler(
             }
             linkId = link.value.id;
           }
-        items = listMoments(
-          db,
-          {
-            ...(input.momentKind === undefined ? {} : { momentKind: input.momentKind }),
-            ...(contactId === undefined ? {} : { contactId }),
-            ...(linkId === undefined ? {} : { linkId }),
-          },
-          options,
-        ).map(momentItem);
+          items = listMoments(
+            db,
+            {
+              ...(input.momentKind === undefined
+                ? {}
+                : { momentKind: input.momentKind }),
+              ...(contactId === undefined ? {} : { contactId }),
+              ...(linkId === undefined ? {} : { linkId }),
+            },
+            options,
+          ).map(momentItem);
         }
         break;
       case "commitments.open":
@@ -492,28 +517,32 @@ export function reviewAffinityToolHandler(
             }
             linkId = link.value.id;
           }
-        items = listOpenCommitments(
-          db,
-          {
-            ...(input.commitmentType === undefined
-              ? {}
-              : { commitmentType: input.commitmentType }),
-            ...(contactId === undefined ? {} : { contactId }),
-            ...(linkId === undefined ? {} : { linkId }),
-            ...(input.horizonDays === undefined
-              ? {}
-              : { horizonDays: input.horizonDays }),
-          },
-          options,
-        ).map(commitmentItem);
+          items = listOpenCommitments(
+            db,
+            {
+              ...(input.commitmentType === undefined
+                ? {}
+                : { commitmentType: input.commitmentType }),
+              ...(contactId === undefined ? {} : { contactId }),
+              ...(linkId === undefined ? {} : { linkId }),
+              ...(input.horizonDays === undefined
+                ? {}
+                : { horizonDays: input.horizonDays }),
+            },
+            options,
+          ).map(commitmentItem);
         }
         break;
       case "links.owner":
         items = listOwnerSocialLinks(
           db,
           {
-            ...(input.kind === undefined ? {} : { kind: input.kind as LinkKind }),
-            ...(input.linkState === undefined ? {} : { state: input.linkState }),
+            ...(input.kind === undefined
+              ? {}
+              : { kind: input.kind as LinkKind }),
+            ...(input.linkState === undefined
+              ? {}
+              : { state: input.linkState }),
           },
           options,
         ).map(toLinkListToolItem);
@@ -522,7 +551,9 @@ export function reviewAffinityToolHandler(
         items = listObservedLinks(
           db,
           {
-            ...(input.linkState === undefined ? {} : { state: input.linkState }),
+            ...(input.linkState === undefined
+              ? {}
+              : { state: input.linkState }),
           },
           options,
         ).map(toLinkListToolItem);
@@ -531,7 +562,9 @@ export function reviewAffinityToolHandler(
         items = listProgressionReadiness(
           db,
           {
-            ...(input.kind === undefined ? {} : { kind: input.kind as LinkKind }),
+            ...(input.kind === undefined
+              ? {}
+              : { kind: input.kind as LinkKind }),
           },
           options,
         ).map(toLinkListToolItem);
@@ -540,8 +573,12 @@ export function reviewAffinityToolHandler(
         items = listRadar(
           db,
           {
-            ...(input.kind === undefined ? {} : { kind: input.kind as LinkKind }),
-            ...(input.linkState === undefined ? {} : { state: input.linkState }),
+            ...(input.kind === undefined
+              ? {}
+              : { kind: input.kind as LinkKind }),
+            ...(input.linkState === undefined
+              ? {}
+              : { state: input.linkState }),
           },
           options,
         ).map(radarItem);
@@ -553,7 +590,9 @@ export function reviewAffinityToolHandler(
             ...(input.recurrenceKind === undefined
               ? {}
               : { recurrenceKind: input.recurrenceKind }),
-            ...(input.kind === undefined ? {} : { contactKind: input.kind as ContactKind }),
+            ...(input.kind === undefined
+              ? {}
+              : { contactKind: input.kind as ContactKind }),
             ...(input.horizonDays === undefined
               ? {}
               : { horizonDays: input.horizonDays }),
@@ -571,11 +610,22 @@ export function reviewAffinityToolHandler(
         }));
         break;
       case "merges.history": {
-        const contact = resolveContactLocator(db, input.contact!, "contact");
+        const locator = input.contact;
+        if (locator === undefined) {
+          return toolFailure(
+            "protocol",
+            "invalid_input",
+            "Contact locator is required.",
+            "Provide `contact` when `view` is `merges.history`.",
+          );
+        }
+        const contact = resolveContactLocator(db, locator, "contact");
         if (!contact.ok) {
           return contact.result;
         }
-        items = getMergeHistory(db, contact.value.id, options).map(mergeHistoryItem);
+        items = getMergeHistory(db, contact.value.id, options).map(
+          mergeHistoryItem,
+        );
         break;
       }
     }
@@ -593,7 +643,12 @@ export function reviewAffinityToolHandler(
         entities: items,
         warnings:
           items.length === 0
-            ? [toolWarning("empty_result", "This review view is currently empty.")]
+            ? [
+                toolWarning(
+                  "empty_result",
+                  "This review view is currently empty.",
+                ),
+              ]
             : undefined,
       },
     );
@@ -619,20 +674,27 @@ export const reviewAffinityTool = defineAffinityTool<
     view: "Which review surface to return.",
     contact: "Target contact locator for views that require one.",
     link: "Target link locator for views that require one.",
-    contactIds: "Optional contact id subset for duplicate review or graph review.",
+    contactIds:
+      "Optional contact id subset for duplicate review or graph review.",
     kind: "Optional contact kind or link kind filter, depending on the view.",
-    lifecycleState: "Optional contact lifecycle filter for the contact list view.",
+    lifecycleState:
+      "Optional contact lifecycle filter for the contact list view.",
     linkState: "Optional link state filter for link review views.",
-    includeOwner: "Whether owner contacts should be included in contact review.",
-    includeDormant: "Whether dormant links or contacts should be included where supported.",
-    includeArchived: "Whether archived links should be included where supported.",
-    includeObserved: "Whether observed links should be included where supported.",
+    includeOwner:
+      "Whether owner contacts should be included in contact review.",
+    includeDormant:
+      "Whether dormant links or contacts should be included where supported.",
+    includeArchived:
+      "Whether archived links should be included where supported.",
+    includeObserved:
+      "Whether observed links should be included where supported.",
     eventTypes: "Optional event-type filter for journal and timeline views.",
     momentKind: "Optional moment kind filter for moment review.",
     commitmentType: "Optional promise/agreement filter for commitment review.",
     recurrenceKind: "Optional recurrence-kind filter for upcoming-date review.",
     horizonDays: "Optional horizon filter for commitments or upcoming dates.",
-    exactOnly: "Whether duplicate review should only include exact identity matches.",
+    exactOnly:
+      "Whether duplicate review should only include exact identity matches.",
     minScore: "Optional minimum duplicate score.",
     since: "Optional lower timestamp bound for time-based views.",
     until: "Optional upper timestamp bound for time-based views.",
@@ -660,27 +722,51 @@ export const reviewAffinityTool = defineAffinityTool<
       ]),
       contact: contactLocatorSchema("Optional target contact locator."),
       link: linkLocatorSchema("Optional target link locator."),
-      contactIds: arraySchema(integerSchema("Contact id."), "Optional contact-id subset."),
-      kind: stringSchema("Optional contact kind or link kind filter, depending on the view."),
+      contactIds: arraySchema(
+        integerSchema("Contact id."),
+        "Optional contact-id subset.",
+      ),
+      kind: stringSchema(
+        "Optional contact kind or link kind filter, depending on the view.",
+      ),
       lifecycleState: enumSchema("Optional contact lifecycle-state filter.", [
-        "active", "dormant", "merged", "lost",
+        "active",
+        "dormant",
+        "merged",
+        "lost",
       ]),
       linkState: enumSchema("Optional link state filter.", [
-        "active", "dormant", "strained", "broken", "archived",
+        "active",
+        "dormant",
+        "strained",
+        "broken",
+        "archived",
       ]),
       includeOwner: booleanSchema("Whether owner contacts are included."),
       includeDormant: booleanSchema("Whether dormant rows are included."),
       includeArchived: booleanSchema("Whether archived links are included."),
       includeObserved: booleanSchema("Whether observed links are included."),
-      eventTypes: arraySchema(stringSchema("Event type."), "Optional event-type filter."),
+      eventTypes: arraySchema(
+        stringSchema("Event type."),
+        "Optional event-type filter.",
+      ),
       momentKind: enumSchema("Optional moment kind filter.", [
-        "breakthrough", "rupture", "reconciliation", "milestone", "turning_point",
+        "breakthrough",
+        "rupture",
+        "reconciliation",
+        "milestone",
+        "turning_point",
       ]),
       commitmentType: enumSchema("Optional commitment type filter.", [
-        "promise", "agreement",
+        "promise",
+        "agreement",
       ]),
       recurrenceKind: enumSchema("Optional recurrence-kind filter.", [
-        "birthday", "anniversary", "renewal", "memorial", "custom_yearly",
+        "birthday",
+        "anniversary",
+        "renewal",
+        "memorial",
+        "custom_yearly",
       ]),
       horizonDays: integerSchema("Optional horizon-days filter."),
       exactOnly: booleanSchema("Whether duplicate review is exact-only."),
