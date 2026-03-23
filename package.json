@@ -1,9 +1,13 @@
 {
   "name": "@ghostpaw/affinity",
   "version": "0.0.0",
-  "description": "Standalone social CRM core — SQL-grounded relationship mechanics with RPG-native ergonomics.",
+  "description": "Relationship intelligence and social CRM model for Node.js — SQLite, zero dependencies, with a built-in LLM tool facade",
   "license": "MIT",
-  "author": "",
+  "author": {
+    "name": "Anonyfox",
+    "email": "max@anonyfox.com",
+    "url": "https://anonyfox.com"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/GhostPawJS/affinity.git"
@@ -11,7 +15,11 @@
   "bugs": {
     "url": "https://github.com/GhostPawJS/affinity/issues"
   },
-  "homepage": "https://github.com/GhostPawJS/affinity#readme",
+  "homepage": "https://github.com/GhostPawJS/affinity",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/Anonyfox"
+  },
   "type": "module",
   "sideEffects": false,
   "engines": {
@@ -23,6 +31,22 @@
   "publishConfig": {
     "access": "public"
   },
+  "keywords": [
+    "affinity",
+    "social-crm",
+    "relationship-intelligence",
+    "contacts",
+    "crm",
+    "social-graph",
+    "network",
+    "sqlite",
+    "llm",
+    "ai",
+    "agent",
+    "tools",
+    "typescript",
+    "zero-dependencies"
+  ],
   "files": ["dist"],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -42,17 +66,17 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "test": "node --experimental-strip-types --test",
-    "lint": "biome check .",
-    "lint:fix": "biome check --write .",
-    "format": "biome format --write .",
+    "test": "node --experimental-strip-types --test --test-reporter=dot 'src/**/*.test.ts'",
+    "lint": "biome check",
+    "lint:fix": "biome check --fix",
+    "format": "biome format --write",
     "typecheck": "tsc --noEmit",
-    "check": "npm run lint && npm run typecheck",
+    "check": "biome check && tsc --noEmit",
     "clean": "rm -rf dist",
-    "prepublishOnly": "npm run build",
-    "release:patch": "npm version patch -m \"release %s\"",
-    "release:minor": "npm version minor -m \"release %s\"",
-    "release:major": "npm version major -m \"release %s\""
+    "prepublishOnly": "npm run check && npm run build",
+    "release:patch": "npm version patch && git push && git push --tags",
+    "release:minor": "npm version minor && git push && git push --tags",
+    "release:major": "npm version major && git push && git push --tags"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
