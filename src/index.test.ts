@@ -1,12 +1,15 @@
 import { strictEqual } from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import { describe, it } from "node:test";
-import { initAffinityTables, read, skills, types, write } from "./index.ts";
+import { initAffinityTables, read, skills, soul, types, write } from "./index.ts";
 
 describe("package entry", () => {
   it("exports only the documented package surface", () => {
     strictEqual(typeof initAffinityTables, "function");
     strictEqual(typeof types, "object");
+    strictEqual(typeof soul, "object");
+    strictEqual(typeof soul.affinitySoul, "object");
+    strictEqual(typeof soul.renderAffinitySoulPromptFoundation, "function");
     strictEqual(typeof skills, "object");
     strictEqual(typeof skills.listAffinitySkills, "function");
     strictEqual(typeof skills.getAffinitySkillByName, "function");

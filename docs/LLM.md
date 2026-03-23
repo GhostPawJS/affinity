@@ -3,31 +3,76 @@
 Affinity supports two execution styles at the same time:
 
 - direct-code use through `read` and `write`
-- agent use through a smaller runtime stack of `tools` and `skills`
+- agent use through a smaller runtime stack of `soul`, `tools`, and `skills`
 
 The direct-code surface stays precise and domain-first. The agent-facing stack
 is additive:
 
+- `soul` is the thinking foundation
 - `tools` are the executable action surface
 - `skills` are the reusable workflow layer that teaches how to combine the tools
   well
 
 ## Runtime Surfaces
 
-Affinity now exposes six top-level runtime namespaces:
+Affinity now exposes seven top-level runtime namespaces:
 
 - `initAffinityTables`
 - `read`
 - `write`
 - `types`
+- `soul`
 - `skills`
 - `tools`
 
 Typical agent-facing usage:
 
 ```ts
-import { skills, tools } from "@ghostpaw/affinity";
+import { skills, soul, tools } from "@ghostpaw/affinity";
 ```
+
+## Why `soul` Exists
+
+Before a harness chooses a tool or injects a workflow skill, it still needs the
+right posture.
+
+The `soul` layer provides that prompt-foundation runtime: a canonical Affinity
+operator stance that teaches how to think about Contact truth, Social Links,
+Ties, Journal evidence, commitments, recurring dates, Radar, and the Affinity
+Chart.
+
+The shared runtime shape is:
+
+```ts
+interface AffinitySoulTrait {
+  principle: string;
+  provenance: string;
+}
+
+interface AffinitySoul {
+  slug: string;
+  name: string;
+  description: string;
+  essence: string;
+  traits: readonly AffinitySoulTrait[];
+}
+```
+
+The canonical exports are:
+
+- `soul.affinitySoul`
+- `soul.affinitySoulEssence`
+- `soul.affinitySoulTraits`
+- `soul.renderAffinitySoulPromptFoundation()`
+
+Use the soul layer for:
+
+- system or role-prompt foundation
+- behavioral posture before tool choice
+- reminding the model to protect evidence truth and ask for clarification
+
+Do not use the soul layer as an execution surface. It shapes judgment; it does
+not mutate state.
 
 ## Why `tools` Exists
 
@@ -116,6 +161,14 @@ The `content` teaches:
 
 Skills are not handlers. They are guidance objects for retrieval and prompt
 assembly.
+
+## Runtime Stack
+
+Affinity’s agent-facing stack is intentionally layered:
+
+- `soul` teaches posture
+- `tools` execute stateful or read-only operations
+- `skills` teach recurring workflows built from tools
 
 ## Current Tool Set
 
@@ -266,7 +319,7 @@ The canonical reconciliation table lives in `src/tools/tool_mapping.ts`.
 
 ## Design Boundary
 
-`tools` and `skills` are additive. They do not replace:
+`soul`, `tools`, and `skills` are additive. They do not replace:
 
 - `read`
 - `write`
@@ -275,5 +328,6 @@ The canonical reconciliation table lives in `src/tools/tool_mapping.ts`.
 Humans still get the precise direct-code library. Agents get a smaller,
 clearer runtime stack on top of the same truthful core:
 
+- `soul` for behavioral foundation
 - `tools` for actions
 - `skills` for workflow guidance

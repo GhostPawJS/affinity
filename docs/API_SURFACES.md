@@ -146,7 +146,25 @@ Public barrel: [`src/write.ts`](../src/write.ts) (`export * as write` from [`src
 
 ---
 
-## 6. Tool API (`tools` namespace) — 11 tools
+## 6. Soul API (`soul` namespace)
+
+Public barrel: `src/soul.ts` (`export * as soul` from `src/index.ts`).
+This is an additive prompt-foundation layer that sits above the domain core and
+shapes how humans and LLM harnesses should think before using tools or skills.
+
+- `[x]` `affinitySoul`
+- `[x]` `affinitySoulEssence`
+- `[x]` `affinitySoulTraits`
+- `[x]` `renderAffinitySoulPromptFoundation()`
+
+The soul layer keeps these invariants:
+
+- one canonical soul, not a persona registry
+- prompt-ready runtime values rather than handlers
+- essence and traits grounded in Affinity product grammar and use cases
+- posture only: no direct execution behavior
+
+## 7. Tool API (`tools` namespace) — 11 tools
 
 Public barrel: `src/tools/index.ts` (`export * as tools` from `src/index.ts`).
 This is an additive LLM-facing facade layered on top of `read` and `write`.
@@ -173,7 +191,7 @@ The tool layer keeps these invariants:
 - consistent outcomes: `success`, `no_op`, `needs_clarification`, `error`
 - every direct public `read` and `write` operation remains reachable through one mapped tool path
 
-## 7. Skill API (`skills` namespace) — 11 skills
+## 8. Skill API (`skills` namespace) — 11 skills
 
 Public barrel: `src/skills/index.ts` (`export * as skills` from `src/index.ts`).
 This is an additive harness-facing workflow layer that sits above `tools`.
@@ -197,9 +215,9 @@ The skill layer keeps these invariants:
 - the registry exposes `affinitySkills`, `listAffinitySkills()`, and `getAffinitySkillByName()`
 - skill names are unique and kebab-case
 
-## 8. Package entry
+## 9. Package entry
 
-- `[x]` Root `index.ts` exports: `initAffinityTables`, `read`, `write`, `types`, `skills`, `tools`, thrown error classes (`export * from "./errors.ts"`), and optional `errors` namespace (`export * as errors from "./errors.ts"`).
+- `[x]` Root `index.ts` exports: `initAffinityTables`, `read`, `write`, `types`, `soul`, `skills`, `tools`, thrown error classes (`export * from "./errors.ts"`), and optional `errors` namespace (`export * as errors from "./errors.ts"`).
 
 ---
 
