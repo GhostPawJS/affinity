@@ -3,26 +3,30 @@
 Affinity supports two execution styles at the same time:
 
 - direct-code use through `read` and `write`
-- agent use through a smaller `tools` facade
+- agent use through a smaller runtime stack of `tools` and `skills`
 
-The direct-code surface stays precise and domain-first. The `tools` surface is
-an additive runtime layer for LLM systems that need fewer, clearer choices and
-more structured outcomes.
+The direct-code surface stays precise and domain-first. The agent-facing stack
+is additive:
+
+- `tools` are the executable action surface
+- `skills` are the reusable workflow layer that teaches how to combine the tools
+  well
 
 ## Runtime Surfaces
 
-Affinity now exposes five top-level runtime namespaces:
+Affinity now exposes six top-level runtime namespaces:
 
 - `initAffinityTables`
 - `read`
 - `write`
 - `types`
+- `skills`
 - `tools`
 
 Typical agent-facing usage:
 
 ```ts
-import { tools } from "@ghostpaw/affinity";
+import { skills, tools } from "@ghostpaw/affinity";
 ```
 
 ## Why `tools` Exists
@@ -78,6 +82,41 @@ Failures are also categorized explicitly:
 That means an adapter does not have to infer intent from vague prose or thrown
 exceptions.
 
+## Why `skills` Exist
+
+The tool layer makes action selection smaller and clearer, but recurring CRM
+workflows still benefit from reusable guidance.
+
+The `skills` layer sits above `tools` and packages the most important operating
+patterns into prompt-ready building blocks that a harness can inject into model
+context or retrieve by name.
+
+Each skill exports:
+
+- `name`
+- `description`
+- `content`
+
+The shared runtime shape is:
+
+```ts
+interface AffinitySkill {
+  name: string;
+  description: string;
+  content: string;
+}
+```
+
+The `content` teaches:
+
+- which tools to use
+- how to sequence them
+- how to validate the outcome
+- which pitfalls to avoid
+
+Skills are not handlers. They are guidance objects for retrieval and prompt
+assembly.
+
 ## Current Tool Set
 
 The current `tools` namespace exports exactly these 11 tools:
@@ -109,6 +148,28 @@ The current `tools` namespace exports exactly these 11 tools:
 | `manage_commitment` | Record or resolve commitments |
 | `manage_date_anchor` | Add, revise, or remove recurring anchors |
 | `manage_attribute` | Set, unset, or replace contact/link attributes |
+
+## Current Skill Set
+
+The current `skills` namespace exports these 11 workflow blocks:
+
+- `bootstrap-and-cold-start`
+- `identify-and-locate-contacts`
+- `import-history-without-faking-evidence`
+- `model-structure-orgs-and-households`
+- `record-direct-evidence-well`
+- `record-observations-and-referrals`
+- `capture-transactions-and-commercial-events`
+- `manage-promises-and-agreements`
+- `manage-recurring-dates-and-reminders`
+- `review-radar-progression-and-graph`
+- `reconcile-duplicates-and-merge-safely`
+
+The canonical skill registry is surfaced at the package root through `skills`:
+
+- `skills.affinitySkills`
+- `skills.listAffinitySkills()`
+- `skills.getAffinitySkillByName()`
 
 ## Locator Rules
 
@@ -205,11 +266,14 @@ The canonical reconciliation table lives in `src/tools/tool_mapping.ts`.
 
 ## Design Boundary
 
-`tools` is additive. It does not replace:
+`tools` and `skills` are additive. They do not replace:
 
 - `read`
 - `write`
 - `types`
 
 Humans still get the precise direct-code library. Agents get a smaller,
-clearer, runtime-friendly surface on top of the same truthful core.
+clearer runtime stack on top of the same truthful core:
+
+- `tools` for actions
+- `skills` for workflow guidance

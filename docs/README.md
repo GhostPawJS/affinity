@@ -9,7 +9,7 @@ repository root for the full authoritative specification.
 
 ## Package Surface
 
-Consumers interact with five entry points:
+Consumers interact with six entry points:
 
 | Export | Purpose |
 |---|---|
@@ -17,6 +17,7 @@ Consumers interact with five entry points:
 | `read.*` | all query operations |
 | `write.*` | all mutation operations |
 | `types` | all public TypeScript types |
+| `skills.*` | additive harness-facing workflow guidance |
 | `tools.*` | additive LLM-facing tool surface |
 
 Everything flows through `node:sqlite`'s `DatabaseSync`. There is no ORM, no
@@ -24,8 +25,10 @@ async layer, and no external dependencies.
 
 The direct-code surface remains the authoritative human API. The `tools`
 namespace is an additive reconciliation layer that collapses the public
-`read`/`write` API into 11 LLM-friendly building blocks. See `docs/LLM.md` for
-the full tool contract and exact source-to-tool mapping.
+`read`/`write` API into 11 LLM-friendly building blocks. The `skills`
+namespace sits above `tools` and exposes reusable workflow guidance for harness
+prompting and retrieval. See `docs/LLM.md` for the full tool and skill
+contract.
 
 ## Core Separations
 
@@ -196,7 +199,8 @@ flowchart TD
 
 ```
 src/
-  index.ts              public barrel: initAffinityTables, read, write, types, tools
+  index.ts              public barrel: initAffinityTables, read, write, types, skills, tools
+  skills/               additive harness-facing workflow guidance
   read.ts               all read operations
   write.ts              all write operations
   types.ts              all public types

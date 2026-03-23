@@ -173,9 +173,33 @@ The tool layer keeps these invariants:
 - consistent outcomes: `success`, `no_op`, `needs_clarification`, `error`
 - every direct public `read` and `write` operation remains reachable through one mapped tool path
 
-## 7. Package entry
+## 7. Skill API (`skills` namespace) — 11 skills
 
-- `[x]` Root `index.ts` exports: `initAffinityTables`, `read`, `write`, `types`, `tools`, thrown error classes (`export * from "./errors.ts"`), and optional `errors` namespace (`export * as errors from "./errors.ts"`).
+Public barrel: `src/skills/index.ts` (`export * as skills` from `src/index.ts`).
+This is an additive harness-facing workflow layer that sits above `tools`.
+
+- `[x]` `bootstrap-and-cold-start`
+- `[x]` `identify-and-locate-contacts`
+- `[x]` `import-history-without-faking-evidence`
+- `[x]` `model-structure-orgs-and-households`
+- `[x]` `record-direct-evidence-well`
+- `[x]` `record-observations-and-referrals`
+- `[x]` `capture-transactions-and-commercial-events`
+- `[x]` `manage-promises-and-agreements`
+- `[x]` `manage-recurring-dates-and-reminders`
+- `[x]` `review-radar-progression-and-graph`
+- `[x]` `reconcile-duplicates-and-merge-safely`
+
+The skill layer keeps these invariants:
+
+- every skill is a prompt-ready runtime object with `name`, `description`, and `content`
+- skills teach `tools`, not raw `read` / `write`
+- the registry exposes `affinitySkills`, `listAffinitySkills()`, and `getAffinitySkillByName()`
+- skill names are unique and kebab-case
+
+## 8. Package entry
+
+- `[x]` Root `index.ts` exports: `initAffinityTables`, `read`, `write`, `types`, `skills`, `tools`, thrown error classes (`export * from "./errors.ts"`), and optional `errors` namespace (`export * as errors from "./errors.ts"`).
 
 ---
 
