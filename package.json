@@ -1,6 +1,6 @@
 {
   "name": "@ghostpaw/affinity",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Relationship intelligence and social CRM model for Node.js — SQLite, zero dependencies, with a built-in LLM tool facade",
   "license": "MIT",
   "author": {
@@ -47,7 +47,9 @@
     "typescript",
     "zero-dependencies"
   ],
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
