@@ -27,6 +27,20 @@ describe("searchContacts", () => {
     db.close();
   });
 
+  it("filters by kind without breaking results", async () => {
+    const db = await createInitializedAffinityDb();
+    createContact(db, { name: "Elena Petrova", kind: "human" });
+    createContact(db, { name: "Elena Corp", kind: "company" });
+    const all = searchContacts(db, "Elena");
+    strictEqual(all.length, 2);
+    const humans = searchContacts(db, "Elena", { kind: "human" });
+    strictEqual(humans.length, 1);
+    strictEqual(humans[0]?.name, "Elena Petrova");
+    const pets = searchContacts(db, "Elena", { kind: "pet" });
+    strictEqual(pets.length, 0);
+    db.close();
+  });
+
   it("respects options.includeDormant = false", async () => {
     const db = await createInitializedAffinityDb();
     const { primary: active } = createContact(db, {

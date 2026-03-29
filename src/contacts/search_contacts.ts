@@ -75,8 +75,8 @@ export function searchContacts(
   const rows = db
     .prepare(sql)
     .all(
-      ...params,
       normalizedPattern,
+      ...params,
       pattern,
       pattern,
       normalizedPattern,

@@ -34,7 +34,9 @@ export type ManageRelationshipToolInput =
       action: "seed_social_link";
       from: ContactLocator;
       to: ContactLocator;
-      input: Omit<SeedSocialLinkInput, "fromContactId" | "toContactId">;
+      input?: Omit<SeedSocialLinkInput, "fromContactId" | "toContactId">;
+      kind?: string;
+      role?: string;
     }
   | {
       action: "revise_bond";
@@ -52,7 +54,9 @@ export type ManageRelationshipToolInput =
       action: "set_structural_tie";
       from: ContactLocator;
       to: ContactLocator;
-      input: Omit<SetStructuralTieInput, "fromContactId" | "toContactId">;
+      input?: Omit<SetStructuralTieInput, "fromContactId" | "toContactId">;
+      kind?: string;
+      role?: string;
     }
   | {
       action: "remove_structural_tie";
@@ -118,10 +122,19 @@ export function manageRelationshipToolHandler(
         if (!to.ok) {
           return to.result;
         }
+        const merged = {
+          ...input.input,
+          ...(input.kind !== undefined && input.input?.kind === undefined
+            ? { kind: input.kind }
+            : {}),
+          ...(input.role !== undefined && input.input?.role === undefined
+            ? { role: input.role }
+            : {}),
+        } as Omit<SeedSocialLinkInput, "fromContactId" | "toContactId">;
         return mutationToolResult(
           "seed_social_link",
           seedSocialLink(db, {
-            ...input.input,
+            ...merged,
             fromContactId: from.value.id,
             toContactId: to.value.id,
           }),
@@ -159,10 +172,19 @@ export function manageRelationshipToolHandler(
         if (!to.ok) {
           return to.result;
         }
+        const merged = {
+          ...input.input,
+          ...(input.kind !== undefined && input.input?.kind === undefined
+            ? { kind: input.kind }
+            : {}),
+          ...(input.role !== undefined && input.input?.role === undefined
+            ? { role: input.role }
+            : {}),
+        } as Omit<SetStructuralTieInput, "fromContactId" | "toContactId">;
         return mutationToolResult(
           "set_structural_tie",
           setStructuralTie(db, {
-            ...input.input,
+            ...merged,
             fromContactId: from.value.id,
             toContactId: to.value.id,
           }),
@@ -203,7 +225,10 @@ export const manageRelationshipTool = defineAffinityTool<
     action: "Which relationship action to perform.",
     from: "Source contact locator for actions that create or set links.",
     to: "Destination contact locator for actions that create or set links.",
-    input: "Action-specific creation payload.",
+    input:
+      "Action-specific creation payload (alternative to top-level kind/role).",
+    kind: "Link kind for seed_social_link or set_structural_tie. Can be passed here or inside input.",
+    role: "Optional role for seed_social_link or set_structural_tie. Can be passed here or inside input.",
     link: "Target link locator for existing-link actions.",
     bond: "Replacement bond text or null.",
     state: "Replacement link state.",
@@ -227,10 +252,16 @@ export const manageRelationshipTool = defineAffinityTool<
       to: contactLocatorSchema(
         "Target contact. Required when action=seed_social_link or set_structural_tie. Provide contactId or identity.",
       ),
+      kind: stringSchema(
+        "Link kind. Required for seed_social_link and set_structural_tie. Can be passed here or inside input.",
+      ),
+      role: stringSchema(
+        "Optional role for seed_social_link or set_structural_tie. Can be passed here or inside input.",
+      ),
       input: {
         type: "object" as const,
         description:
-          "Payload for seed_social_link or set_structural_tie. Shape depends on action.",
+          "Full payload for seed_social_link or set_structural_tie. Alternative to top-level kind/role.",
       },
       link: linkLocatorSchema(
         "Target link. Required when action=revise_bond, override_state, or remove_structural_tie. Provide linkId or endpoints.",
