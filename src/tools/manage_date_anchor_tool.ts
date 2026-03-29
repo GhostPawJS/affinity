@@ -179,17 +179,65 @@ export const manageDateAnchorTool = defineAffinityTool<
   inputSchema: objectSchema(
     {
       action: enumSchema("Operation to perform.", ["add", "revise", "remove"]),
-      input: {
-        type: "object" as const,
-        description: "Date anchor payload. Required when action=add.",
-      },
+      input: objectSchema(
+        {
+          target: objectSchema(
+            {
+              kind: enumSchema("Target kind.", ["contact", "link"]),
+              contact: contactLocatorSchema(
+                "Contact locator. Required when kind=contact. Provide contactId or identity.",
+              ),
+              link: linkLocatorSchema(
+                "Link locator. Required when kind=link. Provide linkId or endpoints.",
+              ),
+            },
+            ["kind"],
+            "Date-anchor target.",
+          ),
+          recurrenceKind: enumSchema("Recurrence kind.", [
+            "birthday",
+            "anniversary",
+            "renewal",
+            "memorial",
+            "custom_yearly",
+          ]),
+          anchorMonth: integerSchema("Anchor month, 1–12."),
+          anchorDay: integerSchema("Anchor day, 1–31 (validated per month)."),
+          summary: stringSchema("Summary. Must be non-empty."),
+          significance: integerSchema("Significance from 1 to 10."),
+          now: integerSchema("Optional timestamp override."),
+          force: booleanSchema("Whether to bypass duplicate checks."),
+        },
+        [
+          "target",
+          "recurrenceKind",
+          "anchorMonth",
+          "anchorDay",
+          "summary",
+          "significance",
+        ],
+        "Date anchor payload. Required when action=add.",
+      ),
       anchorEventId: integerSchema(
         "Anchor event id. Required when action=revise or remove.",
       ),
-      patch: {
-        type: "object" as const,
-        description: "Anchor patch. Required when action=revise.",
-      },
+      patch: objectSchema(
+        {
+          recurrenceKind: enumSchema("Optional recurrence kind.", [
+            "birthday",
+            "anniversary",
+            "renewal",
+            "memorial",
+            "custom_yearly",
+          ]),
+          anchorMonth: integerSchema("Optional month, 1–12."),
+          anchorDay: integerSchema("Optional day, 1–31."),
+          summary: stringSchema("Optional summary."),
+          significance: integerSchema("Optional significance, 1–10."),
+        },
+        [],
+        "Anchor patch. Required when action=revise.",
+      ),
       options: objectSchema(
         {
           now: integerSchema("Optional timestamp."),

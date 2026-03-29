@@ -253,7 +253,7 @@ export const manageRelationshipTool = defineAffinityTool<
         "Target contact. Required when action=seed_social_link or set_structural_tie. Provide contactId or identity.",
       ),
       kind: stringSchema(
-        "Link kind. Required for seed_social_link and set_structural_tie. Can be passed here or inside input.",
+        "Link kind. Required for seed_social_link and set_structural_tie. Can be passed here or inside input. For seed_social_link: personal, family, professional, romantic, care, service, observed, other_relational. For set_structural_tie: works_at, manages, member_of, married_to, partner_of, parent_of, child_of, sibling_of, friend_of, client_of, vendor_of, reports_to, belongs_to, other_structural.",
       ),
       role: stringSchema(
         "Optional role for seed_social_link or set_structural_tie. Can be passed here or inside input.",
