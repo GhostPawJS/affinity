@@ -7,13 +7,11 @@ import type { AttributeRecord } from "../lib/types/attribute_record.ts";
 import type { AttributeTarget } from "../lib/types/attribute_target.ts";
 import {
   arraySchema,
-  booleanSchema,
   defineAffinityTool,
+  enumSchema,
   integerSchema,
-  literalSchema,
   nullableStringSchema,
   objectSchema,
-  oneOfSchema,
   stringSchema,
 } from "./tool_metadata.ts";
 import { type MutationToolData, mutationToolResult } from "./tool_mutation.ts";
@@ -59,50 +57,39 @@ export type ManageAttributeToolResult = ToolResult<
 >;
 
 function contactLocatorSchema(description: string) {
-  return oneOfSchema(
-    [
-      objectSchema({ contactId: integerSchema("Exact contact id.") }, [
-        "contactId",
-      ]),
-      objectSchema(
+  return {
+    type: "object" as const,
+    properties: {
+      contactId: integerSchema("Exact contact id."),
+      identity: objectSchema(
         {
-          identity: objectSchema(
-            {
-              type: stringSchema("Identity type."),
-              value: stringSchema("Identity value."),
-            },
-            ["type", "value"],
-          ),
+          type: stringSchema("Identity type."),
+          value: stringSchema("Identity value."),
         },
-        ["identity"],
+        ["type", "value"],
+        "Contact identity locator.",
       ),
-    ],
+    },
     description,
-  );
+  };
 }
 
 function linkLocatorSchema(description: string) {
-  return oneOfSchema(
-    [
-      objectSchema({ linkId: integerSchema("Exact link id.") }, ["linkId"]),
-      objectSchema(
+  return {
+    type: "object" as const,
+    properties: {
+      linkId: integerSchema("Exact link id."),
+      endpoints: objectSchema(
         {
-          endpoints: objectSchema(
-            {
-              fromContactId: integerSchema("From contact id."),
-              toContactId: integerSchema("To contact id."),
-              kind: stringSchema("Optional link kind."),
-              role: stringSchema("Optional link role."),
-              isStructural: booleanSchema("Optional structural discriminator."),
-            },
-            ["fromContactId", "toContactId"],
-          ),
+          fromContactId: integerSchema("From contact id."),
+          toContactId: integerSchema("To contact id."),
         },
-        ["endpoints"],
+        ["fromContactId", "toContactId"],
+        "Endpoint-based link locator.",
       ),
-    ],
+    },
     description,
-  );
+  };
 }
 
 function resolveAttributeTarget(
@@ -165,7 +152,8 @@ export const manageAttributeTool = defineAffinityTool<
   ManageAttributeToolResult
 >({
   name: manageAttributeToolName,
-  description: "Set, unset, or replace attributes on contacts and links.",
+  description:
+    "Set, unset, or replace custom metadata attributes on contacts and links. For emails, phones, handles, and URLs use manage_identity instead — those are routing keys, not attributes.",
   whenToUse:
     "Use this for metadata such as tags, notes, or small labeled facts attached to a contact or link.",
   whenNotToUse:
@@ -184,103 +172,42 @@ export const manageAttributeTool = defineAffinityTool<
   },
   outputDescription:
     "Returns the primary attribute plus the mutation receipt fields needed to understand what changed.",
-  inputSchema: oneOfSchema(
-    [
-      objectSchema(
+  inputSchema: objectSchema(
+    {
+      action: enumSchema("Operation to perform.", ["set", "unset", "replace"]),
+      target: objectSchema(
         {
-          action: literalSchema("set"),
-          target: oneOfSchema(
-            [
-              objectSchema(
-                {
-                  kind: literalSchema("contact"),
-                  contact: contactLocatorSchema("Target contact."),
-                },
-                ["kind", "contact"],
-              ),
-              objectSchema(
-                {
-                  kind: literalSchema("link"),
-                  link: linkLocatorSchema("Target link."),
-                },
-                ["kind", "link"],
-              ),
-            ],
-            "Attribute target.",
+          kind: enumSchema("Target kind.", ["contact", "link"]),
+          contact: contactLocatorSchema(
+            "Contact locator. Required when kind=contact. Provide contactId or identity.",
           ),
-          name: stringSchema("Attribute name."),
-          value: nullableStringSchema(
-            "Attribute value, or null for presence/tag semantics.",
+          link: linkLocatorSchema(
+            "Link locator. Required when kind=link. Provide linkId or endpoints.",
           ),
         },
-        ["action", "target", "name"],
+        ["kind"],
+        "Attribute target. Always required.",
       ),
-      objectSchema(
-        {
-          action: literalSchema("unset"),
-          target: oneOfSchema(
-            [
-              objectSchema(
-                {
-                  kind: literalSchema("contact"),
-                  contact: contactLocatorSchema("Target contact."),
-                },
-                ["kind", "contact"],
-              ),
-              objectSchema(
-                {
-                  kind: literalSchema("link"),
-                  link: linkLocatorSchema("Target link."),
-                },
-                ["kind", "link"],
-              ),
-            ],
-            "Attribute target.",
-          ),
-          name: stringSchema("Attribute name."),
-          removedAt: integerSchema("Optional removal timestamp."),
-        },
-        ["action", "target", "name"],
+      name: stringSchema("Attribute name. Required when action=set or unset."),
+      value: nullableStringSchema(
+        "Attribute value. Required when action=set. Null for presence/tag semantics.",
       ),
-      objectSchema(
-        {
-          action: literalSchema("replace"),
-          target: oneOfSchema(
-            [
-              objectSchema(
-                {
-                  kind: literalSchema("contact"),
-                  contact: contactLocatorSchema("Target contact."),
-                },
-                ["kind", "contact"],
-              ),
-              objectSchema(
-                {
-                  kind: literalSchema("link"),
-                  link: linkLocatorSchema("Target link."),
-                },
-                ["kind", "link"],
-              ),
-            ],
-            "Attribute target.",
-          ),
-          entries: arraySchema(
-            objectSchema(
-              {
-                name: stringSchema("Attribute name."),
-                value: nullableStringSchema(
-                  "Attribute value, or null for presence/tag semantics.",
-                ),
-              },
-              ["name"],
+      entries: arraySchema(
+        objectSchema(
+          {
+            name: stringSchema("Attribute name."),
+            value: nullableStringSchema(
+              "Attribute value, or null for presence/tag semantics.",
             ),
-            "Replacement attribute entries.",
-          ),
-        },
-        ["action", "target", "entries"],
+          },
+          ["name"],
+        ),
+        "Key-value map to replace all attributes. Required when action=replace.",
       ),
-    ],
-    "Manage attributes.",
+      removedAt: integerSchema("Removal timestamp. Optional for action=unset."),
+    },
+    ["action"],
+    "Set, unset, or replace attributes on contacts and links.",
   ),
   handler: manageAttributeToolHandler,
 });

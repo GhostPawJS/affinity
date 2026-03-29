@@ -6,13 +6,10 @@ import type { EventRecord } from "../lib/types/event_record.ts";
 import type { RecordCommitmentInput } from "../lib/types/record_commitment_input.ts";
 import type { ResolveCommitmentOptions } from "../lib/types/resolve_commitment_options.ts";
 import {
-  arraySchema,
   defineAffinityTool,
   enumSchema,
   integerSchema,
-  literalSchema,
   objectSchema,
-  oneOfSchema,
   stringSchema,
 } from "./tool_metadata.ts";
 import { type MutationToolData, mutationToolResult } from "./tool_mutation.ts";
@@ -32,34 +29,6 @@ export type ManageCommitmentToolInput =
 export type ManageCommitmentToolResult = ToolResult<
   MutationToolData<EventRecord>
 >;
-
-function commitmentInputSchema() {
-  return objectSchema(
-    {
-      commitmentType: enumSchema("Promise or agreement.", [
-        "promise",
-        "agreement",
-      ]),
-      occurredAt: integerSchema("When the commitment was made."),
-      summary: stringSchema("Commitment summary."),
-      significance: integerSchema("Commitment significance."),
-      dueAt: integerSchema("Optional due timestamp."),
-      participants: arraySchema(
-        objectSchema(
-          {
-            contactId: integerSchema("Participant contact id."),
-            role: stringSchema("Participant role."),
-            directionality: stringSchema("Optional directionality."),
-          },
-          ["contactId", "role"],
-        ),
-        "Participant list.",
-      ),
-      now: integerSchema("Optional timestamp."),
-    },
-    ["commitmentType", "occurredAt", "summary", "significance", "participants"],
-  );
-}
 
 export function manageCommitmentToolHandler(
   db: AffinityDb,
@@ -110,48 +79,41 @@ export const manageCommitmentTool = defineAffinityTool<
   },
   outputDescription:
     "Returns the commitment mutation receipt, including linked event creation and derived link effects.",
-  inputSchema: oneOfSchema(
-    [
-      objectSchema(
-        {
-          action: literalSchema("record"),
-          input: commitmentInputSchema(),
-        },
-        ["action", "input"],
+  inputSchema: objectSchema(
+    {
+      action: enumSchema("Operation to perform.", ["record", "resolve"]),
+      input: {
+        type: "object" as const,
+        description: "Commitment payload. Required when action=record.",
+      },
+      commitmentEventId: integerSchema(
+        "Commitment event id. Required when action=resolve.",
       ),
-      objectSchema(
+      resolution: enumSchema(
+        "How the commitment was resolved. Required when action=resolve.",
+        ["kept", "cancelled", "broken"],
+      ),
+      options: objectSchema(
         {
-          action: literalSchema("resolve"),
-          commitmentEventId: integerSchema("Commitment event id."),
-          resolution: enumSchema("Commitment resolution.", [
-            "kept",
-            "cancelled",
-            "broken",
-          ]),
-          options: objectSchema(
+          now: integerSchema("Optional timestamp."),
+          resolvingEvent: objectSchema(
             {
-              now: integerSchema("Optional timestamp."),
-              resolvingEvent: objectSchema(
-                {
-                  type: stringSchema("Optional resolving event type."),
-                  occurredAt: integerSchema(
-                    "Optional resolving event timestamp.",
-                  ),
-                  summary: stringSchema("Optional resolving event summary."),
-                  significance: integerSchema(
-                    "Optional resolving event significance.",
-                  ),
-                },
-                [],
+              type: stringSchema("Optional resolving event type."),
+              occurredAt: integerSchema("Optional resolving event timestamp."),
+              summary: stringSchema("Optional resolving event summary."),
+              significance: integerSchema(
+                "Optional resolving event significance.",
               ),
             },
             [],
           ),
         },
-        ["action", "commitmentEventId", "resolution"],
+        [],
+        "Optional metadata.",
       ),
-    ],
-    "Manage commitments.",
+    },
+    ["action"],
+    "Record or resolve one commitment.",
   ),
   handler: manageCommitmentToolHandler,
 });

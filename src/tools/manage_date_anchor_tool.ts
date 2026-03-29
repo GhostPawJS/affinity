@@ -14,9 +14,7 @@ import {
   defineAffinityTool,
   enumSchema,
   integerSchema,
-  literalSchema,
   objectSchema,
-  oneOfSchema,
   stringSchema,
 } from "./tool_metadata.ts";
 import { type MutationToolData, mutationToolResult } from "./tool_mutation.ts";
@@ -58,50 +56,42 @@ export type ManageDateAnchorToolResult = ToolResult<
 >;
 
 function contactLocatorSchema(description: string) {
-  return oneOfSchema(
-    [
-      objectSchema({ contactId: integerSchema("Exact contact id.") }, [
-        "contactId",
-      ]),
-      objectSchema(
+  return {
+    type: "object" as const,
+    properties: {
+      contactId: integerSchema("Exact contact id."),
+      identity: objectSchema(
         {
-          identity: objectSchema(
-            {
-              type: stringSchema("Identity type."),
-              value: stringSchema("Identity value."),
-            },
-            ["type", "value"],
-          ),
+          type: stringSchema("Identity type."),
+          value: stringSchema("Identity value."),
         },
-        ["identity"],
+        ["type", "value"],
+        "Contact identity locator.",
       ),
-    ],
+    },
     description,
-  );
+  };
 }
 
 function linkLocatorSchema(description: string) {
-  return oneOfSchema(
-    [
-      objectSchema({ linkId: integerSchema("Exact link id.") }, ["linkId"]),
-      objectSchema(
+  return {
+    type: "object" as const,
+    properties: {
+      linkId: integerSchema("Exact link id."),
+      endpoints: objectSchema(
         {
-          endpoints: objectSchema(
-            {
-              fromContactId: integerSchema("From contact id."),
-              toContactId: integerSchema("To contact id."),
-              kind: stringSchema("Optional link kind."),
-              role: stringSchema("Optional link role."),
-              isStructural: booleanSchema("Optional structural discriminator."),
-            },
-            ["fromContactId", "toContactId"],
-          ),
+          fromContactId: integerSchema("From contact id."),
+          toContactId: integerSchema("To contact id."),
+          kind: stringSchema("Optional link kind."),
+          role: stringSchema("Optional link role."),
+          isStructural: booleanSchema("Optional structural discriminator."),
         },
-        ["endpoints"],
+        ["fromContactId", "toContactId"],
+        "Endpoint-based link locator.",
       ),
-    ],
+    },
     description,
-  );
+  };
 }
 
 function resolveDateAnchorTarget(
@@ -167,7 +157,7 @@ export const manageDateAnchorTool = defineAffinityTool<
 >({
   name: manageDateAnchorToolName,
   description:
-    "Add, revise, or remove recurring date anchors on contacts or links.",
+    "Add, revise, or remove recurring date anchors on contacts or links. Use this for birthdays, anniversaries, and yearly events — not manage_attribute.",
   whenToUse:
     "Use this for birthdays, anniversaries, renewals, memorials, and other recurring anchors.",
   whenNotToUse:
@@ -186,102 +176,34 @@ export const manageDateAnchorTool = defineAffinityTool<
   },
   outputDescription:
     "Returns the date-anchor mutation receipt, including any recomputed upcoming occurrences.",
-  inputSchema: oneOfSchema(
-    [
-      objectSchema(
-        {
-          action: literalSchema("add"),
-          input: objectSchema(
-            {
-              target: oneOfSchema(
-                [
-                  objectSchema(
-                    {
-                      kind: literalSchema("contact"),
-                      contact: contactLocatorSchema("Target contact."),
-                    },
-                    ["kind", "contact"],
-                  ),
-                  objectSchema(
-                    {
-                      kind: literalSchema("link"),
-                      link: linkLocatorSchema("Target link."),
-                    },
-                    ["kind", "link"],
-                  ),
-                ],
-                "Date-anchor target.",
-              ),
-              recurrenceKind: enumSchema("Recurrence kind.", [
-                "birthday",
-                "anniversary",
-                "renewal",
-                "memorial",
-                "custom_yearly",
-              ]),
-              anchorMonth: integerSchema("Anchor month."),
-              anchorDay: integerSchema("Anchor day."),
-              summary: stringSchema("Summary."),
-              significance: integerSchema("Significance."),
-              now: integerSchema("Optional timestamp."),
-              force: booleanSchema(
-                "Whether duplicate checks should be bypassed.",
-              ),
-            },
-            [
-              "target",
-              "recurrenceKind",
-              "anchorMonth",
-              "anchorDay",
-              "summary",
-              "significance",
-            ],
-          ),
-        },
-        ["action", "input"],
+  inputSchema: objectSchema(
+    {
+      action: enumSchema("Operation to perform.", ["add", "revise", "remove"]),
+      input: {
+        type: "object" as const,
+        description: "Date anchor payload. Required when action=add.",
+      },
+      anchorEventId: integerSchema(
+        "Anchor event id. Required when action=revise or remove.",
       ),
-      objectSchema(
+      patch: {
+        type: "object" as const,
+        description: "Anchor patch. Required when action=revise.",
+      },
+      options: objectSchema(
         {
-          action: literalSchema("revise"),
-          anchorEventId: integerSchema("Anchor event id."),
-          patch: objectSchema(
-            {
-              recurrenceKind: enumSchema("Optional recurrence kind.", [
-                "birthday",
-                "anniversary",
-                "renewal",
-                "memorial",
-                "custom_yearly",
-              ]),
-              anchorMonth: integerSchema("Optional month."),
-              anchorDay: integerSchema("Optional day."),
-              summary: stringSchema("Optional summary."),
-              significance: integerSchema("Optional significance."),
-            },
-            [],
-          ),
-          options: objectSchema(
-            {
-              now: integerSchema("Optional timestamp."),
-              force: booleanSchema(
-                "Whether duplicate checks should be bypassed.",
-              ),
-            },
-            [],
-          ),
+          now: integerSchema("Optional timestamp."),
+          force: booleanSchema("Whether duplicate checks should be bypassed."),
         },
-        ["action", "anchorEventId", "patch"],
+        [],
+        "Optional metadata.",
       ),
-      objectSchema(
-        {
-          action: literalSchema("remove"),
-          anchorEventId: integerSchema("Anchor event id."),
-          removedAt: integerSchema("Optional removal timestamp."),
-        },
-        ["action", "anchorEventId"],
+      removedAt: integerSchema(
+        "Removal timestamp. Optional for action=remove.",
       ),
-    ],
-    "Manage date anchors.",
+    },
+    ["action"],
+    "Add, revise, or remove recurring date anchors.",
   ),
   handler: manageDateAnchorToolHandler,
 });

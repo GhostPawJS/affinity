@@ -5,7 +5,6 @@ import {
   defineAffinityTool,
   integerSchema,
   objectSchema,
-  oneOfSchema,
   stringSchema,
 } from "./tool_metadata.ts";
 import { type MutationToolData, mutationToolResult } from "./tool_mutation.ts";
@@ -29,26 +28,21 @@ export type MergeContactsToolResult = ToolResult<
 >;
 
 function contactLocatorSchema(description: string) {
-  return oneOfSchema(
-    [
-      objectSchema({ contactId: integerSchema("Exact contact id.") }, [
-        "contactId",
-      ]),
-      objectSchema(
+  return {
+    type: "object" as const,
+    properties: {
+      contactId: integerSchema("Exact contact id."),
+      identity: objectSchema(
         {
-          identity: objectSchema(
-            {
-              type: stringSchema("Identity type."),
-              value: stringSchema("Identity value."),
-            },
-            ["type", "value"],
-          ),
+          type: stringSchema("Identity type."),
+          value: stringSchema("Identity value."),
         },
-        ["identity"],
+        ["type", "value"],
+        "Contact identity locator.",
       ),
-    ],
+    },
     description,
-  );
+  };
 }
 
 export function mergeContactsToolHandler(
@@ -104,8 +98,12 @@ export const mergeContactsTool = defineAffinityTool<
     "Returns the merge receipt with rewired entities and affected-link information.",
   inputSchema: objectSchema(
     {
-      winner: contactLocatorSchema("Winner contact."),
-      loser: contactLocatorSchema("Loser contact."),
+      winner: contactLocatorSchema(
+        "Winner contact. Provide contactId or identity.",
+      ),
+      loser: contactLocatorSchema(
+        "Loser contact. Provide contactId or identity.",
+      ),
       reasonSummary: stringSchema("Optional merge reason."),
       now: integerSchema("Optional merge timestamp."),
     },

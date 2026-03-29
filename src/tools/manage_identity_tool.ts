@@ -9,10 +9,9 @@ import type { ReviseIdentityPatch } from "../lib/types/revise_identity_patch.ts"
 import {
   booleanSchema,
   defineAffinityTool,
+  enumSchema,
   integerSchema,
-  literalSchema,
   objectSchema,
-  oneOfSchema,
   stringSchema,
 } from "./tool_metadata.ts";
 import { type MutationToolData, mutationToolResult } from "./tool_mutation.ts";
@@ -35,26 +34,21 @@ export type ManageIdentityToolResult = ToolResult<
 >;
 
 function contactLocatorSchema(description: string) {
-  return oneOfSchema(
-    [
-      objectSchema({ contactId: integerSchema("Exact contact id.") }, [
-        "contactId",
-      ]),
-      objectSchema(
+  return {
+    type: "object" as const,
+    properties: {
+      contactId: integerSchema("Exact contact id."),
+      identity: objectSchema(
         {
-          identity: objectSchema(
-            {
-              type: stringSchema("Identity type."),
-              value: stringSchema("Identity value."),
-            },
-            ["type", "value"],
-          ),
+          type: stringSchema("Identity type."),
+          value: stringSchema("Identity value."),
         },
-        ["identity"],
+        ["type", "value"],
+        "Contact identity locator.",
       ),
-    ],
+    },
     description,
-  );
+  };
 }
 
 export function manageIdentityToolHandler(
@@ -102,7 +96,7 @@ export const manageIdentityTool = defineAffinityTool<
 >({
   name: manageIdentityToolName,
   description:
-    "Add, revise, verify, or remove one routing identity on a contact.",
+    "Add, revise, verify, or remove one routing identity on a contact. Use this for emails, phone numbers, social handles, and URLs — anything that could locate a person. Do not use manage_attribute for these.",
   whenToUse:
     "Use this for contact identity management such as email, handle, or phone routing keys.",
   whenNotToUse:
@@ -122,58 +116,49 @@ export const manageIdentityTool = defineAffinityTool<
   },
   outputDescription:
     "Returns the primary identity plus the mutation receipt fields needed to understand what changed.",
-  inputSchema: oneOfSchema(
-    [
-      objectSchema(
-        {
-          action: literalSchema("add"),
-          contact: contactLocatorSchema("Target contact."),
-          input: objectSchema(
-            {
-              type: stringSchema("Identity type."),
-              value: stringSchema("Identity value."),
-              label: stringSchema("Optional label."),
-              verified: booleanSchema("Whether the identity starts verified."),
-              now: integerSchema("Optional timestamp."),
-            },
-            ["type", "value"],
-          ),
-        },
-        ["action", "contact", "input"],
+  inputSchema: objectSchema(
+    {
+      action: enumSchema("Operation to perform.", [
+        "add",
+        "revise",
+        "verify",
+        "remove",
+      ]),
+      contact: contactLocatorSchema(
+        "Target contact. Required when action=add. Provide contactId or identity.",
       ),
-      objectSchema(
+      input: objectSchema(
         {
-          action: literalSchema("revise"),
-          identityId: integerSchema("Identity id."),
-          patch: objectSchema(
-            {
-              type: stringSchema("Optional identity type."),
-              value: stringSchema("Optional identity value."),
-              label: stringSchema("Optional label."),
-            },
-            [],
-          ),
+          type: stringSchema("Identity type."),
+          value: stringSchema("Identity value."),
+          label: stringSchema("Optional label."),
+          verified: booleanSchema("Whether the identity starts verified."),
+          now: integerSchema("Optional timestamp."),
         },
-        ["action", "identityId", "patch"],
+        ["type", "value"],
+        "New identity payload. Required when action=add.",
       ),
-      objectSchema(
+      identityId: integerSchema(
+        "Identity id. Required when action=revise, verify, or remove.",
+      ),
+      patch: objectSchema(
         {
-          action: literalSchema("verify"),
-          identityId: integerSchema("Identity id."),
-          verifiedAt: integerSchema("Optional verification timestamp."),
+          type: stringSchema("Optional identity type."),
+          value: stringSchema("Optional identity value."),
+          label: stringSchema("Optional label."),
         },
-        ["action", "identityId"],
+        [],
+        "Identity patch. Required when action=revise.",
       ),
-      objectSchema(
-        {
-          action: literalSchema("remove"),
-          identityId: integerSchema("Identity id."),
-          removedAt: integerSchema("Optional removal timestamp."),
-        },
-        ["action", "identityId"],
+      verifiedAt: integerSchema(
+        "Verification timestamp. Optional for action=verify.",
       ),
-    ],
-    "Manage identities.",
+      removedAt: integerSchema(
+        "Removal timestamp. Optional for action=remove.",
+      ),
+    },
+    ["action"],
+    "Add, revise, verify, or remove one routing identity on a contact.",
   ),
   handler: manageIdentityToolHandler,
 });

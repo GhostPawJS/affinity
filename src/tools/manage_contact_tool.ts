@@ -13,9 +13,7 @@ import {
   defineAffinityTool,
   enumSchema,
   integerSchema,
-  literalSchema,
   objectSchema,
-  oneOfSchema,
   stringSchema,
 } from "./tool_metadata.ts";
 import { type MutationToolData, mutationToolResult } from "./tool_mutation.ts";
@@ -42,27 +40,21 @@ export type ManageContactToolResult = ToolResult<
 >;
 
 function contactLocatorSchema(description: string) {
-  return oneOfSchema(
-    [
-      objectSchema({ contactId: integerSchema("Exact contact id.") }, [
-        "contactId",
-      ]),
-      objectSchema(
+  return {
+    type: "object" as const,
+    properties: {
+      contactId: integerSchema("Exact contact id."),
+      identity: objectSchema(
         {
-          identity: objectSchema(
-            {
-              type: stringSchema("Identity type."),
-              value: stringSchema("Identity value."),
-            },
-            ["type", "value"],
-            "Contact identity locator.",
-          ),
+          type: stringSchema("Identity type."),
+          value: stringSchema("Identity value."),
         },
-        ["identity"],
+        ["type", "value"],
+        "Contact identity locator.",
       ),
-    ],
+    },
     description,
-  );
+  };
 }
 
 export function manageContactToolHandler(
@@ -107,7 +99,7 @@ export const manageContactTool = defineAffinityTool<
 >({
   name: manageContactToolName,
   description:
-    "Create a contact, revise one contact's core fields, or change lifecycle state.",
+    "Create a contact, revise one contact's core fields, or change lifecycle state. ALWAYS search_affinity first before creating — duplicates corrupt the graph.",
   whenToUse:
     "Use this for contact creation and lifecycle-safe contact maintenance.",
   whenNotToUse: "Do not use this for identities, links, attributes, or merges.",
@@ -125,69 +117,56 @@ export const manageContactTool = defineAffinityTool<
   },
   outputDescription:
     "Returns the primary contact plus the mutation receipt fields needed to understand what changed.",
-  inputSchema: oneOfSchema(
-    [
-      objectSchema(
+  inputSchema: objectSchema(
+    {
+      action: enumSchema("Operation to perform.", [
+        "create",
+        "revise",
+        "set_lifecycle",
+      ]),
+      input: objectSchema(
         {
-          action: literalSchema("create"),
-          input: objectSchema(
-            {
-              name: stringSchema("Contact name."),
-              kind: enumSchema("Contact kind.", [
-                "human",
-                "group",
-                "company",
-                "team",
-                "pet",
-                "service",
-                "other",
-              ]),
-              now: integerSchema("Optional timestamp."),
-              bootstrapOwner: booleanSchema(
-                "Whether this contact should be the owner.",
-              ),
-            },
-            ["name", "kind"],
-            "New contact payload.",
-          ),
-        },
-        ["action", "input"],
-      ),
-      objectSchema(
-        {
-          action: literalSchema("revise"),
-          contact: contactLocatorSchema("Target contact."),
-          patch: objectSchema(
-            {
-              name: stringSchema("Optional replacement name."),
-            },
-            [],
-            "Allowed contact patch.",
-          ),
-        },
-        ["action", "contact", "patch"],
-      ),
-      objectSchema(
-        {
-          action: literalSchema("set_lifecycle"),
-          contact: contactLocatorSchema("Target contact."),
-          lifecycleState: enumSchema("Target lifecycle state.", [
-            "active",
-            "dormant",
-            "merged",
-            "lost",
+          name: stringSchema("Contact name."),
+          kind: enumSchema("Contact kind.", [
+            "human",
+            "group",
+            "company",
+            "team",
+            "pet",
+            "service",
+            "other",
           ]),
-          options: objectSchema(
-            {
-              now: integerSchema("Optional timestamp."),
-            },
-            [],
-            "Optional lifecycle metadata.",
+          now: integerSchema("Optional timestamp."),
+          bootstrapOwner: booleanSchema(
+            "Whether this contact should be the owner.",
           ),
         },
-        ["action", "contact", "lifecycleState"],
+        ["name", "kind"],
+        "New contact payload. Required when action=create.",
       ),
-    ],
+      contact: contactLocatorSchema(
+        "Target contact. Required when action=revise or set_lifecycle. Provide contactId or identity.",
+      ),
+      patch: objectSchema(
+        {
+          name: stringSchema("Optional replacement name."),
+        },
+        [],
+        "Allowed contact patch. Required when action=revise.",
+      ),
+      lifecycleState: enumSchema(
+        "Target lifecycle state. Required when action=set_lifecycle.",
+        ["active", "dormant", "merged", "lost"],
+      ),
+      options: objectSchema(
+        {
+          now: integerSchema("Optional timestamp."),
+        },
+        [],
+        "Optional lifecycle metadata.",
+      ),
+    },
+    ["action"],
     "Manage contacts.",
   ),
   handler: manageContactToolHandler,

@@ -13,7 +13,7 @@ describe("affinity soul", () => {
     strictEqual(affinitySoul.name, "Gardener");
     strictEqual(affinitySoul.essence, affinitySoulEssence);
     strictEqual(affinitySoul.traits, affinitySoulTraits);
-    strictEqual(affinitySoul.traits.length, 5);
+    strictEqual(affinitySoul.traits.length, 6);
 
     for (const trait of affinitySoulTraits) {
       strictEqual(trait.principle.trim().length > 0, true);

@@ -28,7 +28,6 @@ import {
   integerSchema,
   numberSchema,
   objectSchema,
-  oneOfSchema,
   stringSchema,
 } from "./tool_metadata.ts";
 import { reviewAffinityToolName } from "./tool_names.ts";
@@ -134,50 +133,42 @@ function buildChartOptions(input: ReviewAffinityToolInput) {
 }
 
 function contactLocatorSchema(description: string) {
-  return oneOfSchema(
-    [
-      objectSchema({ contactId: integerSchema("Exact contact id.") }, [
-        "contactId",
-      ]),
-      objectSchema(
+  return {
+    type: "object" as const,
+    properties: {
+      contactId: integerSchema("Exact contact id."),
+      identity: objectSchema(
         {
-          identity: objectSchema(
-            {
-              type: stringSchema("Identity type."),
-              value: stringSchema("Identity value."),
-            },
-            ["type", "value"],
-          ),
+          type: stringSchema("Identity type."),
+          value: stringSchema("Identity value."),
         },
-        ["identity"],
+        ["type", "value"],
+        "Contact identity locator.",
       ),
-    ],
+    },
     description,
-  );
+  };
 }
 
 function linkLocatorSchema(description: string) {
-  return oneOfSchema(
-    [
-      objectSchema({ linkId: integerSchema("Exact link id.") }, ["linkId"]),
-      objectSchema(
+  return {
+    type: "object" as const,
+    properties: {
+      linkId: integerSchema("Exact link id."),
+      endpoints: objectSchema(
         {
-          endpoints: objectSchema(
-            {
-              fromContactId: integerSchema("From contact id."),
-              toContactId: integerSchema("To contact id."),
-              kind: stringSchema("Optional link kind."),
-              role: stringSchema("Optional link role."),
-              isStructural: booleanSchema("Optional structural discriminator."),
-            },
-            ["fromContactId", "toContactId"],
-          ),
+          fromContactId: integerSchema("From contact id."),
+          toContactId: integerSchema("To contact id."),
+          kind: stringSchema("Optional link kind."),
+          role: stringSchema("Optional link role."),
+          isStructural: booleanSchema("Optional structural discriminator."),
         },
-        ["endpoints"],
+        ["fromContactId", "toContactId"],
+        "Endpoint-based link locator.",
       ),
-    ],
+    },
     description,
-  );
+  };
 }
 
 function validateReviewInput(

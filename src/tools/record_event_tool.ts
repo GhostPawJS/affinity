@@ -9,14 +9,9 @@ import type { RecordMilestoneInput } from "../lib/types/record_milestone_input.t
 import type { RecordObservationInput } from "../lib/types/record_observation_input.ts";
 import type { RecordTransactionInput } from "../lib/types/record_transaction_input.ts";
 import {
-  arraySchema,
   defineAffinityTool,
   enumSchema,
-  integerSchema,
-  literalSchema,
   objectSchema,
-  oneOfSchema,
-  stringSchema,
 } from "./tool_metadata.ts";
 import { type MutationToolData, mutationToolResult } from "./tool_mutation.ts";
 import { recordEventToolName } from "./tool_names.ts";
@@ -30,60 +25,6 @@ export type RecordEventToolInput =
   | { kind: "transaction"; input: RecordTransactionInput };
 
 export type RecordEventToolResult = ToolResult<MutationToolData<EventRecord>>;
-
-const participantSchema = objectSchema(
-  {
-    contactId: integerSchema("Participant contact id."),
-    role: enumSchema("Participant role.", [
-      "actor",
-      "recipient",
-      "subject",
-      "observer",
-      "mentioned",
-    ]),
-    directionality: enumSchema("Optional participant directionality.", [
-      "owner_initiated",
-      "other_initiated",
-      "mutual",
-      "observed",
-    ]),
-  },
-  ["contactId", "role"],
-);
-
-function interactionInputSchema() {
-  return objectSchema(
-    {
-      type: enumSchema("Interaction subtype.", [
-        "conversation",
-        "activity",
-        "gift",
-        "support",
-        "conflict",
-        "correction",
-      ]),
-      occurredAt: integerSchema("When the event occurred."),
-      summary: stringSchema("Event summary."),
-      significance: integerSchema("Event significance from 1 to 10."),
-      participants: arraySchema(participantSchema, "Participant list."),
-      now: integerSchema("Optional timestamp."),
-    },
-    ["type", "occurredAt", "summary", "significance", "participants"],
-  );
-}
-
-function socialEventInputSchema() {
-  return objectSchema(
-    {
-      occurredAt: integerSchema("When the event occurred."),
-      summary: stringSchema("Event summary."),
-      significance: integerSchema("Event significance from 1 to 10."),
-      participants: arraySchema(participantSchema, "Participant list."),
-      now: integerSchema("Optional timestamp."),
-    },
-    ["occurredAt", "summary", "significance", "participants"],
-  );
-}
 
 export function recordEventToolHandler(
   db: AffinityDb,
@@ -141,38 +82,22 @@ export const recordEventTool = defineAffinityTool<
   },
   outputDescription:
     "Returns the primary event plus the mutation receipt fields and any affected links or derived effects.",
-  inputSchema: oneOfSchema(
-    [
-      objectSchema(
-        {
-          kind: literalSchema("interaction"),
-          input: interactionInputSchema(),
-        },
-        ["kind", "input"],
-      ),
-      objectSchema(
-        {
-          kind: literalSchema("observation"),
-          input: socialEventInputSchema(),
-        },
-        ["kind", "input"],
-      ),
-      objectSchema(
-        {
-          kind: literalSchema("milestone"),
-          input: socialEventInputSchema(),
-        },
-        ["kind", "input"],
-      ),
-      objectSchema(
-        {
-          kind: literalSchema("transaction"),
-          input: socialEventInputSchema(),
-        },
-        ["kind", "input"],
-      ),
-    ],
-    "Record one event.",
+  inputSchema: objectSchema(
+    {
+      kind: enumSchema("Event kind.", [
+        "interaction",
+        "observation",
+        "milestone",
+        "transaction",
+      ]),
+      input: {
+        type: "object" as const,
+        description:
+          "Event payload. Shape depends on kind. Interaction events require a `type` subtype; others do not. Always required.",
+      },
+    },
+    ["kind", "input"],
+    "Record one social event.",
   ),
   handler: recordEventToolHandler,
 });

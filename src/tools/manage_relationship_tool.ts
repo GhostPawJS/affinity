@@ -14,11 +14,8 @@ import {
   defineAffinityTool,
   enumSchema,
   integerSchema,
-  literalSchema,
   nullableStringSchema,
-  numberSchema,
   objectSchema,
-  oneOfSchema,
   stringSchema,
 } from "./tool_metadata.ts";
 import { type MutationToolData, mutationToolResult } from "./tool_mutation.ts";
@@ -68,50 +65,42 @@ export type ManageRelationshipToolResult = ToolResult<
 >;
 
 function contactLocatorSchema(description: string) {
-  return oneOfSchema(
-    [
-      objectSchema({ contactId: integerSchema("Exact contact id.") }, [
-        "contactId",
-      ]),
-      objectSchema(
+  return {
+    type: "object" as const,
+    properties: {
+      contactId: integerSchema("Exact contact id."),
+      identity: objectSchema(
         {
-          identity: objectSchema(
-            {
-              type: stringSchema("Identity type."),
-              value: stringSchema("Identity value."),
-            },
-            ["type", "value"],
-          ),
+          type: stringSchema("Identity type."),
+          value: stringSchema("Identity value."),
         },
-        ["identity"],
+        ["type", "value"],
+        "Contact identity locator.",
       ),
-    ],
+    },
     description,
-  );
+  };
 }
 
 function linkLocatorSchema(description: string) {
-  return oneOfSchema(
-    [
-      objectSchema({ linkId: integerSchema("Exact link id.") }, ["linkId"]),
-      objectSchema(
+  return {
+    type: "object" as const,
+    properties: {
+      linkId: integerSchema("Exact link id."),
+      endpoints: objectSchema(
         {
-          endpoints: objectSchema(
-            {
-              fromContactId: integerSchema("From contact id."),
-              toContactId: integerSchema("To contact id."),
-              kind: stringSchema("Optional link kind."),
-              role: stringSchema("Optional link role."),
-              isStructural: booleanSchema("Optional structural discriminator."),
-            },
-            ["fromContactId", "toContactId"],
-          ),
+          fromContactId: integerSchema("From contact id."),
+          toContactId: integerSchema("To contact id."),
+          kind: stringSchema("Optional link kind."),
+          role: stringSchema("Optional link role."),
+          isStructural: booleanSchema("Optional structural discriminator."),
         },
-        ["endpoints"],
+        ["fromContactId", "toContactId"],
+        "Endpoint-based link locator.",
       ),
-    ],
+    },
     description,
-  );
+  };
 }
 
 export function manageRelationshipToolHandler(
@@ -201,7 +190,7 @@ export const manageRelationshipTool = defineAffinityTool<
 >({
   name: manageRelationshipToolName,
   description:
-    "Seed social links, revise bond and state, and manage structural ties.",
+    "Seed social links, revise bond and state, and manage structural ties. Seed a link as soon as a relationship is mentioned — do not wait for repeated evidence.",
   whenToUse:
     "Use this for direct relationship modeling and link-state changes.",
   whenNotToUse:
@@ -223,118 +212,50 @@ export const manageRelationshipTool = defineAffinityTool<
   },
   outputDescription:
     "Returns the primary link plus the mutation receipt fields needed to understand what changed.",
-  inputSchema: oneOfSchema(
-    [
-      objectSchema(
-        {
-          action: literalSchema("seed_social_link"),
-          from: contactLocatorSchema("From contact."),
-          to: contactLocatorSchema("To contact."),
-          input: objectSchema(
-            {
-              kind: enumSchema("Relational link kind.", [
-                "personal",
-                "family",
-                "professional",
-                "romantic",
-                "care",
-                "service",
-                "observed",
-                "other_relational",
-              ]),
-              role: stringSchema("Optional role."),
-              rank: integerSchema("Optional rank."),
-              affinity: numberSchema("Optional affinity score 0–1."),
-              trust: numberSchema("Optional trust score 0–1."),
-              state: enumSchema("Optional initial state.", [
-                "active",
-                "dormant",
-                "strained",
-                "broken",
-                "archived",
-              ]),
-              cadenceDays: integerSchema("Optional cadence days."),
-              bond: stringSchema("Optional bond."),
-              now: integerSchema("Optional timestamp."),
-            },
-            ["kind"],
-          ),
-        },
-        ["action", "from", "to", "input"],
+  inputSchema: objectSchema(
+    {
+      action: enumSchema("Operation to perform.", [
+        "seed_social_link",
+        "revise_bond",
+        "override_state",
+        "set_structural_tie",
+        "remove_structural_tie",
+      ]),
+      from: contactLocatorSchema(
+        "Source contact. Required when action=seed_social_link or set_structural_tie. Provide contactId or identity.",
       ),
-      objectSchema(
-        {
-          action: literalSchema("revise_bond"),
-          link: linkLocatorSchema("Target link."),
-          bond: nullableStringSchema(
-            "Replacement bond text, or null to clear.",
-          ),
-          options: objectSchema(
-            { now: integerSchema("Optional timestamp.") },
-            [],
-          ),
-        },
-        ["action", "link", "bond"],
+      to: contactLocatorSchema(
+        "Target contact. Required when action=seed_social_link or set_structural_tie. Provide contactId or identity.",
       ),
-      objectSchema(
-        {
-          action: literalSchema("override_state"),
-          link: linkLocatorSchema("Target link."),
-          state: enumSchema("Replacement link state.", [
-            "active",
-            "dormant",
-            "strained",
-            "broken",
-            "archived",
-          ]),
-          options: objectSchema(
-            { now: integerSchema("Optional timestamp.") },
-            [],
-          ),
-        },
-        ["action", "link", "state"],
+      input: {
+        type: "object" as const,
+        description:
+          "Payload for seed_social_link or set_structural_tie. Shape depends on action.",
+      },
+      link: linkLocatorSchema(
+        "Target link. Required when action=revise_bond, override_state, or remove_structural_tie. Provide linkId or endpoints.",
       ),
-      objectSchema(
-        {
-          action: literalSchema("set_structural_tie"),
-          from: contactLocatorSchema("From contact."),
-          to: contactLocatorSchema("To contact."),
-          input: objectSchema(
-            {
-              kind: enumSchema("Structural link kind.", [
-                "works_at",
-                "manages",
-                "member_of",
-                "married_to",
-                "partner_of",
-                "parent_of",
-                "child_of",
-                "sibling_of",
-                "friend_of",
-                "client_of",
-                "vendor_of",
-                "reports_to",
-                "belongs_to",
-                "other_structural",
-              ]),
-              role: stringSchema("Optional role."),
-              now: integerSchema("Optional timestamp."),
-            },
-            ["kind"],
-          ),
-        },
-        ["action", "from", "to", "input"],
+      bond: nullableStringSchema(
+        "Bond text. Required when action=revise_bond. Null to clear.",
       ),
-      objectSchema(
-        {
-          action: literalSchema("remove_structural_tie"),
-          link: linkLocatorSchema("Target structural tie."),
-          removedAt: integerSchema("Optional removal timestamp."),
-        },
-        ["action", "link"],
+      state: enumSchema("Link state. Required when action=override_state.", [
+        "active",
+        "dormant",
+        "strained",
+        "broken",
+        "archived",
+      ]),
+      options: objectSchema(
+        { now: integerSchema("Optional timestamp.") },
+        [],
+        "Optional metadata.",
       ),
-    ],
-    "Manage relationships.",
+      removedAt: integerSchema(
+        "Removal timestamp. Optional for action=remove_structural_tie.",
+      ),
+    },
+    ["action"],
+    "Seed social links, revise bond and state, and manage structural ties.",
   ),
   handler: manageRelationshipToolHandler,
 });

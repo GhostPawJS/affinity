@@ -6,10 +6,9 @@ import type { LinkDetailRecord } from "../lib/types/link_detail_record.ts";
 import { getLinkDetail } from "../links/get_link_detail.ts";
 import {
   defineAffinityTool,
+  enumSchema,
   integerSchema,
-  literalSchema,
   objectSchema,
-  oneOfSchema,
   stringSchema,
 } from "./tool_metadata.ts";
 import { inspectAffinityItemToolName } from "./tool_names.ts";
@@ -46,49 +45,39 @@ export type InspectAffinityItemToolResult =
   ToolResult<InspectAffinityItemToolData>;
 
 function contactLocatorSchema(description: string) {
-  return oneOfSchema(
-    [
-      objectSchema({ contactId: integerSchema("Exact contact id.") }, [
-        "contactId",
-      ]),
-      objectSchema(
+  return {
+    type: "object" as const,
+    properties: {
+      contactId: integerSchema("Exact contact id."),
+      identity: objectSchema(
         {
-          identity: objectSchema(
-            {
-              type: stringSchema("Identity type."),
-              value: stringSchema("Identity value."),
-            },
-            ["type", "value"],
-            "Contact identity locator.",
-          ),
+          type: stringSchema("Identity type."),
+          value: stringSchema("Identity value."),
         },
-        ["identity"],
+        ["type", "value"],
+        "Contact identity locator.",
       ),
-    ],
+    },
     description,
-  );
+  };
 }
 
 function linkLocatorSchema(description: string) {
-  return oneOfSchema(
-    [
-      objectSchema({ linkId: integerSchema("Exact link id.") }, ["linkId"]),
-      objectSchema(
+  return {
+    type: "object" as const,
+    properties: {
+      linkId: integerSchema("Exact link id."),
+      endpoints: objectSchema(
         {
-          endpoints: objectSchema(
-            {
-              fromContactId: integerSchema("From contact id."),
-              toContactId: integerSchema("To contact id."),
-            },
-            ["fromContactId", "toContactId"],
-            "Endpoint-based link locator.",
-          ),
+          fromContactId: integerSchema("From contact id."),
+          toContactId: integerSchema("To contact id."),
         },
-        ["endpoints"],
+        ["fromContactId", "toContactId"],
+        "Endpoint-based link locator.",
       ),
-    ],
+    },
     description,
-  );
+  };
 }
 
 export function inspectAffinityItemToolHandler(
@@ -201,32 +190,23 @@ export const inspectAffinityItemTool = defineAffinityTool<
   },
   outputDescription:
     "Returns one shaped detail object and dense entity references for the inspected item.",
-  inputSchema: oneOfSchema(
-    [
-      objectSchema(
-        {
-          kind: literalSchema("owner_profile"),
-          topLinksLimit: integerSchema("Optional top-links cap."),
-        },
-        ["kind"],
+  inputSchema: objectSchema(
+    {
+      kind: enumSchema("What to inspect.", [
+        "owner_profile",
+        "contact_profile",
+        "link",
+      ]),
+      contact: contactLocatorSchema(
+        "Target contact. Required when kind=contact_profile. Provide contactId or identity.",
       ),
-      objectSchema(
-        {
-          kind: literalSchema("contact_profile"),
-          contact: contactLocatorSchema("Target contact."),
-          topLinksLimit: integerSchema("Optional top-links cap."),
-        },
-        ["kind", "contact"],
+      link: linkLocatorSchema(
+        "Target link. Required when kind=link. Provide linkId or endpoints.",
       ),
-      objectSchema(
-        {
-          kind: literalSchema("link"),
-          link: linkLocatorSchema("Target link."),
-          recentEventsLimit: integerSchema("Optional recent-events cap."),
-        },
-        ["kind", "link"],
-      ),
-    ],
+      topLinksLimit: integerSchema("Optional top-links cap."),
+      recentEventsLimit: integerSchema("Optional recent-events cap."),
+    },
+    ["kind"],
     "Inspect one exact affinity item.",
   ),
   handler: inspectAffinityItemToolHandler,
