@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import { createContact } from "../contacts/create_contact.ts";
 import { AffinityMergeError } from "../lib/errors/affinity_merge_error.ts";
 import { createInitializedAffinityDb } from "../lib/testing/create_initialized_affinity_db.ts";
+import { seedSocialLink } from "../links/seed_social_link.ts";
 import { dismissDuplicate } from "./dismiss_duplicate.ts";
 import { listDismissedDuplicates } from "./list_dismissed_duplicates.ts";
 import { mergeContacts } from "./merge_contacts.ts";
@@ -105,6 +106,30 @@ describe("mergeContacts", () => {
       )
       .get(eventId, w.id) as { c: number };
     strictEqual(Number(n.c), 1);
+    db.close();
+  });
+
+  it("removes self-referential links created when winner had a link to the loser", async () => {
+    const db = await createInitializedAffinityDb();
+    const { primary: w } = createContact(db, { name: "W", kind: "human" });
+    const { primary: l } = createContact(db, { name: "L", kind: "human" });
+    const now = 50;
+    // winner → loser link; becomes winner → winner after merge
+    seedSocialLink(db, {
+      fromContactId: w.id,
+      toContactId: l.id,
+      kind: "personal",
+      now,
+    });
+
+    mergeContacts(db, { winnerContactId: w.id, loserContactId: l.id, now });
+
+    const selfLoops = db
+      .prepare(
+        "SELECT COUNT(*) AS c FROM links WHERE from_contact_id = to_contact_id AND removed_at IS NULL",
+      )
+      .get() as { c: number };
+    strictEqual(Number(selfLoops.c), 0);
     db.close();
   });
 

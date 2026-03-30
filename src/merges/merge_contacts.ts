@@ -43,17 +43,12 @@ function dedupeLiveLinks(db: AffinityDb, now: number): number[] {
   return [...removed];
 }
 
-function softDeleteSelfLoops(
-  db: AffinityDb,
-  contactId: number,
-  now: number,
-): number[] {
+function softDeleteSelfLoops(db: AffinityDb, now: number): number[] {
   const rows = db
     .prepare(
-      `SELECT id FROM links
-       WHERE removed_at IS NULL AND from_contact_id = to_contact_id AND from_contact_id = ?`,
+      "SELECT id FROM links WHERE removed_at IS NULL AND from_contact_id = to_contact_id",
     )
-    .all(contactId) as { id: number }[];
+    .all() as { id: number }[];
   const ids: number[] = [];
   for (const r of rows) {
     db.prepare(
@@ -183,7 +178,7 @@ export function mergeContacts(
     ).run(winnerId, now, loserId);
 
     const affectedLinks = new Set<number>();
-    for (const id of softDeleteSelfLoops(db, winnerId, now)) {
+    for (const id of softDeleteSelfLoops(db, now)) {
       affectedLinks.add(id);
     }
     for (const id of dedupeLiveLinks(db, now)) {
