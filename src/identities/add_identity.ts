@@ -60,6 +60,9 @@ export function addIdentity(
       throw new AffinityInvariantError("inserted identity not found");
     }
     refreshContactRollup(db, contactId, now);
+    db.prepare(
+      "DELETE FROM dismissed_duplicates WHERE left_id = ? OR right_id = ?",
+    ).run(contactId, contactId);
     return buildIdentityMutationReceipt(mapIdentityRowToIdentityRecord(row), {
       created: [{ kind: "identity", id }],
     });

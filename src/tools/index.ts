@@ -15,6 +15,10 @@ export {
   manageContactToolHandler,
 } from "./manage_contact_tool.ts";
 export {
+  manageDuplicateDismissalTool,
+  manageDuplicateDismissalToolHandler,
+} from "./manage_duplicate_dismissal_tool.ts";
+export {
   manageDateAnchorTool,
   manageDateAnchorToolHandler,
 } from "./manage_date_anchor_tool.ts";
@@ -55,6 +59,7 @@ export {
   manageCommitmentToolName,
   manageContactToolName,
   manageDateAnchorToolName,
+  manageDuplicateDismissalToolName,
   manageIdentityToolName,
   manageRelationshipToolName,
   mergeContactsToolName,

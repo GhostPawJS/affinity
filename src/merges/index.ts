@@ -1,6 +1,14 @@
 export { getMergeHistory } from "./get_merge_history.ts";
 export { initContactMergesTables } from "./init_contact_merges_tables.ts";
+export { initDismissedDuplicatesTables } from "./init_dismissed_duplicates_tables.ts";
 export { mergeContacts } from "./merge_contacts.ts";
+export { dismissDuplicate } from "./dismiss_duplicate.ts";
+export { undismissDuplicate } from "./undismiss_duplicate.ts";
+export { listDismissedDuplicates } from "./list_dismissed_duplicates.ts";
+export { buildDismissalMutationReceipt } from "./receipts.ts";
 export type { MergeContactsInput } from "../lib/types/merge_contacts_input.ts";
 export type { MergeHistoryRecord } from "../lib/types/merge_history_record.ts";
 export type { MergePrimary } from "../lib/types/merge_primary.ts";
+export type { DismissedPairRef } from "../lib/types/dismissed_pair_ref.ts";
+export type { DismissedDuplicateRecord } from "../lib/types/dismissed_duplicate_record.ts";
+export type { DismissalMutationReceipt } from "../lib/types/mutation_receipt.ts";

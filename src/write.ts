@@ -15,7 +15,11 @@ export {
   seedSocialLink,
   setStructuralTie,
 } from "./links/index.ts";
-export { mergeContacts } from "./merges/index.ts";
+export {
+  mergeContacts,
+  dismissDuplicate,
+  undismissDuplicate,
+} from "./merges/index.ts";
 export {
   recordCommitment,
   recordInteraction,

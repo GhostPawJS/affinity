@@ -1,10 +1,12 @@
 import { strictEqual, throws } from "node:assert/strict";
 import { describe, it } from "node:test";
 import { createContact } from "../contacts/create_contact.ts";
+import { listDuplicateCandidates } from "../contacts/list_duplicate_candidates.ts";
 import { getIdentityRowById } from "../identities/queries.ts";
 import { AffinityNotFoundError } from "../lib/errors/affinity_not_found_error.ts";
 import { AffinityStateError } from "../lib/errors/affinity_state_error.ts";
 import { createInitializedAffinityDb } from "../lib/testing/create_initialized_affinity_db.ts";
+import { dismissDuplicate } from "../merges/dismiss_duplicate.ts";
 import { addIdentity } from "./add_identity.ts";
 import { removeIdentity } from "./remove_identity.ts";
 
@@ -34,6 +36,43 @@ describe("removeIdentity", () => {
       () => removeIdentity(db, id.id),
       (e: unknown) => e instanceof AffinityNotFoundError,
     );
+    db.close();
+  });
+
+  it("clears dismissed pair when identity is removed from one contact", async () => {
+    const db = await createInitializedAffinityDb();
+    const { primary: a } = createContact(db, { name: "Sarah", kind: "human" });
+    const { primary: b } = createContact(db, { name: "Sarah", kind: "human" });
+
+    const { primary: idA } = addIdentity(db, a.id, {
+      type: "email",
+      value: "sarah.a@example.com",
+    });
+    addIdentity(db, b.id, { type: "email", value: "sarah.b@example.com" });
+
+    dismissDuplicate(db, a.id, b.id, "seemed different");
+
+    strictEqual(
+      listDuplicateCandidates(db).some(
+        (c) =>
+          (c.leftContactId === a.id || c.rightContactId === a.id) &&
+          (c.leftContactId === b.id || c.rightContactId === b.id),
+      ),
+      false,
+    );
+
+    // Remove identity from a — should invalidate dismissal
+    removeIdentity(db, idA.id);
+
+    strictEqual(
+      listDuplicateCandidates(db).some(
+        (c) =>
+          (c.leftContactId === a.id || c.rightContactId === a.id) &&
+          (c.leftContactId === b.id || c.rightContactId === b.id),
+      ),
+      true,
+    );
+
     db.close();
   });
 

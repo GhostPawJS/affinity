@@ -3,6 +3,7 @@ export const reviewAffinityToolName = "review_affinity";
 export const inspectAffinityItemToolName = "inspect_affinity_item";
 export const manageContactToolName = "manage_contact";
 export const mergeContactsToolName = "merge_contacts";
+export const manageDuplicateDismissalToolName = "manage_duplicate_dismissal";
 export const manageIdentityToolName = "manage_identity";
 export const manageRelationshipToolName = "manage_relationship";
 export const recordEventToolName = "record_event";

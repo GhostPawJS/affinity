@@ -1,6 +1,7 @@
 import type { AttributeRecord } from "./attribute_record.ts";
 import type { ContactListItem } from "./contact_list_item.ts";
 import type { DerivedLinkEffect } from "./derived_link_effect.ts";
+import type { DismissedPairRef } from "./dismissed_pair_ref.ts";
 import type { EntityRef } from "./entity_ref.ts";
 import type { EventRecord } from "./event_record.ts";
 import type { IdentityRecord } from "./identity_record.ts";
@@ -26,3 +27,4 @@ export type LinkMutationReceipt = MutationReceipt<LinkListItem>;
 export type EventMutationReceipt = MutationReceipt<EventRecord>;
 export type AttributeMutationReceipt = MutationReceipt<AttributeRecord>;
 export type MergeReceipt = MutationReceipt<MergePrimary>;
+export type DismissalMutationReceipt = MutationReceipt<DismissedPairRef>;

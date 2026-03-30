@@ -30,6 +30,9 @@ export function removeIdentity(
       "UPDATE identities SET removed_at = ?, updated_at = ? WHERE id = ?",
     ).run(now, now, identityId);
     refreshContactRollup(db, row.contact_id, now);
+    db.prepare(
+      "DELETE FROM dismissed_duplicates WHERE left_id = ? OR right_id = ?",
+    ).run(row.contact_id, row.contact_id);
     return buildIdentityMutationReceipt(primary, {
       removed: [{ kind: "identity", id: identityId }],
     });

@@ -204,6 +204,13 @@ export function mergeContacts(
     ).run(winnerId, loserId, now, reasonSummary);
 
     db.prepare(
+      "DELETE FROM dismissed_duplicates WHERE left_id = ? OR right_id = ?",
+    ).run(loserId, loserId);
+    db.prepare(
+      "DELETE FROM dismissed_duplicates WHERE left_id = ? OR right_id = ?",
+    ).run(winnerId, winnerId);
+
+    db.prepare(
       "DELETE FROM link_rollups WHERE link_id IN (SELECT id FROM links WHERE removed_at IS NOT NULL)",
     ).run();
     const liveWinnerLinks = db

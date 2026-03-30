@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import * as write from "./write.ts";
 
 describe("write barrel", () => {
-  it("exports contact, identity, link, journal, attribute, and merge mutations", () => {
+  it("exports contact, identity, link, journal, attribute, merge, and dismissal mutations", () => {
     strictEqual(typeof write.createContact, "function");
     strictEqual(typeof write.reviseContact, "function");
     strictEqual(typeof write.setContactLifecycle, "function");
@@ -29,5 +29,7 @@ describe("write barrel", () => {
     strictEqual(typeof write.unsetAttribute, "function");
     strictEqual(typeof write.replaceAttributes, "function");
     strictEqual(typeof write.mergeContacts, "function");
+    strictEqual(typeof write.dismissDuplicate, "function");
+    strictEqual(typeof write.undismissDuplicate, "function");
   });
 });

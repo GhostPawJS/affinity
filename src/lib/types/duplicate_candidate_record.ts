@@ -4,4 +4,6 @@ export interface DuplicateCandidateRecord {
   rightContactId: number;
   matchReason: string;
   matchScore: number;
+  /** Present and true when the pair has been dismissed and includeDismissed was set. */
+  dismissed?: true;
 }

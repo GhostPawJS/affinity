@@ -133,9 +133,31 @@ export function listDuplicateCandidates(
       }
     }
   }
+  const dismissedRows = db
+    .prepare("SELECT left_id, right_id FROM dismissed_duplicates")
+    .all() as { left_id: number; right_id: number }[];
+  const dismissedSet = new Set(
+    dismissedRows.map((r) => pairKey(r.left_id, r.right_id)),
+  );
+
+  const includeDismissed = filters?.includeDismissed === true;
+  for (const candidate of pairs.values()) {
+    if (
+      dismissedSet.has(
+        pairKey(candidate.leftContactId, candidate.rightContactId),
+      )
+    ) {
+      candidate.dismissed = true;
+    }
+  }
+
   const minScore = filters?.minScore ?? 0;
   return [...pairs.values()]
-    .filter((candidate) => candidate.matchScore >= minScore)
+    .filter((candidate) => {
+      if (candidate.matchScore < minScore) return false;
+      if (candidate.dismissed === true && !includeDismissed) return false;
+      return true;
+    })
     .sort((left, right) => {
       const leftExact = left.matchScore === 1 ? 1 : 0;
       const rightExact = right.matchScore === 1 ? 1 : 0;

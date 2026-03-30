@@ -1,10 +1,12 @@
 import { strictEqual, throws } from "node:assert/strict";
 import { describe, it } from "node:test";
 import { createContact } from "../contacts/create_contact.ts";
+import { listDuplicateCandidates } from "../contacts/list_duplicate_candidates.ts";
 import { AffinityConflictError } from "../lib/errors/affinity_conflict_error.ts";
 import { AffinityNotFoundError } from "../lib/errors/affinity_not_found_error.ts";
 import { AffinityStateError } from "../lib/errors/affinity_state_error.ts";
 import { createInitializedAffinityDb } from "../lib/testing/create_initialized_affinity_db.ts";
+import { dismissDuplicate } from "../merges/dismiss_duplicate.ts";
 import { addIdentity } from "./add_identity.ts";
 
 describe("addIdentity", () => {
@@ -39,6 +41,39 @@ describe("addIdentity", () => {
       () => addIdentity(db, 999, { type: "email", value: "a@b" }),
       (e: unknown) => e instanceof AffinityNotFoundError,
     );
+    db.close();
+  });
+
+  it("clears dismissed pair when identity is added to one contact", async () => {
+    const db = await createInitializedAffinityDb();
+    const { primary: a } = createContact(db, { name: "Sarah", kind: "human" });
+    const { primary: b } = createContact(db, { name: "Sarah", kind: "human" });
+
+    dismissDuplicate(db, a.id, b.id, "seemed different");
+
+    // Pair is hidden
+    strictEqual(
+      listDuplicateCandidates(db).some(
+        (c) =>
+          (c.leftContactId === a.id || c.rightContactId === a.id) &&
+          (c.leftContactId === b.id || c.rightContactId === b.id),
+      ),
+      false,
+    );
+
+    // Add identity to one — should invalidate dismissal
+    addIdentity(db, a.id, { type: "email", value: "sarah.new@example.com" });
+
+    // Pair is visible again
+    strictEqual(
+      listDuplicateCandidates(db).some(
+        (c) =>
+          (c.leftContactId === a.id || c.rightContactId === a.id) &&
+          (c.leftContactId === b.id || c.rightContactId === b.id),
+      ),
+      true,
+    );
+
     db.close();
   });
 

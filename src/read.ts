@@ -15,7 +15,7 @@ export {
   listProgressionReadiness,
   listRadar,
 } from "./links/index.ts";
-export { getMergeHistory } from "./merges/index.ts";
+export { getMergeHistory, listDismissedDuplicates } from "./merges/index.ts";
 export {
   getContactJournal,
   listMoments,

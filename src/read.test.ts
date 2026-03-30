@@ -2,11 +2,12 @@ import { strictEqual } from "node:assert/strict";
 import { describe, it } from "node:test";
 import { createContact } from "./contacts/create_contact.ts";
 import { createInitializedAffinityDb } from "./lib/testing/create_initialized_affinity_db.ts";
+import { dismissDuplicate } from "./merges/dismiss_duplicate.ts";
 import { mergeContacts } from "./merges/merge_contacts.ts";
 import * as read from "./read.ts";
 
 describe("read barrel", () => {
-  it("exports all 17 documented read operations", () => {
+  it("exports all 18 documented read operations", () => {
     strictEqual(typeof read.getOwnerProfile, "function");
     strictEqual(typeof read.getContactProfile, "function");
     strictEqual(typeof read.listContacts, "function");
@@ -24,6 +25,7 @@ describe("read barrel", () => {
     strictEqual(typeof read.getAffinityChart, "function");
     strictEqual(typeof read.listDuplicateCandidates, "function");
     strictEqual(typeof read.getMergeHistory, "function");
+    strictEqual(typeof read.listDismissedDuplicates, "function");
   });
 });
 
@@ -38,6 +40,22 @@ describe("getMergeHistory", () => {
     strictEqual(fromW.length, 1);
     strictEqual(fromL.length, 1);
     strictEqual(fromW[0]?.winnerContactId, w.id);
+    db.close();
+  });
+});
+
+describe("listDismissedDuplicates", () => {
+  it("round-trips a dismissal", async () => {
+    const db = await createInitializedAffinityDb();
+    const { primary: a } = createContact(db, { name: "Sarah", kind: "human" });
+    const { primary: b } = createContact(db, { name: "Sarah", kind: "human" });
+
+    strictEqual(read.listDismissedDuplicates(db).length, 0);
+    dismissDuplicate(db, a.id, b.id, "confirmed different");
+    const records = read.listDismissedDuplicates(db);
+    strictEqual(records.length, 1);
+    strictEqual(records[0]?.reason, "confirmed different");
+
     db.close();
   });
 });

@@ -56,6 +56,8 @@ export type { SeedSocialLinkInput } from "./lib/types/seed_social_link_input.ts"
 export type { DerivedLinkEffect } from "./lib/types/derived_link_effect.ts";
 export type { OpaqueDerivation } from "./lib/types/derivation_opaque.ts";
 export type { DuplicateCandidateRecord } from "./lib/types/duplicate_candidate_record.ts";
+export type { DismissedPairRef } from "./lib/types/dismissed_pair_ref.ts";
+export type { DismissedDuplicateRecord } from "./lib/types/dismissed_duplicate_record.ts";
 export type { EntityRef } from "./lib/types/entity_ref.ts";
 export type { EventParticipantView } from "./lib/types/event_participant_view.ts";
 export type { EventRecord } from "./lib/types/event_record.ts";
@@ -78,6 +80,7 @@ export type { MomentRecord } from "./lib/types/moment_record.ts";
 export type {
   AttributeMutationReceipt,
   ContactMutationReceipt,
+  DismissalMutationReceipt,
   EventMutationReceipt,
   IdentityMutationReceipt,
   LinkMutationReceipt,

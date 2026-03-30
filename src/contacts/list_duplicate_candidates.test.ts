@@ -2,7 +2,9 @@ import { strictEqual } from "node:assert/strict";
 import { describe, it } from "node:test";
 import { addIdentity } from "../identities/add_identity.ts";
 import { createInitializedAffinityDb } from "../lib/testing/create_initialized_affinity_db.ts";
+import { dismissDuplicate } from "../merges/dismiss_duplicate.ts";
 import { mergeContacts } from "../merges/merge_contacts.ts";
+import { undismissDuplicate } from "../merges/undismiss_duplicate.ts";
 import { createContact } from "./create_contact.ts";
 import { listDuplicateCandidates } from "./list_duplicate_candidates.ts";
 
@@ -43,6 +45,108 @@ describe("listDuplicateCandidates", () => {
       ),
       true,
     );
+    db.close();
+  });
+
+  it("excludes dismissed pairs by default", async () => {
+    const db = await createInitializedAffinityDb();
+    const { primary: a } = createContact(db, {
+      name: "Sarah Chen",
+      kind: "human",
+    });
+    const { primary: b } = createContact(db, {
+      name: "Sarah Chen",
+      kind: "human",
+    });
+
+    dismissDuplicate(db, a.id, b.id, "confirmed different people");
+
+    const results = listDuplicateCandidates(db);
+    strictEqual(
+      results.some(
+        (c) =>
+          (c.leftContactId === a.id || c.rightContactId === a.id) &&
+          (c.leftContactId === b.id || c.rightContactId === b.id),
+      ),
+      false,
+    );
+
+    db.close();
+  });
+
+  it("includes dismissed pairs with dismissed flag when includeDismissed is true", async () => {
+    const db = await createInitializedAffinityDb();
+    const { primary: a } = createContact(db, {
+      name: "Sarah Chen",
+      kind: "human",
+    });
+    const { primary: b } = createContact(db, {
+      name: "Sarah Chen",
+      kind: "human",
+    });
+
+    dismissDuplicate(db, a.id, b.id);
+
+    const results = listDuplicateCandidates(db, { includeDismissed: true });
+    const match = results.find(
+      (c) =>
+        (c.leftContactId === a.id || c.rightContactId === a.id) &&
+        (c.leftContactId === b.id || c.rightContactId === b.id),
+    );
+    strictEqual(match !== undefined, true);
+    strictEqual(match?.dismissed, true);
+
+    db.close();
+  });
+
+  it("pair reappears after undismiss", async () => {
+    const db = await createInitializedAffinityDb();
+    const { primary: a } = createContact(db, {
+      name: "Sarah Chen",
+      kind: "human",
+    });
+    const { primary: b } = createContact(db, {
+      name: "Sarah Chen",
+      kind: "human",
+    });
+
+    dismissDuplicate(db, a.id, b.id);
+    strictEqual(
+      listDuplicateCandidates(db).some(
+        (c) =>
+          (c.leftContactId === a.id || c.rightContactId === a.id) &&
+          (c.leftContactId === b.id || c.rightContactId === b.id),
+      ),
+      false,
+    );
+
+    undismissDuplicate(db, a.id, b.id);
+    strictEqual(
+      listDuplicateCandidates(db).some(
+        (c) =>
+          (c.leftContactId === a.id || c.rightContactId === a.id) &&
+          (c.leftContactId === b.id || c.rightContactId === b.id),
+      ),
+      true,
+    );
+
+    db.close();
+  });
+
+  it("non-dismissed pairs do not have the dismissed flag", async () => {
+    const db = await createInitializedAffinityDb();
+    const { primary: a } = createContact(db, { name: "Alex", kind: "human" });
+    const { primary: b } = createContact(db, { name: "Alex", kind: "human" });
+
+    const results = listDuplicateCandidates(db);
+    const match = results.find(
+      (c) =>
+        (c.leftContactId === a.id || c.rightContactId === a.id) &&
+        (c.leftContactId === b.id || c.rightContactId === b.id),
+    );
+    strictEqual(match !== undefined, true);
+    strictEqual(match?.dismissed, undefined);
+
     db.close();
   });
 

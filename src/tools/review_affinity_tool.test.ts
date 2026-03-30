@@ -5,6 +5,7 @@ import { recordInteraction } from "../events/record_interaction.ts";
 import { createInitializedAffinityDb } from "../lib/testing/create_initialized_affinity_db.ts";
 import { seedSocialLink } from "../links/seed_social_link.ts";
 import { setStructuralTie } from "../links/set_structural_tie.ts";
+import { dismissDuplicate } from "../merges/dismiss_duplicate.ts";
 import { reviewAffinityToolHandler } from "./review_affinity_tool.ts";
 
 describe("review_affinity_tool", () => {
@@ -75,6 +76,71 @@ describe("review_affinity_tool", () => {
       strictEqual(result.data.chart?.nodes.length, 2);
       strictEqual(result.data.chart?.edges.length, 1);
     }
+    db.close();
+  });
+
+  it("contacts.duplicates with includeDismissed returns dismissed pair marked", async () => {
+    const db = await createInitializedAffinityDb();
+    const { primary: a } = createContact(db, { name: "Sarah", kind: "human" });
+    const { primary: b } = createContact(db, { name: "Sarah", kind: "human" });
+
+    dismissDuplicate(db, a.id, b.id, "different people");
+
+    const withoutFlag = reviewAffinityToolHandler(db, {
+      view: "contacts.duplicates",
+    });
+    strictEqual(withoutFlag.ok, true);
+    if (withoutFlag.ok) {
+      strictEqual(
+        withoutFlag.data.items.some((item) => item.id === Math.min(a.id, b.id)),
+        false,
+      );
+    }
+
+    const withFlag = reviewAffinityToolHandler(db, {
+      view: "contacts.duplicates",
+      includeDismissed: true,
+    });
+    strictEqual(withFlag.ok, true);
+    if (withFlag.ok) {
+      strictEqual(
+        withFlag.data.items.some((item) => item.id === Math.min(a.id, b.id)),
+        true,
+      );
+    }
+
+    db.close();
+  });
+
+  it("merges.dismissed view returns dismissed pairs", async () => {
+    const db = await createInitializedAffinityDb();
+    const { primary: a } = createContact(db, { name: "Sarah", kind: "human" });
+    const { primary: b } = createContact(db, { name: "Sarah", kind: "human" });
+
+    dismissDuplicate(db, a.id, b.id, "reviewed");
+
+    const result = reviewAffinityToolHandler(db, { view: "merges.dismissed" });
+    strictEqual(result.ok, true);
+    if (result.ok) {
+      strictEqual(result.data.count, 1);
+      strictEqual(result.data.items[0]?.id, Math.min(a.id, b.id));
+    }
+
+    db.close();
+  });
+
+  it("rejects includeDismissed on non-duplicate views", async () => {
+    const db = await createInitializedAffinityDb();
+
+    const result = reviewAffinityToolHandler(db, {
+      view: "contacts.list",
+      includeDismissed: true,
+    });
+    strictEqual(result.ok, false);
+    if (!result.ok) {
+      strictEqual(result.outcome, "error");
+    }
+
     db.close();
   });
 });

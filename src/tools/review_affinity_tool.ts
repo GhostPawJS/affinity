@@ -13,6 +13,7 @@ import type {
 } from "../events/types.ts";
 import { getAffinityChart } from "../graph/get_affinity_chart.ts";
 import type { AffinityChartRecord } from "../lib/types/affinity_chart_record.ts";
+import type { DismissedDuplicateRecord } from "../lib/types/dismissed_duplicate_record.ts";
 import { getLinkTimeline } from "../links/get_link_timeline.ts";
 import { listObservedLinks } from "../links/list_observed_links.ts";
 import { listOwnerSocialLinks } from "../links/list_owner_social_links.ts";
@@ -20,6 +21,7 @@ import { listProgressionReadiness } from "../links/list_progression_readiness.ts
 import { listRadar } from "../links/list_radar.ts";
 import type { LinkKind, LinkState } from "../links/types.ts";
 import { getMergeHistory } from "../merges/get_merge_history.ts";
+import { listDismissedDuplicates } from "../merges/list_dismissed_duplicates.ts";
 import {
   arraySchema,
   booleanSchema,
@@ -65,7 +67,8 @@ export type ReviewAffinityToolView =
   | "links.radar"
   | "dates.upcoming"
   | "graph.chart"
-  | "merges.history";
+  | "merges.history"
+  | "merges.dismissed";
 
 export interface ReviewAffinityToolInput {
   view: ReviewAffinityToolView;
@@ -86,6 +89,7 @@ export interface ReviewAffinityToolInput {
   horizonDays?: number;
   exactOnly?: boolean;
   minScore?: number;
+  includeDismissed?: boolean;
   since?: number;
   until?: number;
   limit?: number;
@@ -257,6 +261,18 @@ function validateReviewInput(
     );
   }
 
+  if (
+    input.includeDismissed !== undefined &&
+    input.view !== "contacts.duplicates"
+  ) {
+    return toolFailure(
+      "protocol",
+      "invalid_input",
+      "The `includeDismissed` filter is not valid for this review view.",
+      "Use `includeDismissed` only with the contacts.duplicates review view.",
+    );
+  }
+
   return null;
 }
 
@@ -353,6 +369,16 @@ function mergeHistoryItem(record: {
   };
 }
 
+function dismissedPairItem(record: DismissedDuplicateRecord): ToolListItem {
+  return {
+    kind: "contact",
+    id: record.leftContactId,
+    title: `Dismissed pair: #${record.leftContactId} and #${record.rightContactId}`,
+    subtitle: record.reason ?? "no reason given",
+    snippet: `dismissed at ${record.dismissedAt}`,
+  };
+}
+
 function compactFilters(
   input: ReviewAffinityToolInput,
 ): Record<string, unknown> {
@@ -411,6 +437,9 @@ export function reviewAffinityToolHandler(
             ...(input.minScore === undefined
               ? {}
               : { minScore: input.minScore }),
+            ...(input.includeDismissed === undefined
+              ? {}
+              : { includeDismissed: input.includeDismissed }),
           },
           options,
         ).map(duplicateCandidateItem);
@@ -619,6 +648,9 @@ export function reviewAffinityToolHandler(
         );
         break;
       }
+      case "merges.dismissed":
+        items = listDismissedDuplicates(db, options).map(dismissedPairItem);
+        break;
     }
 
     return toolSuccess(
@@ -687,6 +719,8 @@ export const reviewAffinityTool = defineAffinityTool<
     exactOnly:
       "Whether duplicate review should only include exact identity matches.",
     minScore: "Optional minimum duplicate score.",
+    includeDismissed:
+      "Whether dismissed pairs should be included in duplicate review (marked with dismissed flag).",
     since: "Optional lower timestamp bound for time-based views.",
     until: "Optional upper timestamp bound for time-based views.",
     limit: "Optional result limit.",
@@ -710,6 +744,7 @@ export const reviewAffinityTool = defineAffinityTool<
         "dates.upcoming",
         "graph.chart",
         "merges.history",
+        "merges.dismissed",
       ]),
       contact: contactLocatorSchema("Optional target contact locator."),
       link: linkLocatorSchema("Optional target link locator."),
@@ -762,6 +797,9 @@ export const reviewAffinityTool = defineAffinityTool<
       horizonDays: integerSchema("Optional horizon-days filter."),
       exactOnly: booleanSchema("Whether duplicate review is exact-only."),
       minScore: numberSchema("Optional duplicate minimum score."),
+      includeDismissed: booleanSchema(
+        "Whether dismissed pairs are included in duplicate review (marked with dismissed flag).",
+      ),
       since: integerSchema("Optional lower timestamp bound."),
       until: integerSchema("Optional upper timestamp bound."),
       limit: integerSchema("Optional result limit."),

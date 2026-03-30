@@ -11,6 +11,7 @@ import { initLinkEventEffectsTables } from "./links/init_link_event_effects_tabl
 import { initLinkRollupsTables } from "./links/init_link_rollups_tables.ts";
 import { initLinksTables } from "./links/init_links_tables.ts";
 import { initContactMergesTables } from "./merges/init_contact_merges_tables.ts";
+import { initDismissedDuplicatesTables } from "./merges/init_dismissed_duplicates_tables.ts";
 
 /**
  * Creates the full standalone affinity public schema (contacts through attributes).
@@ -19,6 +20,7 @@ export function initAffinityTables(db: AffinityDb): void {
   initContactsTables(db);
   initContactRollupsTables(db);
   initContactMergesTables(db);
+  initDismissedDuplicatesTables(db);
   initIdentitiesTables(db);
   initLinksTables(db);
   initLinkRollupsTables(db);

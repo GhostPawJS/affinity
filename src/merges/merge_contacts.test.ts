@@ -3,6 +3,8 @@ import { describe, it } from "node:test";
 import { createContact } from "../contacts/create_contact.ts";
 import { AffinityMergeError } from "../lib/errors/affinity_merge_error.ts";
 import { createInitializedAffinityDb } from "../lib/testing/create_initialized_affinity_db.ts";
+import { dismissDuplicate } from "./dismiss_duplicate.ts";
+import { listDismissedDuplicates } from "./list_dismissed_duplicates.ts";
 import { mergeContacts } from "./merge_contacts.ts";
 
 describe("mergeContacts", () => {
@@ -132,6 +134,30 @@ describe("mergeContacts", () => {
       )
       .get(w.id, c.id) as { c: number };
     strictEqual(Number(live.c), 1);
+    db.close();
+  });
+
+  it("clears dismissed_duplicates rows involving winner and loser on merge", async () => {
+    const db = await createInitializedAffinityDb();
+    const { primary: w } = createContact(db, { name: "W", kind: "human" });
+    const { primary: l } = createContact(db, { name: "L", kind: "human" });
+    const { primary: other } = createContact(db, {
+      name: "Other",
+      kind: "human",
+    });
+
+    // Dismiss the pair being merged
+    dismissDuplicate(db, w.id, l.id, "planned merge");
+    // Dismiss winner against another contact too
+    dismissDuplicate(db, w.id, other.id, "different person");
+
+    strictEqual(listDismissedDuplicates(db).length, 2);
+
+    mergeContacts(db, { winnerContactId: w.id, loserContactId: l.id });
+
+    // Both dismissals involving winner or loser are cleared
+    strictEqual(listDismissedDuplicates(db).length, 0);
+
     db.close();
   });
 });
