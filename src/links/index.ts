@@ -1,4 +1,5 @@
 export { getLinkDetail } from "./get_link_detail.ts";
+export { getLinksBetween } from "./get_links_between.ts";
 export { getLinkTimeline } from "./get_link_timeline.ts";
 export { initLinkEventEffectsTables } from "./init_link_event_effects_tables.ts";
 export { initLinksTables } from "./init_links_tables.ts";

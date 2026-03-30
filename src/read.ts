@@ -9,6 +9,7 @@ export { listUpcomingDates } from "./dates/index.ts";
 export { getAffinityChart } from "./graph/index.ts";
 export {
   getLinkDetail,
+  getLinksBetween,
   getLinkTimeline,
   listObservedLinks,
   listOwnerSocialLinks,

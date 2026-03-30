@@ -39,6 +39,11 @@ export const affinityToolMappings: AffinityToolMapping[] = [
     action: "link",
   },
   {
+    source: "getLinksBetween",
+    tool: inspectAffinityItemToolName,
+    action: "links_between",
+  },
+  {
     source: "listContacts",
     tool: reviewAffinityToolName,
     view: "contacts.list",

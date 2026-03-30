@@ -7,7 +7,7 @@ import { mergeContacts } from "./merges/merge_contacts.ts";
 import * as read from "./read.ts";
 
 describe("read barrel", () => {
-  it("exports all 18 documented read operations", () => {
+  it("exports all 19 documented read operations", () => {
     strictEqual(typeof read.getOwnerProfile, "function");
     strictEqual(typeof read.getContactProfile, "function");
     strictEqual(typeof read.listContacts, "function");
@@ -16,6 +16,7 @@ describe("read barrel", () => {
     strictEqual(typeof read.getLinkTimeline, "function");
     strictEqual(typeof read.listMoments, "function");
     strictEqual(typeof read.getLinkDetail, "function");
+    strictEqual(typeof read.getLinksBetween, "function");
     strictEqual(typeof read.listOwnerSocialLinks, "function");
     strictEqual(typeof read.listObservedLinks, "function");
     strictEqual(typeof read.listProgressionReadiness, "function");
