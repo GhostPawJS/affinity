@@ -178,18 +178,29 @@ read.listOpenCommitments(db).length
     </div>
   </section>
 
+  <section class="sec field" aria-labelledby="field-title">
+    <h2 id="field-title">Next to what people use for this today</h2>
+    <p class="intro">Most people keep relationships in tools built for something else. These are the three that come up most, and where affinity differs.</p>
+    <div class="field-rows">
+      <article class="field-row"><h3>Phone contacts and calendar birthdays</h3><p class="gap">They hold a number and a date. They do not hold how long it has been, or what you promised.</p><p class="here">Each relationship has a cadence, so drift is computed. A promise stays open until it is kept, cancelled or broken.</p></article>
+      <article class="field-row"><h3>A spreadsheet or notes file</h3><p class="gap">Fine until the question is who you have not talked to in a while. Then someone has to sort it by hand.</p><p class="here"><code>read.listRadar</code> returns that order, recomputed on every recorded event.</p></article>
+      <article class="field-row"><h3>A hosted personal CRM with an MCP endpoint</h3><p class="gap">Your agent writes about the people in your life to someone else's server, behind an OAuth sign-in.</p><p class="here">The data is a SQLite file you open. The MCP server runs on your machine.</p></article>
+    </div>
+    <p class="note">affinity has no app and no sync. It is the store your code or your agent writes into; any interface on top is yours to build.</p>
+  </section>
+
   <section class="sec numbers" aria-labelledby="numbers-title">
     <h2 id="numbers-title">What it costs to add</h2>
     <dl class="ledger">
       <div><dt>Runtime dependencies</dt><dd>0</dd></div>
       <div><dt>Node.js</dt><dd>24 or newer (node:sqlite)</dd></div>
       <div><dt>Size of dist/index.js, gzip</dt><dd>56.1 KB</dd></div>
-      <div><dt>Import time</dt><dd>about 5.7 ms</dd></div>
+      <div><dt>Import time</dt><dd>about 4.8 ms</dd></div>
       <div><dt>Tests</dt><dd>459 passing</dd></div>
-      <div><dt>Line coverage</dt><dd>95.3%</dd></div>
+      <div><dt>Line coverage</dt><dd>95.4%</dd></div>
       <div><dt>Agent tools</dt><dd>12</dd></div>
     </dl>
-    <p class="note">Measured 2026-10-24 on the maintainer's machine with Node.js 24.14.0 against affinity 0.3.0: size of the published dist/index.js at gzip -9, median of 11 cold imports, tests and coverage from the v0.3.0 tag.</p>
+    <p class="note">Measured 2026-10-24 on the maintainer's machine with Node.js 24.14.0 against affinity 0.3.0: size of the published dist/index.js at gzip -9, median of 11 cold imports, tests and coverage from the v0.3.0 tag. The replay above was re-run against the same release on that day and gave the same output.</p>
   </section>
 
   <section class="sec start" aria-labelledby="start-title">

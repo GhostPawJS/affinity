@@ -403,3 +403,88 @@ Observer note: 1 likes at fetch
 > and still do https://t.co/ePDgf7Zz9w
 <https://x.com/dromarr/status/2112874716012699869>
 Observer note: 6 likes at fetch
+
+## Batch 2026-10-24 · ongoing: depth pass for the subdomain move · queries: "agent remember people relationships", "personal crm local", "keep in touch with friends app", "relationship manager birthdays", "personal crm", "keeping in touch friends app", "personal crm mcp" · unreachable: YouTube (429), Reddit (challenge page)
+
+### V061 · GitHub (DyangPB/memoir-crm issue #1) · creator · posted 2026-10-07 · fetched 2026-10-24 · via fetch
+> # Spec: Memoir MVP — personal CRM
+>
+> ## Problem Statement
+>
+> People lose track of the people who matter. They forget birthdays, can't remember when they last spoke to someone, and have no single place for the small details that make relationships work — how they met, gift ideas, the names of someone's kids. Sales CRMs are built for pipelines, not for friends. The user wants a personal CRM: a private address book of people, with a timeline of interactions, reminders, notes, and labels. …
+<https://github.com/DyangPB/memoir-crm/issues/1>
+Observer note: issue title: Memoir MVP — personal CRM
+
+### V062 · Hacker News (Show HN: CRM-CLI – A local-first personal CRM for the terminal with MCP server) · creator · posted 2026-03-07 · fetched 2026-10-24 · via fetch
+> Hey HN, I built a personal CRM that lives entirely in the terminal.
+>
+> I kept losing track of people — who I met at conferences, what we discussed, when I last followed up. I tried Notion, spreadsheets, and a few CRM apps, but they were all too heavy for what I needed. I just wanted something fast that I could use without leaving the terminal.
+>
+> crm-cli stores everything in a local SQLite file (~/.crm/crm.db). Single binary, no accounts, no cloud. You can manage contacts, organizations, log interactions, track deals, set follow-up tasks, and tag anything. …
+<https://news.ycombinator.com/item?id=47292121>
+
+### V063 · GitHub (jaw9c/awesome-remote-mcp-servers issue #1419) · creator · posted 2026-10-17 · fetched 2026-10-24 · via fetch
+> Adds [ppl](https://withppl.com), a hosted personal CRM that gives agents memory about people: contacts, notes, journal, tasks, reminders, and semantic search.
+>
+> **Why it meets the quality criteria**
+> - Official: the server is run by the ppl team at `https://withppl.com/mcp`. Source and docs: https://github.com/ppl-crm/ppl, developer docs: https://withppl.com/developers
+> - Security: OAuth 2.1 per the MCP spec, with PKCE (S256), protected resource metadata (`/.well-known/oauth-protected-resource`), and dynamic client registration (`/oauth/register`). Unauthenticated requests get a 401 with a `WWW-Authenticate` resource_metadata challenge. …
+<https://github.com/jaw9c/awesome-remote-mcp-servers/pull/1419>
+Observer note: issue title: Add ppl (personal CRM remote MCP server)
+
+### V064 · Hacker News (Ask HN: In 2024 what's the best way to manage contacts?) · buyer · posted 2024-10-22 · fetched 2026-10-24 · via fetch
+> I just use Apple’s Contacts app. I’ve been using it since 2003 (it was called Address Book on OS X back then).
+>
+> 21 years ago I used it with Apple’s iSync to sync contacts with my flip phone. Later with my iPhone.
+>
+> I have some lists set up to sort out family, work, etc. I just looked and this can _finally_ be done on iOS as well. It was a Mac-only feature for far too long.
+>
+> Inside the Apple ecosystem everything assumes use of the Contacts app, so I’ve never really had to think about using anything else. Back when AIM was a thing, I could use Address Book to add people’s screen names and they’d show up in iChat (AIM is dead, but I still have their old screen names in my Contacts app). …
+<https://news.ycombinator.com/item?id=41913332>
+
+### V065 · Hacker News (The EU could be scanning your chats by October 2025) · buyer · posted 2025-07-29 · fetched 2026-10-24 · via fetch
+> I was reflecting on the whole chat apps and protocols the other day and felt we might just have trapped ourselves artificially.
+>
+> If I want to casually keep in touch with a friend, I am supposed to have the following options:
+>
+> - SMS/RCS: no need for an app but is controlled
+>
+> - WhatsApp: no good to many reasons
+>
+> - Signal: how can you believe it is not controlled once it becomes the mandatory app in the US Gov.
+>
+> - Matrix: great but you need to self host a server, create accounts, etc.
+>
+> - SimpleX: very interesting, but centralised and I feel it might just be the next Signal. …
+<https://news.ycombinator.com/item?id=44721620>
+
+### V066 · Hacker News (Study finds growing social circles may fuel polarization) · adjacent · posted 2025-10-28 · fetched 2026-10-24 · via fetch
+> I think longer is… possible, at least? The internet has allowed me to keep in touch with friends from elementary school. I’m, unfortunately, approaching 40 more quickly than I’d like, so these are around 30 year friendships.
+>
+> Although, I’ve also got some college friends that I’d consider close. So that’s more like 15 years. Also online mostly at this point.
+<https://news.ycombinator.com/item?id=45730490>
+
+### V067 · Bluesky (post) · buyer · posted 2024-10-15 · fetched 2026-10-24 · via fetch
+> Why is keeping in touch so hard? I need an app with a list of all my friends, their contact info, and how long it's been since we talked... Omg I'm describing a CRM!
+<https://bsky.app/profile/darrian.bsky.social/post/3l6l3yi3g3b2s>
+
+### V068 · Hacker News (Show HN: Poppy – A simple app to stay intentional with relationships) · creator · posted 2026-03-16 · fetched 2026-10-24 · via fetch
+> Check out https://github.com/Relvio-AI/relvio, its an open-source personal CRM that connects to Gmail and automatically extracts your contacts. You can add notes, tag people by relationship, set follow-up reminders with overdue tracking, and see who you're losing touch with. LinkedIn import works via CSV.
+>
+> Free, runs locally on your machine with no cloud or subscription, takes a couple minutes to set up
+<https://news.ycombinator.com/item?id=47395522>
+
+### V069 · Hacker News (Show HN: DenchClaw – Local CRM on Top of OpenClaw) · buyer · posted 2026-03-09 · fetched 2026-10-24 · via fetch
+> Ha, I get why it looks that way from the CRM angle, but outreach is maybe 5% of what I actually use DenchClaw for day to day.
+>
+> Yesterday I asked it to pull up all my meeting notes from last week, cross-reference them with my task list, and draft follow-ups. Before that I had it reorganize a messy folder of research PDFs into a structured workspace. I use it to build slides, write code (DenchClaw literally built DenchClaw), manage my calendar, search through old Notion pages I forgot existed.
+>
+> The CRM part gets attention because that's what people asked for when we talked to power users. …
+<https://news.ycombinator.com/item?id=47314015>
+
+### V070 · Bluesky (post) · adjacent · posted 2024-12-06 · fetched 2026-10-24 · via fetch
+> I'm trying to figure out if it's typical to have lots of friends who live out of state or if I'm unusual in keeping in touch (mostly via FB) with so many far flung people. Or making friends across the country on the bird app. 
+>
+> What's your experience? Do your friends live close by?
+<https://bsky.app/profile/mrkitmath.bsky.social/post/3lcoejn6x3k2n>
+Observer note: 4 likes at fetch

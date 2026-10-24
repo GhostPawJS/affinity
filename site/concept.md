@@ -1,5 +1,8 @@
 # Concept: GhostPaw Affinity
 
+## Diagnosis
+Depth pass on 2026-10-24 for the subdomain move. What stays strong: the replayed run, re-run against affinity 0.3.0 with identical output, and the dossier answer. What was thin: the page never placed affinity next to the tools people already use, so a reader could not tell it from a hosted personal CRM. Added: a comparison against phone contacts, spreadsheets and hosted CRMs with an MCP endpoint, plus a plain statement that there is no app or sync.
+
 ## Voices
 - Birthdays live in Facebook, phone contacts or recurring calendar entries, not in any relationship tool. V028 V029 V030 V031 V032 V046
 - The cost people name is the forgotten follow-up: clients, leads and old friends lost to silence. V026 V056 V058 V059
@@ -10,6 +13,10 @@
 - Agent memory treats every fact alike; relationships need salience and decay. V021 V020 V019
 - Some people keep notes on what friends like next to the birthday, by hand. V033 V045 V048
 - Developers ask how a contacts store handles notes and custom attributes. V008 V045
+- Builders keep starting personal CRMs from the same list: forgotten birthdays, when we last spoke, the small details. V061 V062 V067
+- Hosted personal CRMs now ship remote MCP servers with OAuth and over a hundred tools; local-first ones store a SQLite file in the home directory. V063 V062 V068
+- Plenty of people stay with the phone's contacts app and never want more. V064 (disagreement)
+- Keeping in touch is spread over many chat apps, so no single app knows who drifted. V065 V070
 
 ## Buyer
 A Node.js developer building an assistant or agent that talks to people for them, who keeps contacts in a phone address book or a notes app and birthdays in a calendar (V029 V043). They arrive from a thread about personal CRMs or about agent memory (V002 V021), compare against Monica, Dex and the hosted ppl MCP (P001 P003 P004), and need to see that the library tracks who is drifting and what was promised without logging chores, while the data stays in their own SQLite file (V009 V015). The hesitation most likely to stop them: an agent with a people database sounds like the dossier they just read about (V034 V039).
@@ -25,7 +32,7 @@ A Node.js developer building an assistant or agent that talks to people for them
 Chosen: a replayed real run. Five steps against affinity 0.3.0 on 2026-10-24 with a fixed clock: record a climbing evening with Jun, promise Ren the notes, try to resolve the promise as "done" (refused) and then as "kept", add Jun's birthday. A radar panel shows the three people and their drift score; each step shows the exact call and what came back, and the radar updates from the recorded results. Speed: the radar is on screen at load; proof: values are the library's own output; effort: five presses; honesty: labelled as a replay, and the note says rollups are recomputed on writes so the clock never moves; share value: the refusal line is quotable.
 Rejected: a contact form that saves to the browser: it would imply a hosted product and proves nothing about drift.
 Rejected: a relationship graph animation: pretty, but the graph is a dashboard every peer has (P002 P007) and carries no rule.
-Rejected: a feature table against Monica and Dex: claims about other projects instead of our own numbers.
+Rejected: a feature table against Monica and Dex: claims about other projects instead of our own numbers. The 2026-10-24 comparison section names categories of tools (phone contacts, spreadsheets, hosted CRMs), not products.
 
 ## Offer
 Product: @ghostpaw/affinity, an open-source relationship and social CRM engine for Node.js on SQLite
@@ -42,8 +49,8 @@ Delivery: `npm install @ghostpaw/affinity` into a Node.js 24+ project, or `npx -
 - In the recorded run, one activity with Jun raised affinity by 0.245 and trust by 0.025, set the cadence from 14 to 17 days and moved Jun from the top of the radar to the bottom. https://github.com/GhostPawJS/affinity#quick-start
 - In the recorded run, an open promise to Ren lowered trust by 0.044 and resolving it as "done" threw "resolution must be kept, cancelled, or broken". https://github.com/GhostPawJS/affinity
 - Radar and drift rollups are refreshed when events are written, not at read time (links/rollups.ts). https://github.com/GhostPawJS/affinity
-- 459 tests with 95.34% line, 85.76% branch and 96.98% function coverage, measured 2026-10-24. https://github.com/GhostPawJS/affinity
-- dist is 56.1 KB gzip and imports in about 5.7 ms on the maintainer box, measured 2026-10-24. https://github.com/GhostPawJS/affinity
+- 459 tests with 95.38% line, 85.96% branch and 96.98% function coverage, measured 2026-10-24. https://github.com/GhostPawJS/affinity
+- dist is 56.1 KB gzip and imports in about 4.8 ms on the maintainer box, measured 2026-10-24. https://github.com/GhostPawJS/affinity
 - Birthdays are commonly kept as recurring calendar entries or left to Facebook. V029 V028
 
 ## Axes
@@ -88,7 +95,7 @@ Who is drifting, on a dark scope. The page centres on a radar with three people 
 2. The run: radar of three people, five replayed steps with call and result. V059 V028
 3. What it keeps: contacts, identities, links, ties, events, dates, attributes; derived state. V002 V021
 4. Worry: where the data lives and what affinity does not do. V034 V039 V015
-5. Numbers: 0 deps, Node 24+, 459 tests, 95.3% lines, 56.1 KB gzip, about 5.7 ms import, 12 tools.
+5. Numbers: 0 deps, Node 24+, 459 tests, 95.4% lines, 56.1 KB gzip, about 4.8 ms import, 12 tools.
 6. Start: install, quick start, GitHub, README, live demo, back to GhostPaw home and sibling pages.
 7. Footer: Impressum, Datenschutz.
 
@@ -137,3 +144,4 @@ Reduced motion: no sweep; bars and results change in place.
 
 ## Changelog
 - 2026-10-24: first concept from the 2026-10-24 research batch (60 voices, 12 peers); drift radar chosen; replay of a real affinity 0.3.0 run.
+- 2026-10-24: depth pass (10 more voices, now 70); replay re-run against the current release; import time re-measured; comparison section added; page moved to https://affinity.ghostpaw.dev/.
