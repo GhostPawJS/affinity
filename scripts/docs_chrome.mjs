@@ -39,6 +39,9 @@ export function minifyCss(css) {
  * @param {string} html  the generated demo shell
  * @param {{ lib: string, layoutCss?: string }} opts
  */
+// Cloudflare Web Analytics (cookieless). Public beacon token.
+const BEACON = `<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "eb094a31847f4b1b96558586692a6f73"}'></script>\n`;
+
 export function addDocsChrome(html, { lib, layoutCss = "" }) {
   const font = landingFont();
   const home = `https://${lib}.ghostpaw.dev/`;
@@ -93,5 +96,6 @@ ${layoutCss}`);
     .replace(
       /(<script type="module"[^>]*><\/script>\s*)?<\/body>/,
       (m) => `${foot}${m}`,
-    );
+    )
+    .replace("</body>", `${BEACON}</body>`);
 }
