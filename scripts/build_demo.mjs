@@ -2,6 +2,7 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { build, context } from "esbuild";
+import { addDocsChrome, minifyCss } from "./docs_chrome.mjs";
 
 const rootDir = process.cwd();
 const outDir = path.join(rootDir, "demo");
@@ -22,6 +23,7 @@ const buildOptions = {
   },
   outdir: outDir,
   platform: "browser",
+  minify: !watchMode,
   sourcemap: true,
   target: ["es2022"],
 };
@@ -818,7 +820,15 @@ async function writeHtmlShell() {
 </html>
 `;
 
-  await writeFile(path.join(outDir, "index.html"), html);
+  // Minify the inline demo styles, then add the ghostpaw.dev top bar and footer.
+  const page = html.replace(
+    /<style>\n([\s\S]*?)<\/style>/,
+    (_, css) => `<style>${minifyCss(css)}</style>`,
+  );
+  await writeFile(
+    path.join(outDir, "index.html"),
+    addDocsChrome(page, { lib: "affinity" }),
+  );
 }
 
 async function buildDemo() {
