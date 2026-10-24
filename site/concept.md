@@ -120,7 +120,7 @@ Who is drifting, on a dark scope. The page centres on a radar with three people 
 | code and numbers | Martian Mono, Cascadia Mono, Consolas, monospace | calls, returned values and file paths like ~/.ghostpaw/affinity.db |
 
 ## Form
-Panes on the void: panel ground, 1px rule border, a 14px chamfer top right, a 3px top bar lit by state. The radar is a list of people with a drift bar each, sorted the way listRadar returns them. Steps are an ordered list: each step a pane with the call in code and the result below. One column on phones; on desktop the radar sits beside the steps and stays in view. Shared faint 48px grid.
+Panes on the void: panel ground, 1px rule border, a 14px chamfer top right, a 3px top bar lit by state. The radar is a list of people with a drift bar each, sorted the way listRadar returns them. Steps are an ordered list: each step a pane with the call in code and the result below. One column on phones; on desktop the radar sits beside the steps and stays in view. Plain void ground with one faint cyan glow.
 
 ## Imagery
 | Image | Job | Art direction | Source |
@@ -145,3 +145,4 @@ Reduced motion: no sweep; bars and results change in place.
 ## Changelog
 - 2026-10-24: first concept from the 2026-10-24 research batch (60 voices, 12 peers); drift radar chosen; replay of a real affinity 0.3.0 run.
 - 2026-10-24: depth pass (10 more voices, now 70); replay re-run against the current release; import time re-measured; comparison section added; page moved to https://affinity.ghostpaw.dev/.
+- 2026-10-24: portal chrome pass. Shared top bar (GhostPaw/<lib>, Live demo or Docs, GitHub, npm), version badge, footer row of all seven libraries; sibling links row dropped from the start section; the ruled grid on the page ground was replaced by one radial glow (lfm 0.1.9 rejects ruled ground textures); share card relabelled GhostPaw/<lib> with the install line.

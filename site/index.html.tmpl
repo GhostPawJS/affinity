@@ -21,17 +21,17 @@
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="{{.urls.home}}">GhostPaw</a>
+  <a class="brand" href="{{.urls.home}}">GhostPaw<span class="crumb">/affinity</span></a>
   <nav aria-label="affinity elsewhere">
+    <a href="{{.urls.demo}}">Live demo</a>
     <a href="{{.urls.github}}">GitHub</a>
     <a href="{{.urls.npm}}">npm</a>
-    <a href="{{.urls.demo}}">Live demo</a>
   </nav>
 </header>
 <main>
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero-copy">
-      <p class="kicker"><code>@ghostpaw/affinity</code> 0.3.0</p>
+      <p class="kicker"><code>@ghostpaw/affinity</code> <span class="ver">0.3.0</span></p>
       <h1 id="hero-title">Who have you been meaning to call?</h1>
       <p class="lede">affinity keeps the people your agent deals with, the promises made to them and the dates that matter in your SQLite file. It works out who is drifting from what happened, so nobody has to keep a list of who to call.</p>
       <div class="install">
@@ -234,12 +234,12 @@ write.recordInteraction(db, {
 const radar = read.listRadar(db);</code></pre>
     <p>To run it as an MCP server instead, add <code>npx -y @ghostpaw/affinity mcp</code> to your client. <code>npx -y @ghostpaw/affinity skill</code> prints the Agent Skill that ships in the package.</p>
     <p class="links"><a class="more" href="{{.urls.readme}}">Read the README</a><a href="{{.urls.demo}}">Open the live demo</a><a href="{{.urls.npm}}">affinity on npm</a></p>
-    <p class="links"><a href="{{.urls.home}}">All seven GhostPaw libraries</a><a href="{{.urls.agentMemory}}">codex, for memory</a><a href="{{.urls.agentTasks}}">questlog, for tasks</a><a href="{{.urls.agentIdentity}}">souls, for identity</a><a href="{{.urls.agentSkills}}">grimoire, for skills</a><a href="{{.urls.agentEmail}}">email, for mail</a><a href="{{.urls.agentTelegram}}">telegram, for chats</a></p>
   </section>
 </main>
 <footer class="foot">
-  <p>affinity is maintained in the open by GhostPaw under the MIT licence.</p>
-  <p class="foot-links"><a href="{{.urls.github}}">Source</a><a href="{{.urls.impressum}}">Impressum</a><a href="{{.urls.privacy}}">Datenschutz</a></p>
+  <nav class="foot-libs" aria-label="GhostPaw libraries"><a href="{{.urls.agentMemory}}">codex</a><a href="{{.urls.agentTasks}}">questlog</a><a href="{{.url}}" aria-current="page">affinity</a><a href="{{.urls.agentIdentity}}">souls</a><a href="{{.urls.agentSkills}}">grimoire</a><a href="{{.urls.agentEmail}}">email</a><a href="{{.urls.agentTelegram}}">telegram</a></nav>
+  <p>affinity is one of seven GhostPaw libraries, maintained in the open under the MIT licence.</p>
+  <p class="foot-links"><a href="{{.urls.home}}">GhostPaw home</a><a href="{{.urls.github}}">Source on GitHub</a><a href="{{.urls.npm}}">affinity on npm</a><a href="{{.urls.impressum}}">Impressum</a><a href="{{.urls.privacy}}">Datenschutz</a></p>
 </footer>
 {{script "assets/scripts/main.js"}}
 </body>
