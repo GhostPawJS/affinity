@@ -6,6 +6,8 @@
 [![dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 
+[![MCP Registry](https://img.shields.io/badge/MCP_Registry-io.github.GhostPawJS%2Faffinity-06d6a0)](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.GhostPawJS%2Faffinity/versions/latest)
+
 A standalone social CRM core for Node.js, built on SQLite.
 
 Affinity treats contacts, identities, relationship mechanics, structural ties,
@@ -14,6 +16,76 @@ one coherent model instead of separate systems. It ships as a single prebundled
 blob with zero runtime dependencies, designed for two audiences at once: human
 developers working directly in code, and LLM agents operating through a
 structured `soul` / `tools` / `skills` runtime.
+
+## MCP server
+
+Every client below starts the same stdio server: `npx -y @ghostpaw/affinity mcp`.
+Contacts live in `~/.ghostpaw/affinity.db` unless the `GHOSTPAW_AFFINITY_DB`
+environment variable (absolute path) or `--db <path>` says otherwise.
+
+**Claude Code**
+
+```bash
+claude mcp add ghostpaw-affinity -- npx -y @ghostpaw/affinity mcp
+```
+
+or as a plugin, which also installs the skill:
+
+```bash
+/plugin marketplace add GhostPawJS/affinity
+/plugin install ghostpaw-affinity@ghostpaw-affinity
+```
+
+**Codex CLI** (`~/.affinity/config.toml`)
+
+```toml
+[mcp_servers.ghostpaw-affinity]
+command = "npx"
+args = ["-y", "@ghostpaw/affinity", "mcp"]
+```
+
+**Cursor** (`.cursor/mcp.json`), **Claude Desktop** (`claude_desktop_config.json`)
+or a project `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "ghostpaw-affinity": {
+      "command": "npx",
+      "args": ["-y", "@ghostpaw/affinity", "mcp"]
+    }
+  }
+}
+```
+
+Claude Desktop users can also install `server.mcpb` from the
+[latest GitHub release](https://github.com/GhostPawJS/affinity/releases/latest).
+A Dockerfile is included for container hosts:
+`docker build -t ghostpaw-affinity . && docker run -i --rm -v affinity:/data ghostpaw-affinity`.
+
+The server speaks MCP 2026-07-28 (stateless, `server/discover`) and the
+initialize-based revisions 2025-11-25, 2025-06-18, 2025-03-26 and 2024-11-05.
+
+### CLI
+
+```bash
+npx -y @ghostpaw/affinity tools
+npx -y @ghostpaw/affinity call manage_contact '{"action":"create","input":{"name":"Sam","kind":"human"}}'
+npx -y @ghostpaw/affinity call search_affinity '{"query":"Sam"}'
+```
+
+Install globally for the `ghostpaw-affinity` binary: `npm i -g @ghostpaw/affinity`.
+`ghostpaw-affinity mcp` starts the stdio server.
+
+### Agent Skill
+
+`SKILL.md` (repo root) and `skills/affinity/SKILL.md` follow the
+[Agent Skills](https://agentskills.io) format and ship in the npm package.
+Copy `skills/affinity/` into your agent's skills folder, or print it:
+
+```bash
+npx -y @ghostpaw/affinity skill > SKILL.md
+```
 
 ## Install
 

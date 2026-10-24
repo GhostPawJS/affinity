@@ -1,0 +1,35 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "ghostpaw-affinity",
+  "version": "0.2.4",
+  "description": "Local relationship model and social CRM for contacts, relationships, evidence, and commitments.",
+  "author": {
+    "name": "Anonyfox",
+    "email": "max@anonyfox.com",
+    "url": "https://anonyfox.com"
+  },
+  "homepage": "https://github.com/GhostPawJS/affinity",
+  "repository": "https://github.com/GhostPawJS/affinity.git",
+  "license": "MIT",
+  "keywords": [
+    "affinity",
+    "social-crm",
+    "relationship-intelligence",
+    "contacts",
+    "crm",
+    "social-graph",
+    "network",
+    "sqlite",
+    "llm",
+    "ai",
+    "agent",
+    "tools",
+    "typescript",
+    "zero-dependencies",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "agent-skills",
+    "cli"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.GhostPawJS/affinity",
+  "description": "Local relationship model and social CRM for contacts, relationships, evidence, and commitments.",
+  "title": "GhostPaw Affinity",
+  "version": "0.2.4",
+  "repository": {
+    "url": "https://github.com/GhostPawJS/affinity.git",
+    "source": "github"
+  },
+  "websiteUrl": "https://github.com/GhostPawJS/affinity",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@ghostpaw/affinity",
+      "version": "0.2.4",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "mcp"
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "GHOSTPAW_AFFINITY_DB",
+          "description": "SQLite database path (default: ~/.ghostpaw/affinity.db)",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}

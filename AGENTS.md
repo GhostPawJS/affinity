@@ -32,23 +32,31 @@ For example, `tools.searchAffinityToolHandler(db, { query: "Sam" })` returns
 `clarification` when a choice is needed, or `error` on failure.
 Optional `warnings` and `next` fields provide additional context.
 
+The MCP server and CLI open `--db <path>`, `GHOSTPAW_AFFINITY_DB`, or
+`~/.ghostpaw/affinity.db`, in that order, with WAL and a 5000 ms busy timeout.
+Start the server with `npx -y @ghostpaw/affinity mcp`.
+
 ## Layout
 
-- `src/index.ts`: public namespaces and initialization.
-- `src/read.ts`, `src/write.ts`: public read and mutation operations.
-- `src/contacts/`, `identities/`, `links/`, `events/`, `dates/`,
-  `attributes/`, `merges/`, `graph/`: domain operations and persistence.
-- `src/lib/`: shared types, errors, read helpers, and test database helpers.
-- `src/tools/`, `src/skills/`, `src/soul.ts`: facade and usage guidance.
-- `docs/`, `README.md`, `CONCEPT.md`: documentation and model contracts.
-- `scripts/`, `.github/workflows/`: checks, demo, and release workflows.
+- `src/contacts/`, `src/identities/`, `src/links/`, `src/events/`, `src/dates/`, `src/attributes/`, `src/merges/`, `src/graph/`, `src/lib/`: domain model and SQLite storage.
+- `src/read.ts`, `src/write.ts`: public read and write namespaces.
+- `src/tools/`, `src/skills/`, `src/soul.ts`: tool registry, workflow skills, prompt foundation.
+- `src/surfaces/`: library-agnostic MCP server, stdio transport, CLI, SKILL.md and manifest renderers.
+- `src/surface/`: affinity bindings for those surfaces; `src/mcp.ts`, `src/cli.ts`, `src/mcp_server_bin.ts` are entries.
+- `scripts/surfaces/`: generator for `SKILL.md`, `skills/affinity/`, `plugin.json`, `mcp.json`, `.claude-plugin/`, `server.json`, `mcpb/manifest.json`. Never edit those outputs by hand; run `npm run surfaces`.
+- `scripts/guard/`: size, API, consumer, startup and ratchet guards; `scripts/bench/`: benchmarks.
+- `docs/`: detailed usage documentation.
 
 ## Contribute
 
 Use Node 24 and the existing dependency installation. Keep runtime dependencies
 at zero; `npm run check:deps` verifies this rule.
-Run `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build`.
-All four commands must pass before review. Follow the existing Biome config.
+Run `npm run check` before review. This single gate runs types, lint, tests, build,
+zero runtime dependencies, generated-surface drift, size and API budgets,
+packed consumer checks, startup budgets, and the ratchet.
+Budget increases require `[budget-increase-approved]`, API snapshot changes
+require `[api-change-approved]`, and guard, workflow or lint configuration
+changes require `[guardrails-change-approved]` in the commit message. Follow the existing Biome config.
 Place `*.test.ts` beside source files, using `node:test` and `node:assert/strict`.
 Use real behavioral assertions, including validation failures and edge cases.
 Do not weaken assertions, skip tests, or exclude code from coverage.

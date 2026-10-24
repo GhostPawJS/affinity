@@ -6,7 +6,16 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignoreUnknown": true
+    "ignoreUnknown": true,
+    "ignore": [
+      "plugin.json",
+      "mcp.json",
+      "server.json",
+      "glama.json",
+      "mcpb/manifest.json",
+      ".claude-plugin/*.json",
+      ".mcp.json"
+    ]
   },
   "formatter": {
     "enabled": true,

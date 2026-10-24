@@ -1,0 +1,124 @@
+{
+  "manifest_version": "0.3",
+  "name": "ghostpaw-affinity",
+  "display_name": "GhostPaw Affinity",
+  "version": "0.2.4",
+  "description": "Local relationship model and social CRM for contacts, relationships, evidence, and commitments.",
+  "long_description": "Local relationship model and social CRM. Stores data in a local SQLite database.",
+  "author": {
+    "name": "Anonyfox",
+    "email": "max@anonyfox.com",
+    "url": "https://anonyfox.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GhostPawJS/affinity.git"
+  },
+  "homepage": "https://github.com/GhostPawJS/affinity",
+  "documentation": "https://github.com/GhostPawJS/affinity/blob/main/README.md",
+  "support": "https://github.com/GhostPawJS/affinity/issues",
+  "license": "MIT",
+  "keywords": [
+    "affinity",
+    "social-crm",
+    "relationship-intelligence",
+    "contacts",
+    "crm",
+    "social-graph",
+    "network",
+    "sqlite",
+    "llm",
+    "ai",
+    "agent",
+    "tools",
+    "typescript",
+    "zero-dependencies",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "agent-skills",
+    "cli"
+  ],
+  "server": {
+    "type": "node",
+    "entry_point": "server/mcp-server.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/mcp-server.js"
+      ],
+      "env": {
+        "GHOSTPAW_AFFINITY_DB": "${user_config.db_path}"
+      }
+    }
+  },
+  "user_config": {
+    "db_path": {
+      "type": "string",
+      "title": "Database path",
+      "description": "Path to the local SQLite database.",
+      "required": false,
+      "default": "${HOME}/.ghostpaw/affinity.db"
+    }
+  },
+  "tools": [
+    {
+      "name": "search_affinity",
+      "description": "Search contacts by name or identity, including exact natural-key lookups like email-style identifiers."
+    },
+    {
+      "name": "review_affinity",
+      "description": "Review one affinity surface such as contacts, journals, link queues, commitments, dates, graph state, or merge history."
+    },
+    {
+      "name": "inspect_affinity_item",
+      "description": "Inspect one exact affinity item such as the owner profile, a contact profile, or one link detail."
+    },
+    {
+      "name": "manage_contact",
+      "description": "Create a contact, revise one contact's core fields, or change lifecycle state. ALWAYS search_affinity first before creating — duplicates corrupt the graph."
+    },
+    {
+      "name": "merge_contacts",
+      "description": "Merge one loser contact into one winner contact using explicit contact locators."
+    },
+    {
+      "name": "manage_duplicate_dismissal",
+      "description": "Dismiss or un-dismiss a duplicate candidate pair so it does not resurface in listDuplicateCandidates."
+    },
+    {
+      "name": "manage_identity",
+      "description": "Add, revise, verify, or remove one routing identity on a contact. Use this for emails, phone numbers, social handles, and URLs — anything that could locate a person. Do not use manage_attribute for these."
+    },
+    {
+      "name": "manage_relationship",
+      "description": "Seed social links, revise bond and state, and manage structural ties. Seed a link as soon as a relationship is mentioned — do not wait for repeated evidence."
+    },
+    {
+      "name": "record_event",
+      "description": "Record one social event such as an interaction, observation, milestone, or transaction. For interactions, milestones, and transactions the owner contact is auto-injected into participants if missing. Observations may omit the owner when recording third-party evidence."
+    },
+    {
+      "name": "manage_commitment",
+      "description": "Record or resolve one commitment such as a promise or agreement. The owner contact is auto-injected into participants if missing."
+    },
+    {
+      "name": "manage_date_anchor",
+      "description": "Add, revise, or remove recurring date anchors on contacts or links. Use this for birthdays, anniversaries, and yearly events — not manage_attribute."
+    },
+    {
+      "name": "manage_attribute",
+      "description": "Set, unset, or replace custom metadata attributes on contacts and links. For emails, phones, handles, and URLs use manage_identity instead — those are routing keys, not attributes."
+    }
+  ],
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
+    "runtimes": {
+      "node": ">=24.0.0"
+    }
+  }
+}

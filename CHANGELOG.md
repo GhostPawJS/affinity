@@ -8,6 +8,10 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ### Added
 
+- MCP stdio server and CLI generated from the existing tool registry.
+- Agent Skill documents, client and directory manifests, Dockerfile, and MCP Bundle packaging.
+- Size, API, packed-consumer, startup, and ratchet guards, with offline benchmarks.
+
 - Behavioral coverage for read filters, date revisions, event mechanics, and tool target resolution.
 - Contributor and usage guide, including caller-owned SQLite WAL and busy-timeout recommendations.
 - Reconstructed release history.

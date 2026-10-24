@@ -1,7 +1,7 @@
 {
   "name": "@ghostpaw/affinity",
   "version": "0.2.4",
-  "description": "Relationship intelligence and social CRM model for Node.js — SQLite, zero dependencies, with a built-in LLM tool facade",
+  "description": "Relationship intelligence and social CRM model for Node.js \u2014 SQLite, zero dependencies, with a built-in LLM tool facade",
   "license": "MIT",
   "author": {
     "name": "Anonyfox",
@@ -45,9 +45,14 @@
     "agent",
     "tools",
     "typescript",
-    "zero-dependencies"
+    "zero-dependencies",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "agent-skills",
+    "cli"
   ],
-  "files": ["dist"],
+  "files": ["dist", "skills", "SKILL.md"],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -61,7 +66,18 @@
         "types": "./dist/index.d.cts",
         "default": "./dist/index.cjs"
       }
-    }
+    },
+    "./mcp": {
+      "import": {
+        "types": "./dist/mcp.d.ts",
+        "default": "./dist/mcp.js"
+      },
+      "require": {
+        "types": "./dist/mcp.d.cts",
+        "default": "./dist/mcp.cjs"
+      }
+    },
+    "./package.json": "./package.json"
   },
   "scripts": {
     "build": "tsup",
@@ -74,14 +90,26 @@
     "lint:fix": "biome check --fix",
     "format": "biome format --write",
     "typecheck": "tsc --noEmit",
-    "check": "biome check && tsc --noEmit",
+    "check": "npm run check:types && npm run check:lint && npm test && npm run build && npm run check:deps && npm run check:surfaces && npm run check:size && npm run check:api && npm run check:consumer && npm run check:startup && npm run check:ratchet",
     "check:deps": "node scripts/check-zero-deps.mjs",
     "clean": "rm -rf dist demo",
-    "version": "biome format --write package.json package-lock.json && git add package.json package-lock.json",
-    "prepublishOnly": "npm run check && npm run build",
+    "version": "node scripts/sync_version.mjs && npm run surfaces && git add src/version.ts SKILL.md skills plugin.json mcp.json server.json .claude-plugin mcpb && biome format --write package.json package-lock.json && git add package.json package-lock.json",
+    "prepublishOnly": "npm run check",
     "release:patch": "npm version patch && git push && git push --tags",
     "release:minor": "npm version minor && git push && git push --tags",
-    "release:major": "npm version major && git push && git push --tags"
+    "release:major": "npm version major && git push && git push --tags",
+    "surfaces": "node --experimental-strip-types scripts/surfaces/generate.mjs",
+    "check:surfaces": "node --experimental-strip-types scripts/surfaces/generate.mjs --check",
+    "check:types": "tsc --noEmit",
+    "check:lint": "biome check",
+    "check:ratchet": "node --test scripts/guard/*.test.mjs && node scripts/guard/ratchet.mjs",
+    "budgets:update": "npm run build && node scripts/guard/size.mjs --update && node scripts/guard/api.mjs --update && node scripts/guard/startup.mjs --update",
+    "bench": "npm run build && node scripts/bench/bench.mjs",
+    "check:size": "node scripts/guard/size.mjs",
+    "check:api": "node scripts/guard/api.mjs",
+    "check:consumer": "node scripts/guard/consumer.mjs",
+    "check:startup": "node scripts/guard/startup.mjs",
+    "mcpb": "node scripts/mcpb/build.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
@@ -93,5 +121,9 @@
     "sql.js": "^1.14.1",
     "tsup": "^8.4.0",
     "typescript": "^5.8.2"
-  }
+  },
+  "bin": {
+    "ghostpaw-affinity": "./dist/cli.js"
+  },
+  "mcpName": "io.github.GhostPawJS/affinity"
 }

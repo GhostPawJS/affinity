@@ -1,0 +1,13 @@
+{
+  "name": "ghostpaw-affinity",
+  "owner": {
+    "name": "Anonyfox"
+  },
+  "plugins": [
+    {
+      "name": "ghostpaw-affinity",
+      "source": "./",
+      "description": "Local relationship model and social CRM for contacts, relationships, evidence, and commitments."
+    }
+  ]
+}
