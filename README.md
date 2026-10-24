@@ -149,7 +149,7 @@ and skills.
 
 ## Tools
 
-Eleven tools shaped around operator intent, not raw storage operations:
+Twelve tools shaped around operator intent, not raw storage operations:
 
 | Tool | What it does |
 |---|---|
@@ -158,6 +158,7 @@ Eleven tools shaped around operator intent, not raw storage operations:
 | `inspect_affinity_item` | Open one exact profile or link detail |
 | `manage_contact` | Create, revise, or change contact lifecycle |
 | `merge_contacts` | Merge duplicate contacts safely |
+| `manage_duplicate_dismissal` | Dismiss or restore a suspected duplicate pair |
 | `manage_identity` | Add, revise, verify, or remove identities |
 | `manage_relationship` | Seed social links, revise bond/state, manage structural ties |
 | `record_event` | Record direct evidence, observations, milestones, or transactions |
