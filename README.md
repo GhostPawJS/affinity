@@ -5,7 +5,6 @@
 [![license](https://img.shields.io/npm/l/@ghostpaw/affinity)](LICENSE)
 [![dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-
 [![MCP Registry](https://img.shields.io/badge/MCP_Registry-io.github.GhostPawJS%2Faffinity-06d6a0)](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.GhostPawJS%2Faffinity/versions/latest)
 
 A standalone social CRM core for Node.js, built on SQLite.
