@@ -1,0 +1,237 @@
+<!DOCTYPE html><html lang=en><head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<title>affinity: a relationship store for agents that works out who is drifting</title>
+<meta name=description content="@ghostpaw/affinity keeps contacts, promises and yearly dates in your own SQLite file and derives rank, trust and drift from what happened. Local MCP server, 12 tools, Node.js 24, zero dependencies, MIT.">
+<link rel=canonical href=https://affinity.ghostpaw.dev/>
+<meta property=og:type content=website>
+<meta property=og:url content=https://affinity.ghostpaw.dev/>
+<meta property=og:title content="affinity: a relationship store for agents that works out who is drifting">
+<meta property=og:description content="@ghostpaw/affinity keeps contacts, promises and yearly dates in your own SQLite file and derives rank, trust and drift from what happened. Local MCP server, 12 tools, Node.js 24, zero dependencies, MIT.">
+<meta property=og:image content=https://affinity.ghostpaw.dev/share-416fd3640e43.png><meta property=og:image:width content=1200><meta property=og:image:height content=630>
+<meta property=og:image:alt content="A radar scope in cyan light with a ghost paw at its centre and one violet point drifting outward, beside the line: Who have you been meaning to call?">
+<meta name=twitter:card content=summary_large_image>
+<link rel=preload href=./tektur-var-4c711ade6b7f.woff2 as=font type=font/woff2 crossorigin>
+<link rel=preload href=./martian-mono-var-3048bdad51b1.woff2 as=font type=font/woff2 crossorigin>
+<meta name=theme-color content=#04070b>
+
+
+<style>@font-face{font-family:Tektur;src:url("./tektur-var-4c711ade6b7f.woff2") format("woff2");font-weight:500 900;font-stretch:75% 100%;font-style:normal;font-display:swap}@font-face{font-family:Martian Mono;src:url("./martian-mono-var-3048bdad51b1.woff2") format("woff2");font-weight:400 700;font-style:normal;font-display:swap}:root{--void: #04070b;--panel: #0a1119;--rule: #1d2c3c;--ghost: #e3edf5;--haze: #93a5b9;--spectral: #62e6f2;--wraith: #b39dff;--alarm: #ff7aa6;--ward: #7af0b4;--glow: rgba(98, 230, 242, .28);--display: "Tektur", Bahnschrift, "Arial Narrow", sans-serif;--body: system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;--mono: "Martian Mono", "Cascadia Mono", Consolas, monospace;--edge: 1px solid var(--rule);--cut: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);--wrap: 72rem;color-scheme:dark}*{box-sizing:border-box}html{-webkit-text-size-adjust:100%;background:var(--void)}body{margin:0;color:var(--ghost);font:400 1.0625rem/1.6 var(--body);font-synthesis:none;background-color:var(--void);background-image:linear-gradient(rgba(98,230,242,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(98,230,242,.035) 1px,transparent 1px);background-size:48px 48px}img{display:block;max-width:100%;height:auto}code,input,kbd,samp{font-family:var(--mono);font-synthesis:none}code{font-size:.86em;letter-spacing:-.01em}a{color:var(--ghost);text-decoration-color:var(--spectral);text-decoration-thickness:1px;text-underline-offset:.22em}a:hover{color:var(--spectral)}:focus-visible{outline:2px solid var(--spectral);outline-offset:3px}h1,h2,h3,h4{font-family:var(--display);line-height:1.06;margin:0 0 .5em;text-wrap:balance;font-weight:700}h1{font-size:clamp(2.35rem,6.4vw,4.7rem);font-stretch:88%;letter-spacing:-.01em;text-shadow:0 0 34px rgba(98,230,242,.18)}h2{font-size:clamp(1.75rem,3.7vw,2.7rem);font-stretch:90%;font-weight:650}h3{font-size:1.3rem;font-weight:600;font-stretch:95%}h4{font-size:1rem;font-weight:600;font-stretch:95%}p{margin:0 0 1em}::selection{background:var(--spectral);color:var(--void)}.top,main>section,.foot{max-width:var(--wrap);margin:0 auto;padding-left:1.25rem;padding-right:1.25rem}.top{display:flex;justify-content:space-between;align-items:center;padding-top:1.1rem;padding-bottom:1.1rem;border-bottom:var(--edge)}.brand{font:700 1.2rem/1 var(--display);font-stretch:85%;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem}.brand:after{content:"";width:.5rem;height:1.05rem;background:var(--spectral);box-shadow:0 0 12px var(--glow)}.top nav{display:flex;gap:1.25rem}.top nav a{text-decoration:none;color:var(--haze)}.top nav a:hover{color:var(--spectral)}.cmd{display:flex;align-items:stretch;border:var(--edge);background:var(--panel);max-width:30rem}.cmd:before{content:"$";font:400 .9rem/1 var(--mono);color:var(--haze);padding:0 0 0 .75rem;align-self:center}.cmd input{flex:1;min-width:0;border:0;background:transparent;color:var(--ghost);font-size:.8rem;padding:.75rem .6rem}.copy{border:0;background:var(--spectral);color:var(--void);font:650 .95rem var(--display);padding:0 .9rem;cursor:pointer;min-width:4.75rem}.copy:hover{background:var(--ghost)}.button{display:inline-block;background:var(--spectral);color:var(--void);text-decoration:none;font:650 1rem var(--display);padding:.8rem 1.4rem .8rem 1.2rem;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%)}.button:hover{background:var(--ghost);color:var(--void)}.note{color:var(--haze);font-size:.9rem;margin-top:1rem;max-width:46rem}.scope{position:relative;overflow:hidden}.scope img{mix-blend-mode:screen;width:100%}.scope:before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom,transparent 0 3px,rgba(4,7,11,.38) 3px 4px);z-index:1}.scan{position:absolute;inset:0;z-index:2;pointer-events:none;transform:translateY(101%);background:linear-gradient(to bottom,var(--spectral) 0 2px,rgba(4,7,11,.92) 2px);box-shadow:0 -6px 24px var(--glow)}.js .scan{animation:sweep .9s cubic-bezier(.45,.05,.35,1) .15s both}@keyframes sweep{0%{transform:translateY(0);opacity:1}92%{opacity:1}to{transform:translateY(101%);opacity:0}}.scan{opacity:0}.frame{position:relative;margin:0}.frame:after{content:"";position:absolute;inset:-.5rem;pointer-events:none;background:linear-gradient(var(--spectral),var(--spectral)) top left / 18px 1px no-repeat,linear-gradient(var(--spectral),var(--spectral)) top left / 1px 18px no-repeat,linear-gradient(var(--spectral),var(--spectral)) top right / 18px 1px no-repeat,linear-gradient(var(--spectral),var(--spectral)) top right / 1px 18px no-repeat,linear-gradient(var(--spectral),var(--spectral)) bottom left / 18px 1px no-repeat,linear-gradient(var(--spectral),var(--spectral)) bottom left / 1px 18px no-repeat,linear-gradient(var(--spectral),var(--spectral)) bottom right / 18px 1px no-repeat,linear-gradient(var(--spectral),var(--spectral)) bottom right / 1px 18px no-repeat;opacity:.7}.foot{padding-top:2rem;padding-bottom:3rem;border-top:var(--edge);color:var(--haze)}.foot-links{display:flex;flex-wrap:wrap;gap:.5rem 1.5rem}.foot a{color:var(--haze)}.foot a:hover{color:var(--spectral)}@media(min-width:52rem){.cmd input{font-size:.9rem}}@media(prefers-reduced-motion:reduce){.js .scan{animation:none}*{transition:none!important}}.hero{display:grid;gap:2.5rem;padding-top:2.5rem;padding-bottom:3.5rem;align-items:center}.hero-copy{min-width:0}.lede{font-size:1.22rem;color:var(--ghost)}.lede code{white-space:nowrap;color:var(--spectral)}.hero-copy>p:not(.lede):not(.actions):not(.terms){color:var(--haze)}.install label{display:block;font:600 .95rem var(--display);color:var(--haze);margin-bottom:.4rem}.actions{display:flex;flex-wrap:wrap;gap:1rem 1.5rem;align-items:center;margin-top:1.5rem}.terms{color:var(--haze);font-size:.95rem}.hero-art{min-width:0}.readout{position:absolute;left:.75rem;bottom:.75rem;z-index:3;margin:0;display:grid;grid-template-columns:auto 1fr;column-gap:.7rem;align-items:center;padding:.55rem 1rem .55rem .8rem;background:#04070bd1;border:1px solid rgba(98,230,242,.45);clip-path:var(--cut)}.readout .big{grid-row:span 2;font:700 2.6rem/1 var(--display);color:var(--spectral);text-shadow:0 0 18px var(--glow)}.readout span:not(.big){font:600 1rem/1.15 var(--display)}.readout small{color:var(--haze);font-size:.8rem}.readout{display:flex;gap:.7rem}.kicker{margin:0 0 .85rem;color:var(--haze)}.kicker code{color:var(--spectral)}.cmd-label{font:600 .95rem var(--display);color:var(--haze);margin:0 0 .4rem}.intro{max-width:46rem;color:var(--haze)}.board-sec .intro:first-of-type,.todo>.intro:first-of-type{color:var(--ghost);font:600 1.25rem var(--display)}.links{display:flex;flex-wrap:wrap;gap:.5rem 1.4rem;margin:1.2rem 0 0}.links .more{font-weight:700;color:var(--spectral)}.board-sec,.todo,.time,.worry,.numbers,.start{padding-top:3.5rem;padding-bottom:2.5rem;border-top:var(--edge)}pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:1rem 0 0;background:var(--void);color:var(--ghost);border:var(--edge);border-left:2px solid var(--wraith);padding:1rem 1.1rem;overflow-x:auto;font-size:.8rem;line-height:1.65}pre code{font-size:inherit;color:var(--ghost)}.button.ghost{background:transparent;color:var(--spectral);border:1px solid var(--spectral);cursor:pointer;padding:.55rem 1.1rem .55rem 1rem}.button.ghost:hover,.button.ghost[aria-pressed=true]{background:var(--spectral);color:var(--void)}.sec{padding-top:3.5rem;padding-bottom:2.5rem;border-top:var(--edge)}.sec>.intro:first-of-type{color:var(--ghost);font:600 1.25rem var(--display)}.note code,.form code,.worry code,.start code,.step code,.state code,h2 code,.intro code{color:var(--spectral)}pre code{color:var(--ghost)}h2 code{font-size:.8em}.run{display:grid;gap:1.25rem;margin-top:1.5rem}.run>*{min-width:0}.state{background:var(--panel);border:var(--edge);padding:1rem 1.15rem 1.1rem;clip-path:var(--cut);box-shadow:inset 0 3px 0 var(--spectral);align-self:start}.state-label{font:600 .95rem var(--display);color:var(--haze);margin:0 0 .6rem;letter-spacing:.04em;text-transform:uppercase}.state ul{list-style:none;margin:0;padding:0}.state li{display:grid;grid-template-columns:auto 1fr;gap:.1rem .75rem;padding:.5rem 0;border-bottom:1px solid rgba(29,44,60,.9)}.state li:last-child{border-bottom:0}.state .k{font:600 1.05rem var(--display);color:var(--ghost)}.state .v{font:400 .8rem/1.5 var(--body);color:var(--haze);text-align:right;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.state .bar{grid-column:1 / -1;height:3px;background:var(--rule);position:relative;display:none}.js .state .bar{display:block}.state .bar i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--spectral);box-shadow:0 0 10px var(--glow);transition:width .3s ease}.state .t-violet .k,.state .t-violet .v{color:var(--wraith)}.state .t-violet .bar i{background:var(--wraith);box-shadow:none}.state .t-alarm .k,.state .t-alarm .v{color:var(--alarm)}.state .t-alarm .bar i{background:var(--alarm);box-shadow:none}.state .t-ward .k,.state .t-ward .v{color:var(--ward)}.state .t-ward .bar i{background:var(--ward)}.state .t-cyan .v{color:var(--spectral)}.state-foot{margin:.75rem 0 0;color:var(--haze);font-size:.85rem}.steps{list-style:none;margin:0;padding:0;display:grid;gap:1rem;counter-reset:step}.step{background:var(--panel);border:var(--edge);padding:1rem 1.15rem 1.15rem;clip-path:var(--cut);box-shadow:inset 0 3px 0 var(--rule);transition:box-shadow .3s ease}.step h3{display:flex;gap:.6rem;align-items:baseline;font-size:1.2rem;margin-bottom:.35rem}.step h3 .n{font:600 .85rem var(--body);color:var(--spectral);font-variant-numeric:tabular-nums}.step>p{color:var(--haze);margin-bottom:.25rem}.step pre{margin-top:.7rem;font-size:.78rem}.step .result pre{border-left-color:var(--ward)}.step.refused .result pre{border-left-color:var(--alarm)}.result .say{margin:.6rem 0 0;color:var(--ghost)}.step.refused .say{color:var(--alarm)}.run-btn,.run-tools{display:none}.js .step.next .run-btn{display:inline-block;margin-top:.85rem}.js .step:not(.done) .result{display:none}.js .step.next{box-shadow:inset 0 3px 0 var(--spectral)}.js .step.done{box-shadow:inset 0 3px 0 var(--ward)}.js .step.done.refused{box-shadow:inset 0 3px 0 var(--alarm)}.js .step.flash{animation:flash .42s ease-out}@keyframes flash{0%{border-color:var(--alarm)}to{border-color:var(--rule)}}.js .run-tools{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1rem;align-items:center}.run-tools p{margin:0;color:var(--haze);font-size:.9rem}.act{font:650 .95rem var(--display);background:var(--spectral);color:var(--void);border:0;padding:.5rem 1rem;cursor:pointer}.act:hover{background:var(--ghost)}.sec-head{display:grid;gap:.5rem;align-items:end}.graph{mix-blend-mode:screen;width:100%;max-width:22rem;justify-self:end;margin:-.5rem 0}.form{margin:1.5rem 0 0;border:var(--edge);background:var(--panel)}.form div{display:grid;grid-template-columns:minmax(0,1fr);gap:.15rem 1.5rem;padding:.8rem 1.1rem;border-bottom:var(--edge)}.form dt,.form dd{min-width:0;overflow-wrap:anywhere}.form div:last-child{border-bottom:0}.form dt{font:600 1rem var(--display);color:var(--ghost)}.form dd{margin:0;color:var(--haze)}.worry ul{padding:0;margin:0;list-style:none;max-width:46rem}.worry li{margin-bottom:.7rem;padding-left:1.4rem;position:relative}.worry li:before{content:"";position:absolute;left:0;top:.62em;width:.5rem;height:.5rem;border:1px solid var(--spectral)}.worry-grid>p{color:var(--haze);font-size:1.1rem}.ledger{margin:0;border-top:var(--edge);max-width:40rem}.ledger div{display:flex;justify-content:space-between;gap:1rem;border-bottom:var(--edge);padding:.55rem 0}.ledger dt{color:var(--haze)}.ledger dd{margin:0;color:var(--spectral);font:500 .9rem/1.6 var(--body);text-align:right;font-variant-numeric:tabular-nums}.start pre{max-width:46rem}.start>p{max-width:46rem;margin-top:1.25rem}.cmd input{padding:.75rem .5rem}.copy{min-width:4rem;padding:0 .7rem}@media(min-width:52rem){.hero{grid-template-columns:1.08fr 1fr;padding-top:4rem;padding-bottom:4.5rem}.run{grid-template-columns:minmax(17rem,.8fr) 1.6fr;gap:1.75rem;align-items:start}.state{position:sticky;top:1rem}.sec-head{grid-template-columns:1fr 22rem}.form div{grid-template-columns:11rem minmax(0,1fr)}.worry-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:3rem;align-items:start}pre{font-size:.84rem}.step pre{font-size:.8rem}}@media(prefers-reduced-motion:reduce){.js .step.flash{animation:none}}
+</style><link rel=icon type=image/png sizes=96x96 href=./favicon.png></head>
+<body>
+<header class=top>
+  <a class=brand href=https://ghostpaw.dev/>GhostPaw</a>
+  <nav aria-label="affinity elsewhere">
+    <a href=https://github.com/GhostPawJS/affinity>GitHub</a>
+    <a href=https://www.npmjs.com/package/@ghostpaw/affinity>npm</a>
+    <a href=https://affinity.ghostpaw.dev/docs/>Live demo</a>
+  </nav>
+</header>
+<main>
+  <section class=hero aria-labelledby=hero-title>
+    <div class=hero-copy>
+      <p class=kicker><code>@ghostpaw/affinity</code> 0.3.0</p>
+      <h1 id=hero-title>Who have you been meaning to call?</h1>
+      <p class=lede>affinity keeps the people your agent deals with, the promises made to them and the dates that matter in your SQLite file. It works out who is drifting from what happened, so nobody has to keep a list of who to call.</p>
+      <div class=install>
+        <p class=cmd-label id=lib-label>As a library</p>
+        <div class=cmd><input id=cmd-lib readonly value="npm install @ghostpaw/affinity" aria-labelledby=lib-label spellcheck=false><button type=button class=copy data-copy=cmd-lib>Copy</button></div>
+        <p class=cmd-label id=mcp-label>As a local MCP server</p>
+        <div class=cmd><input id=cmd-mcp readonly value="npx -y @ghostpaw/affinity mcp" aria-labelledby=mcp-label spellcheck=false><button type=button class=copy data-copy=cmd-mcp>Copy</button></div>
+      </div>
+      <p class=actions><a class=button href=#run>Replay the run</a> <a href=https://github.com/GhostPawJS/affinity>Read the source on GitHub</a></p>
+      <p class=terms>Free and MIT licensed for Node.js 24 or newer, with zero runtime dependencies. The MCP server keeps everything in <code>~/.ghostpaw/affinity.db</code> on your machine.</p>
+    </div>
+    <figure class="hero-art frame">
+      <div class=scope><picture><source media="(min-width: 52rem)" srcset=./hero-720-30cbe156e62e.webp width=720 height=540><img src=./hero-480-81532addd998.webp width=480 height=360 alt="A radar scope drawn in thin cyan light with a sweeping wedge, a ghost paw print at its centre and three points, the farthest one violet and drifting outward." fetchpriority=high></picture><span class=scan aria-hidden=true></span></div>
+      <p class=readout aria-label="Zero runtime dependencies"><span class=big>0</span><span>runtime dependencies</span></p>
+    </figure>
+  </section>
+
+  <section id=run class="sec run-sec" aria-labelledby=run-title>
+    <h2 id=run-title>Three people, five calls</h2>
+    <p class=intro>Jun is at the top of the radar. One evening out moves him to the bottom.</p>
+    <p class=intro>This is a replay of a real run. We made these calls against affinity 0.3.0 on 2026-10-24 with a fixed clock, and every number below is what came back. Mika knows three people: Ren, an old roommate she called six days ago; Jun, a climbing partner she last saw 27 days ago; and Ada, who she met at a conference 41 days ago. Run the steps in order.</p>
+    <div class=run>
+      <div class=state role=region aria-labelledby=state-title aria-live=polite>
+        <p class=state-label id=state-title>Radar and open items</p>
+        <ul id=state-list>
+          <li class=t-violet><span class=k>Jun</span><span class=v>0.347 · drifting</span></li>
+          <li><span class=k>Ada</span><span class=v>0.124 · routine</span></li>
+          <li><span class=k>Ren</span><span class=v>0.000 · routine</span></li>
+          <li><span class=k>Open promises</span><span class=v>none</span></li>
+          <li><span class=k>Next 60 days</span><span class=v>nothing</span></li>
+        </ul>
+        <p class=state-foot id=state-foot>read.listRadar(db), highest drift first</p>
+      </div>
+      <ol class=steps>
+        <li class=step id=step-1>
+          <h3><span class=n>01</span> An evening out with Jun</h3>
+          <p>Mika records what happened. She does not set a score.</p>
+          <pre class=call><code>write.recordInteraction(db, {
+  type: &#39;activity&#39;,
+  occurredAt: now,
+  summary: &#39;Climbing with Jun, then dinner&#39;,
+  significance: 6,
+  participants: [
+    { contactId: mika.id, role: &#39;actor&#39;, directionality: &#39;mutual&#39; },
+    { contactId: jun.id, role: &#39;recipient&#39;, directionality: &#39;mutual&#39; },
+  ],
+});</code></pre>
+          <div class=result><pre><code>// derivedEffects
+[{ affinityDelta: 0.245, trustDelta: 0.025, rankAfter: 2, cadenceAfter: 17 }]
+
+read.listRadar(db).map((r) =&gt; r.name)
+// [&#39;Ada&#39;, &#39;Ren&#39;, &#39;Jun&#39;]</code></pre><p class=say>Jun goes from the top of the radar to the bottom. The library also stretched his expected cadence from 14 to 17 days.</p></div>
+          <button type=button class="act run-btn">Run step 1</button>
+        </li>
+        <li class=step id=step-2>
+          <h3><span class=n>02</span> A promise to Ren</h3>
+          <p>A commitment is a journal entry with a resolution that starts out open.</p>
+          <pre class=call><code>const promise = write.recordCommitment(db, {
+  commitmentType: &#39;promise&#39;,
+  occurredAt: now,
+  summary: &#39;Send Ren the notes on the offer letter&#39;,
+  significance: 5,
+  participants: [
+    { contactId: mika.id, role: &#39;actor&#39;, directionality: &#39;owner_initiated&#39; },
+    { contactId: ren.id, role: &#39;recipient&#39; },
+  ],
+});</code></pre>
+          <div class=result><pre><code>// derivedEffects
+[{ affinityDelta: 0.031, trustDelta: -0.044, rankAfter: 3, cadenceAfter: 12 }]
+
+read.listOpenCommitments(db).length
+// 1</code></pre><p class=say>Ren&#39;s trust went down by 0.044 when the promise was recorded. It now shows as open.</p></div>
+          <button type=button class="act run-btn">Run step 2</button>
+        </li>
+        <li class="step refused" id=step-3>
+          <h3><span class=n>03</span> Close it as “done”</h3>
+          <p>This is how an agent would naturally put it.</p>
+          <pre class=call><code>write.resolveCommitment(db, promise.primary.id, &#39;done&#39;);</code></pre>
+          <div class=result><pre><code>// AffinityValidationError
+// resolution must be kept, cancelled, or broken</code></pre><p class=say>Refused. A promise is kept, cancelled or broken, and “done” is none of those.</p></div>
+          <button type=button class="act run-btn">Run step 3</button>
+        </li>
+        <li class=step id=step-4>
+          <h3><span class=n>04</span> Close it as kept</h3>
+          <pre class=call><code>write.resolveCommitment(db, promise.primary.id, &#39;kept&#39;);</code></pre>
+          <div class=result><pre><code>// derivedEffects
+[]
+
+read.listOpenCommitments(db).length
+// 0</code></pre><p class=say>The promise is closed. Keeping it did not add anything back in this run: Ren&#39;s trust stays at 0.669.</p></div>
+          <button type=button class="act run-btn">Run step 4</button>
+        </li>
+        <li class=step id=step-5>
+          <h3><span class=n>05</span> Jun&#39;s birthday</h3>
+          <p>A date anchor is a yearly date on a contact.</p>
+          <pre class=call><code>write.addDateAnchor(db, {
+  target: { kind: &#39;contact&#39;, contactId: jun.id },
+  recurrenceKind: &#39;birthday&#39;,
+  anchorMonth: 11,
+  anchorDay: 12,
+  summary: &#34;Jun&#39;s birthday&#34;,
+  significance: 7,
+});</code></pre>
+          <div class=result><pre><code>read.listUpcomingDates(db, { horizonDays: 60 })
+// [{ summary: &#34;Jun&#39;s birthday&#34;, recurrenceKind: &#39;birthday&#39;, occursOn: &#39;2026-11-12&#39; }]</code></pre><p class=say>It turns up 19 days ahead, with no calendar entry needed.</p></div>
+          <button type=button class="act run-btn">Run step 5</button>
+        </li>
+      </ol>
+    </div>
+    <div class=run-tools><button type=button class="button ghost" id=reset>Start over</button><p id=run-status role=status></p></div>
+    <p class=note>The radar is refreshed when an event is written, not when you read it. That is why this replay never moves the clock: without a new write, the order stays where the last write left it.</p>
+    <p class=note>Every write returns <code>derivedEffects</code>, so your agent can say what changed instead of guessing.</p>
+  </section>
+
+  <section class="sec explain" aria-labelledby=explain-title>
+    <div class=sec-head>
+    <h2 id=explain-title>What it keeps, and what it works out</h2>
+    <img class=graph src=./art-640-5f6bf82f86f1.webp width=640 height=360 alt="Hexagon nodes joined by threads of cyan light of different weights, a bright node at the centre and one thin violet thread fading out." loading=lazy>
+    </div>
+    <p class=intro>A relationship is its own record, not a field on a contact card.</p>
+    <dl class=form>
+      <div><dt>Contact</dt><dd>A person, company, team, service, pet, household or group, plus one owner contact for you.</dd></div>
+      <div><dt>Identity</dt><dd>An email, phone number, URL or account id that points at exactly one contact. Duplicates can be merged or dismissed.</dd></div>
+      <div><dt>Social link</dt><dd>The relationship itself, with rank, affinity, trust, cadence, a short bond note and a state.</dd></div>
+      <div><dt>Tie</dt><dd>A structural fact such as <code>works_at</code>, <code>reports_to</code> or kinship.</dd></div>
+      <div><dt>Journal entry</dt><dd>What happened: an interaction, observation, milestone, transaction or commitment.</dd></div>
+      <div><dt>Date anchor</dt><dd>A yearly date such as a birthday, anniversary or renewal.</dd></div>
+      <div><dt>Attribute</dt><dd>Free keys and values for preferences, on contacts and on links.</dd></div>
+    </dl>
+    <p class=note>Rank, trust, drift and the rest are computed from the journal and the ties. None of them is a status flag your code sets by hand.</p>
+  </section>
+
+  <section class="sec worry" aria-labelledby=worry-title>
+    <h2 id=worry-title>If a people database makes you uneasy</h2>
+    <div class=worry-grid>
+      <p>The usual cost is the client or friend you forgot to follow up with. The usual fear is the opposite: an assistant that keeps a page on everyone you mention, which sounds like a dossier, and recent coverage of exactly that is fair warning.</p>
+      <ul>
+        <li>It is a library and a local MCP server. There is no hosted service and nothing leaves the SQLite file unless your code sends it.</li>
+        <li>It stores what you or your agent record. It does not read your mail, messages or contacts on its own.</li>
+        <li>The MCP server&#39;s file is <code>~/.ghostpaw/affinity.db</code>, or wherever <code>GHOSTPAW_AFFINITY_DB</code> or <code>--db</code> points.</li>
+        <li>Twelve tools with JSON Schemas, among them <code>record_event</code>, <code>manage_commitment</code> and <code>review_affinity</code>. Each returns success, no_op, needs_clarification or error.</li>
+        <li>Node.js 24 or newer, because it uses the built-in <code>node:sqlite</code>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec numbers" aria-labelledby=numbers-title>
+    <h2 id=numbers-title>What it costs to add</h2>
+    <dl class=ledger>
+      <div><dt>Runtime dependencies</dt><dd>0</dd></div>
+      <div><dt>Node.js</dt><dd>24 or newer (node:sqlite)</dd></div>
+      <div><dt>Size of dist/index.js, gzip</dt><dd>56.1 KB</dd></div>
+      <div><dt>Import time</dt><dd>about 5.7 ms</dd></div>
+      <div><dt>Tests</dt><dd>459 passing</dd></div>
+      <div><dt>Line coverage</dt><dd>95.3%</dd></div>
+      <div><dt>Agent tools</dt><dd>12</dd></div>
+    </dl>
+    <p class=note>Measured 2026-10-24 on the maintainer&#39;s machine with Node.js 24.14.0 against affinity 0.3.0: size of the published dist/index.js at gzip -9, median of 11 cold imports, tests and coverage from the v0.3.0 tag.</p>
+  </section>
+
+  <section class="sec start" aria-labelledby=start-title>
+    <h2 id=start-title>Start from the README</h2>
+    <pre><code>import { DatabaseSync } from &#39;node:sqlite&#39;;
+import { initAffinityTables, read, write } from &#39;@ghostpaw/affinity&#39;;
+
+const db = new DatabaseSync(&#39;:memory:&#39;);
+db.exec(&#39;PRAGMA foreign_keys = ON&#39;);
+initAffinityTables(db);
+
+const { primary: owner } = write.createContact(db, {
+  name: &#39;Mika&#39;,
+  kind: &#39;human&#39;,
+  bootstrapOwner: true,
+});
+const { primary: ada } = write.createContact(db, { name: &#39;Ada Lovelace&#39;, kind: &#39;human&#39; });
+write.addIdentity(db, ada.id, { type: &#39;email&#39;, value: &#39;ada@example.com&#39; });
+
+write.recordInteraction(db, {
+  type: &#39;conversation&#39;,
+  occurredAt: Date.now(),
+  summary: &#39;Coffee together&#39;,
+  significance: 6,
+  participants: [
+    { contactId: owner.id, role: &#39;actor&#39;, directionality: &#39;mutual&#39; },
+    { contactId: ada.id, role: &#39;recipient&#39;, directionality: &#39;mutual&#39; },
+  ],
+});
+
+const radar = read.listRadar(db);</code></pre>
+    <p>To run it as an MCP server instead, add <code>npx -y @ghostpaw/affinity mcp</code> to your client. <code>npx -y @ghostpaw/affinity skill</code> prints the Agent Skill that ships in the package.</p>
+    <p class=links><a class=more href=https://github.com/GhostPawJS/affinity#readme>Read the README</a><a href=https://affinity.ghostpaw.dev/docs/>Open the live demo</a><a href=https://www.npmjs.com/package/@ghostpaw/affinity>affinity on npm</a></p>
+    <p class=links><a href=https://ghostpaw.dev/>All seven GhostPaw libraries</a><a href=https://codex.ghostpaw.dev/>codex, for memory</a><a href=https://questlog.ghostpaw.dev/>questlog, for tasks</a><a href=https://souls.ghostpaw.dev/>souls, for identity</a><a href=https://grimoire.ghostpaw.dev/>grimoire, for skills</a><a href=https://email.ghostpaw.dev/>email, for mail</a><a href=https://telegram.ghostpaw.dev/>telegram, for chats</a></p>
+  </section>
+</main>
+<footer class=foot>
+  <p>affinity is maintained in the open by GhostPaw under the MIT licence.</p>
+  <p class=foot-links><a href=https://github.com/GhostPawJS/affinity>Source</a><a href=https://lab.anonyfox.com/impressum/>Impressum</a><a href=https://lab.anonyfox.com/datenschutz/>Datenschutz</a></p>
+</footer>
+
+
+
+<script type=application/ld+json>{"@context":"https://schema.org","@graph":[{"@type":"SoftwareSourceCode","author":{"@id":"https://ghostpaw.dev/#org","@type":"Organization","name":"GhostPaw"},"codeRepository":"https://github.com/GhostPawJS/affinity","description":"@ghostpaw/affinity keeps contacts, promises and yearly dates in your own SQLite file and derives rank, trust and drift from what happened. Local MCP server, 12 tools, Node.js 24, zero dependencies, MIT.","license":"https://opensource.org/license/mit","name":"@ghostpaw/affinity","programmingLanguage":"TypeScript","runtimePlatform":"Node.js 24","version":"0.3.0"}]}</script><script>document.documentElement.classList.add("js");
+</script><script type=module>var g=[{rows:[{k:"Jun",v:"0.347 · drifting",w:.8674999999999999,t:"violet"},{k:"Ada",v:"0.124 · routine",w:.31},{k:"Ren",v:"0.000 · routine",w:0},{k:"Open promises",v:"none"},{k:"Next 60 days",v:"nothing"}],foot:"read.listRadar(db), highest drift first"},{rows:[{k:"Ada",v:"0.124 · routine",w:.31},{k:"Ren",v:"0.000 · routine",w:0},{k:"Jun",v:"0.000 · seen today",w:0,t:"cyan"},{k:"Open promises",v:"none"},{k:"Next 60 days",v:"nothing"}],foot:"Jun's cadence is now 17 days instead of 14."},{rows:[{k:"Ada",v:"0.124 · routine",w:.31},{k:"Ren",v:"0.000 · routine",w:0},{k:"Jun",v:"0.000 · seen today",w:0,t:"cyan"},{k:"Open promises",v:"1 · notes for Ren",t:"violet"},{k:"Next 60 days",v:"nothing"}],foot:"Ren's trust: 0.713 before the promise, 0.669 after."},{rows:[{k:"Ada",v:"0.124 · routine",w:.31},{k:"Ren",v:"0.000 · routine",w:0},{k:"Jun",v:"0.000 · seen today",w:0,t:"cyan"},{k:"Open promises",v:"1 · notes for Ren",t:"alarm"},{k:"Next 60 days",v:"nothing"}],foot:"Refused. The promise is still open."},{rows:[{k:"Ada",v:"0.124 · routine",w:.31},{k:"Ren",v:"0.000 · routine",w:0},{k:"Jun",v:"0.000 · seen today",w:0,t:"cyan"},{k:"Open promises",v:"none · kept",t:"ward"},{k:"Next 60 days",v:"nothing"}],foot:"Ren's trust stays at 0.669."},{rows:[{k:"Ada",v:"0.124 · routine",w:.31},{k:"Ren",v:"0.000 · routine",w:0},{k:"Jun",v:"0.000 · seen today",w:0,t:"cyan"},{k:"Open promises",v:"none · kept",t:"ward"},{k:"Next 60 days",v:"Jun's birthday, 12 Nov",t:"cyan"}],foot:"read.listUpcomingDates(db, { horizonDays: 60 })"}];(()=>{let r=document.getElementById("state-list"),y=document.getElementById("state-foot"),s=Array.from(document.querySelectorAll(".step")),k=document.getElementById("reset"),w=document.getElementById("run-status");if(!r||!s.length)return;let c=!matchMedia("(prefers-reduced-motion: reduce)").matches,o=0;function d(t){let n=g[t];r.textContent="";for(let e of n.rows){let a=document.createElement("li");e.t&&(a.className="t-"+e.t);let l=document.createElement("span");l.className="k",l.textContent=e.k;let m=document.createElement("span");if(m.className="v",m.textContent=e.v,a.append(l,m),e.w!=null){let f=document.createElement("span");f.className="bar";let p=document.createElement("i");f.append(p),a.append(f);let h=Math.max(0,Math.min(1,e.w))*100+"%",v=r.dataset.prev&&JSON.parse(r.dataset.prev)[e.k];p.style.width=c&&v!=null?v:h,c&&v!=null&&requestAnimationFrame(()=>requestAnimationFrame(()=>{p.style.width=h}))}r.append(a)}let i={};for(let e of n.rows)e.w!=null&&(i[e.k]=Math.max(0,Math.min(1,e.w))*100+"%");r.dataset.prev=JSON.stringify(i),y&&(y.textContent=n.foot||"")}function u(){s.forEach((t,n)=>{t.classList.toggle("done",n<o),t.classList.toggle("next",n===o)}),w&&(w.textContent=o<s.length?"Step "+(o+1)+" of "+s.length+" is next.":"All "+s.length+" steps replayed.")}s.forEach((t,n)=>{t.querySelector(".run-btn").addEventListener("click",()=>{if(n!==o)return;o=n+1,d(o),u(),t.classList.contains("refused")&&c&&(t.classList.add("flash"),t.addEventListener("animationend",()=>t.classList.remove("flash"),{once:!0}));let e=s[o]&&s[o].querySelector(".run-btn"),a=t.querySelector(".result");a&&(a.setAttribute("tabindex","-1"),a.focus({preventScroll:!0})),e&&e.setAttribute("aria-describedby","run-status")})}),k&&k.addEventListener("click",()=>{o=0,r.dataset.prev="",d(0),u(),s[0].querySelector(".run-btn").focus()}),d(0),u(),document.querySelectorAll(".copy").forEach(t=>{t.addEventListener("click",async()=>{let n=document.getElementById(t.dataset.copy);try{await navigator.clipboard.writeText(n.value)}catch{n.select(),document.execCommand("copy")}let i=t.textContent;t.textContent="Copied",setTimeout(()=>{t.textContent=i},1400)})})})();
+</script></body></html>

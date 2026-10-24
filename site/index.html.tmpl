@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="{{.language}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.title}}</title>
+<meta name="description" content="{{.description}}">
+<link rel="canonical" href="{{.url}}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{.url}}">
+<meta property="og:title" content="{{.title}}">
+<meta property="og:description" content="{{.description}}">
+<meta property="og:image" content="{{.socialImage.src}}">
+<meta property="og:image:alt" content="{{.socialImage.alt}}">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preload" href="assets/fonts/tektur-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/martian-mono-var.woff2" as="font" type="font/woff2" crossorigin>
+<meta name="theme-color" content="#04070b">
+<script>document.documentElement.classList.add("js")</script>
+{{style "assets/styles/main.css"}}
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="{{.urls.home}}">GhostPaw</a>
+  <nav aria-label="affinity elsewhere">
+    <a href="{{.urls.github}}">GitHub</a>
+    <a href="{{.urls.npm}}">npm</a>
+    <a href="{{.urls.demo}}">Live demo</a>
+  </nav>
+</header>
+<main>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <p class="kicker"><code>@ghostpaw/affinity</code> 0.3.0</p>
+      <h1 id="hero-title">Who have you been meaning to call?</h1>
+      <p class="lede">affinity keeps the people your agent deals with, the promises made to them and the dates that matter in your SQLite file. It works out who is drifting from what happened, so nobody has to keep a list of who to call.</p>
+      <div class="install">
+        <p class="cmd-label" id="lib-label">As a library</p>
+        <div class="cmd"><input id="cmd-lib" readonly value="npm install @ghostpaw/affinity" aria-labelledby="lib-label" spellcheck="false"><button type="button" class="copy" data-copy="cmd-lib">Copy</button></div>
+        <p class="cmd-label" id="mcp-label">As a local MCP server</p>
+        <div class="cmd"><input id="cmd-mcp" readonly value="npx -y @ghostpaw/affinity mcp" aria-labelledby="mcp-label" spellcheck="false"><button type="button" class="copy" data-copy="cmd-mcp">Copy</button></div>
+      </div>
+      <p class="actions"><a class="button" href="#run">Replay the run</a> <a href="{{.urls.github}}">Read the source on GitHub</a></p>
+      <p class="terms">Free and MIT licensed for Node.js 24 or newer, with zero runtime dependencies. The MCP server keeps everything in <code>~/.ghostpaw/affinity.db</code> on your machine.</p>
+    </div>
+    <figure class="hero-art frame">
+      <div class="scope"><picture><source media="(min-width: 52rem)" srcset="assets/images/hero-720.webp" width="720" height="540"><img src="assets/images/hero-480.webp" width="480" height="360" alt="A radar scope drawn in thin cyan light with a sweeping wedge, a ghost paw print at its centre and three points, the farthest one violet and drifting outward." fetchpriority="high"></picture><span class="scan" aria-hidden="true"></span></div>
+      <p class="readout" aria-label="Zero runtime dependencies"><span class="big">0</span><span>runtime dependencies</span></p>
+    </figure>
+  </section>
+
+  <section id="run" class="sec run-sec" aria-labelledby="run-title">
+    <h2 id="run-title">Three people, five calls</h2>
+    <p class="intro">Jun is at the top of the radar. One evening out moves him to the bottom.</p>
+    <p class="intro">This is a replay of a real run. We made these calls against affinity 0.3.0 on 2026-10-24 with a fixed clock, and every number below is what came back. Mika knows three people: Ren, an old roommate she called six days ago; Jun, a climbing partner she last saw 27 days ago; and Ada, who she met at a conference 41 days ago. Run the steps in order.</p>
+    <div class="run">
+      <div class="state" role="region" aria-labelledby="state-title" aria-live="polite">
+        <p class="state-label" id="state-title">Radar and open items</p>
+        <ul id="state-list">
+          <li class="t-violet"><span class="k">Jun</span><span class="v">0.347 · drifting</span></li>
+          <li><span class="k">Ada</span><span class="v">0.124 · routine</span></li>
+          <li><span class="k">Ren</span><span class="v">0.000 · routine</span></li>
+          <li><span class="k">Open promises</span><span class="v">none</span></li>
+          <li><span class="k">Next 60 days</span><span class="v">nothing</span></li>
+        </ul>
+        <p class="state-foot" id="state-foot">read.listRadar(db), highest drift first</p>
+      </div>
+      <ol class="steps">
+        <li class="step" id="step-1">
+          <h3><span class="n">01</span> An evening out with Jun</h3>
+          <p>Mika records what happened. She does not set a score.</p>
+          <pre class="call"><code>write.recordInteraction(db, {
+  type: 'activity',
+  occurredAt: now,
+  summary: 'Climbing with Jun, then dinner',
+  significance: 6,
+  participants: [
+    { contactId: mika.id, role: 'actor', directionality: 'mutual' },
+    { contactId: jun.id, role: 'recipient', directionality: 'mutual' },
+  ],
+});</code></pre>
+          <div class="result"><pre><code>// derivedEffects
+[{ affinityDelta: 0.245, trustDelta: 0.025, rankAfter: 2, cadenceAfter: 17 }]
+
+read.listRadar(db).map((r) =&gt; r.name)
+// ['Ada', 'Ren', 'Jun']</code></pre><p class="say">Jun goes from the top of the radar to the bottom. The library also stretched his expected cadence from 14 to 17 days.</p></div>
+          <button type="button" class="act run-btn">Run step 1</button>
+        </li>
+        <li class="step" id="step-2">
+          <h3><span class="n">02</span> A promise to Ren</h3>
+          <p>A commitment is a journal entry with a resolution that starts out open.</p>
+          <pre class="call"><code>const promise = write.recordCommitment(db, {
+  commitmentType: 'promise',
+  occurredAt: now,
+  summary: 'Send Ren the notes on the offer letter',
+  significance: 5,
+  participants: [
+    { contactId: mika.id, role: 'actor', directionality: 'owner_initiated' },
+    { contactId: ren.id, role: 'recipient' },
+  ],
+});</code></pre>
+          <div class="result"><pre><code>// derivedEffects
+[{ affinityDelta: 0.031, trustDelta: -0.044, rankAfter: 3, cadenceAfter: 12 }]
+
+read.listOpenCommitments(db).length
+// 1</code></pre><p class="say">Ren's trust went down by 0.044 when the promise was recorded. It now shows as open.</p></div>
+          <button type="button" class="act run-btn">Run step 2</button>
+        </li>
+        <li class="step refused" id="step-3">
+          <h3><span class="n">03</span> Close it as “done”</h3>
+          <p>This is how an agent would naturally put it.</p>
+          <pre class="call"><code>write.resolveCommitment(db, promise.primary.id, 'done');</code></pre>
+          <div class="result"><pre><code>// AffinityValidationError
+// resolution must be kept, cancelled, or broken</code></pre><p class="say">Refused. A promise is kept, cancelled or broken, and “done” is none of those.</p></div>
+          <button type="button" class="act run-btn">Run step 3</button>
+        </li>
+        <li class="step" id="step-4">
+          <h3><span class="n">04</span> Close it as kept</h3>
+          <pre class="call"><code>write.resolveCommitment(db, promise.primary.id, 'kept');</code></pre>
+          <div class="result"><pre><code>// derivedEffects
+[]
+
+read.listOpenCommitments(db).length
+// 0</code></pre><p class="say">The promise is closed. Keeping it did not add anything back in this run: Ren's trust stays at 0.669.</p></div>
+          <button type="button" class="act run-btn">Run step 4</button>
+        </li>
+        <li class="step" id="step-5">
+          <h3><span class="n">05</span> Jun's birthday</h3>
+          <p>A date anchor is a yearly date on a contact.</p>
+          <pre class="call"><code>write.addDateAnchor(db, {
+  target: { kind: 'contact', contactId: jun.id },
+  recurrenceKind: 'birthday',
+  anchorMonth: 11,
+  anchorDay: 12,
+  summary: "Jun's birthday",
+  significance: 7,
+});</code></pre>
+          <div class="result"><pre><code>read.listUpcomingDates(db, { horizonDays: 60 })
+// [{ summary: "Jun's birthday", recurrenceKind: 'birthday', occursOn: '2026-11-12' }]</code></pre><p class="say">It turns up 19 days ahead, with no calendar entry needed.</p></div>
+          <button type="button" class="act run-btn">Run step 5</button>
+        </li>
+      </ol>
+    </div>
+    <div class="run-tools"><button type="button" class="button ghost" id="reset">Start over</button><p id="run-status" role="status"></p></div>
+    <p class="note">The radar is refreshed when an event is written, not when you read it. That is why this replay never moves the clock: without a new write, the order stays where the last write left it.</p>
+    <p class="note">Every write returns <code>derivedEffects</code>, so your agent can say what changed instead of guessing.</p>
+  </section>
+
+  <section class="sec explain" aria-labelledby="explain-title">
+    <div class="sec-head">
+    <h2 id="explain-title">What it keeps, and what it works out</h2>
+    <img class="graph" src="assets/images/art-640.webp" width="640" height="360" alt="Hexagon nodes joined by threads of cyan light of different weights, a bright node at the centre and one thin violet thread fading out." loading="lazy">
+    </div>
+    <p class="intro">A relationship is its own record, not a field on a contact card.</p>
+    <dl class="form">
+      <div><dt>Contact</dt><dd>A person, company, team, service, pet, household or group, plus one owner contact for you.</dd></div>
+      <div><dt>Identity</dt><dd>An email, phone number, URL or account id that points at exactly one contact. Duplicates can be merged or dismissed.</dd></div>
+      <div><dt>Social link</dt><dd>The relationship itself, with rank, affinity, trust, cadence, a short bond note and a state.</dd></div>
+      <div><dt>Tie</dt><dd>A structural fact such as <code>works_at</code>, <code>reports_to</code> or kinship.</dd></div>
+      <div><dt>Journal entry</dt><dd>What happened: an interaction, observation, milestone, transaction or commitment.</dd></div>
+      <div><dt>Date anchor</dt><dd>A yearly date such as a birthday, anniversary or renewal.</dd></div>
+      <div><dt>Attribute</dt><dd>Free keys and values for preferences, on contacts and on links.</dd></div>
+    </dl>
+    <p class="note">Rank, trust, drift and the rest are computed from the journal and the ties. None of them is a status flag your code sets by hand.</p>
+  </section>
+
+  <section class="sec worry" aria-labelledby="worry-title">
+    <h2 id="worry-title">If a people database makes you uneasy</h2>
+    <div class="worry-grid">
+      <p>The usual cost is the client or friend you forgot to follow up with. The usual fear is the opposite: an assistant that keeps a page on everyone you mention, which sounds like a dossier, and recent coverage of exactly that is fair warning.</p>
+      <ul>
+        <li>It is a library and a local MCP server. There is no hosted service and nothing leaves the SQLite file unless your code sends it.</li>
+        <li>It stores what you or your agent record. It does not read your mail, messages or contacts on its own.</li>
+        <li>The MCP server's file is <code>~/.ghostpaw/affinity.db</code>, or wherever <code>GHOSTPAW_AFFINITY_DB</code> or <code>--db</code> points.</li>
+        <li>Twelve tools with JSON Schemas, among them <code>record_event</code>, <code>manage_commitment</code> and <code>review_affinity</code>. Each returns success, no_op, needs_clarification or error.</li>
+        <li>Node.js 24 or newer, because it uses the built-in <code>node:sqlite</code>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec numbers" aria-labelledby="numbers-title">
+    <h2 id="numbers-title">What it costs to add</h2>
+    <dl class="ledger">
+      <div><dt>Runtime dependencies</dt><dd>0</dd></div>
+      <div><dt>Node.js</dt><dd>24 or newer (node:sqlite)</dd></div>
+      <div><dt>Size of dist/index.js, gzip</dt><dd>56.1 KB</dd></div>
+      <div><dt>Import time</dt><dd>about 5.7 ms</dd></div>
+      <div><dt>Tests</dt><dd>459 passing</dd></div>
+      <div><dt>Line coverage</dt><dd>95.3%</dd></div>
+      <div><dt>Agent tools</dt><dd>12</dd></div>
+    </dl>
+    <p class="note">Measured 2026-10-24 on the maintainer's machine with Node.js 24.14.0 against affinity 0.3.0: size of the published dist/index.js at gzip -9, median of 11 cold imports, tests and coverage from the v0.3.0 tag.</p>
+  </section>
+
+  <section class="sec start" aria-labelledby="start-title">
+    <h2 id="start-title">Start from the README</h2>
+    <pre><code>import { DatabaseSync } from 'node:sqlite';
+import { initAffinityTables, read, write } from '@ghostpaw/affinity';
+
+const db = new DatabaseSync(':memory:');
+db.exec('PRAGMA foreign_keys = ON');
+initAffinityTables(db);
+
+const { primary: owner } = write.createContact(db, {
+  name: 'Mika',
+  kind: 'human',
+  bootstrapOwner: true,
+});
+const { primary: ada } = write.createContact(db, { name: 'Ada Lovelace', kind: 'human' });
+write.addIdentity(db, ada.id, { type: 'email', value: 'ada@example.com' });
+
+write.recordInteraction(db, {
+  type: 'conversation',
+  occurredAt: Date.now(),
+  summary: 'Coffee together',
+  significance: 6,
+  participants: [
+    { contactId: owner.id, role: 'actor', directionality: 'mutual' },
+    { contactId: ada.id, role: 'recipient', directionality: 'mutual' },
+  ],
+});
+
+const radar = read.listRadar(db);</code></pre>
+    <p>To run it as an MCP server instead, add <code>npx -y @ghostpaw/affinity mcp</code> to your client. <code>npx -y @ghostpaw/affinity skill</code> prints the Agent Skill that ships in the package.</p>
+    <p class="links"><a class="more" href="{{.urls.readme}}">Read the README</a><a href="{{.urls.demo}}">Open the live demo</a><a href="{{.urls.npm}}">affinity on npm</a></p>
+    <p class="links"><a href="{{.urls.home}}">All seven GhostPaw libraries</a><a href="{{.urls.agentMemory}}">codex, for memory</a><a href="{{.urls.agentTasks}}">questlog, for tasks</a><a href="{{.urls.agentIdentity}}">souls, for identity</a><a href="{{.urls.agentSkills}}">grimoire, for skills</a><a href="{{.urls.agentEmail}}">email, for mail</a><a href="{{.urls.agentTelegram}}">telegram, for chats</a></p>
+  </section>
+</main>
+<footer class="foot">
+  <p>affinity is maintained in the open by GhostPaw under the MIT licence.</p>
+  <p class="foot-links"><a href="{{.urls.github}}">Source</a><a href="{{.urls.impressum}}">Impressum</a><a href="{{.urls.privacy}}">Datenschutz</a></p>
+</footer>
+{{script "assets/scripts/main.js"}}
+</body>
+</html>

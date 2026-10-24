@@ -2,7 +2,7 @@
 
 Affinity ships a fully interactive demo app that runs entirely in the browser — no backend, no persistence, no setup required. It is hosted on GitHub Pages:
 
-**[https://ghostpawjs.github.io/affinity/](https://ghostpawjs.github.io/affinity/)**
+**[https://affinity.ghostpaw.dev/docs/](https://affinity.ghostpaw.dev/docs/)**
 
 The demo exposes every tool and review view the library offers, populated with rich seed data so you can explore the full feature surface immediately. It is the fastest way to understand what Affinity does without writing a single line of code.
 

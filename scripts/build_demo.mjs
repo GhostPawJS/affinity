@@ -38,6 +38,19 @@ async function writeHtmlShell() {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Affinity Demo</title>
+    <meta name="description" content="Interactive demo of @ghostpaw/affinity: track people, the promises made to them and the dates that matter, and see who is drifting. The library runs in your browser on an in-memory SQLite database (sql.js); nothing is sent anywhere." />
+    <link rel="canonical" href="https://affinity.ghostpaw.dev/docs/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Affinity · @ghostpaw/affinity interactive demo" />
+    <meta property="og:description" content="Interactive demo of @ghostpaw/affinity: track people, the promises made to them and the dates that matter, and see who is drifting. The library runs in your browser on an in-memory SQLite database (sql.js); nothing is sent anywhere." />
+    <meta property="og:url" content="https://affinity.ghostpaw.dev/docs/" />
+    <meta property="og:image" content="https://affinity.ghostpaw.dev/docs/share.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="A radar scope in cyan light with a ghost paw at its centre and one violet point drifting outward, beside the line: Who have you been meaning to call?" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <!-- ghostpaw-docs-shell -->
+    <style>.pre{max-width:42rem;margin:4rem auto;padding:0 1.25rem;font:400 1rem/1.6 system-ui,sans-serif;color:#dce7f3}.pre h1{font-size:1.6rem;line-height:1.25;margin:0 0 .75rem}.pre a{color:#62e6f2}.pre li{margin:.25rem 0}#app:not(:empty)~.pre{display:none}@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}</style>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><polygon points='16,2 28,10 28,22 16,30 4,22 4,10' fill='%233b82f6'/></svg>" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -790,6 +803,16 @@ async function writeHtmlShell() {
   </head>
   <body>
     <div id="app"></div>
+    <main class="pre">
+    <h1>Affinity: the @ghostpaw/affinity interactive demo</h1>
+    <p>Track people, the promises made to them and the dates that matter, and see who is drifting. This page loads the library into your browser with an in-memory SQLite database. It needs JavaScript; the demo appears here once it has loaded.</p>
+    <ul>
+    <li><a href="https://affinity.ghostpaw.dev/">What @ghostpaw/affinity is, with a worked example</a></li>
+    <li><a href="https://github.com/GhostPawJS/affinity#readme">README on GitHub</a></li>
+    <li><a href="https://www.npmjs.com/package/@ghostpaw/affinity">@ghostpaw/affinity on npm</a></li>
+    <li><a href="https://ghostpaw.dev/">All GhostPaw libraries</a></li>
+    </ul>
+    </main>
     <script type="module" src="./app.js"></script>
   </body>
 </html>

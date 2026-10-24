@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://affinity.ghostpaw.dev/sitemap.xml

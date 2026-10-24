@@ -14,7 +14,8 @@
       "glama.json",
       "mcpb/manifest.json",
       ".claude-plugin/*.json",
-      ".mcp.json"
+      ".mcp.json",
+      "site/**"
     ]
   },
   "formatter": {
