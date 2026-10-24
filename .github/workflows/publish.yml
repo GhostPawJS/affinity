@@ -47,6 +47,9 @@ jobs:
       - name: Verify package contents
         run: npm pack --dry-run
 
+      - name: Zero runtime dependencies
+        run: npm run check:deps
+
       - name: Publish to npm
         run: npm publish --provenance --access public
 
