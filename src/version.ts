@@ -1,1 +1,1 @@
-export const affinityVersion = "0.2.4";
+export const affinityVersion = "0.3.0";
