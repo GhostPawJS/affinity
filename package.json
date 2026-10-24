@@ -50,7 +50,12 @@
     "mcp-server",
     "model-context-protocol",
     "agent-skills",
-    "cli"
+    "cli",
+    "ghostpaw",
+    "ai-agents",
+    "llm-tools",
+    "node-sqlite",
+    "local-first"
   ],
   "files": ["dist", "skills", "SKILL.md"],
   "main": "./dist/index.cjs",
