@@ -1,12 +1,14 @@
+<a href="https://affinity.ghostpaw.dev/"><img src="https://raw.githubusercontent.com/GhostPawJS/affinity/main/.github/social-preview.png" alt="GhostPaw affinity: Who have you been meaning to call?" width="100%"></a>
+
 # @ghostpaw/affinity
 
-[![npm](https://img.shields.io/npm/v/@ghostpaw/affinity)](https://www.npmjs.com/package/@ghostpaw/affinity)
-[![node](https://img.shields.io/node/v/@ghostpaw/affinity)](https://nodejs.org)
-[![license](https://img.shields.io/npm/l/@ghostpaw/affinity)](LICENSE)
-[![dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![MCP Registry](https://img.shields.io/badge/MCP_Registry-io.github.GhostPawJS%2Faffinity-06d6a0)](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.GhostPawJS%2Faffinity/versions/latest)
-[![Site](https://img.shields.io/badge/site-affinity.ghostpaw.dev-62e6f2)](https://affinity.ghostpaw.dev/)
+[![npm](https://img.shields.io/npm/v/@ghostpaw/affinity?style=flat-square&labelColor=0a1119&color=62e6f2&label=npm)](https://www.npmjs.com/package/@ghostpaw/affinity) [![CI](https://img.shields.io/github/actions/workflow/status/GhostPawJS/affinity/ci.yml?branch=main&style=flat-square&labelColor=0a1119&label=CI)](https://github.com/GhostPawJS/affinity/actions/workflows/ci.yml) [![site](https://img.shields.io/badge/site-affinity.ghostpaw.dev-62e6f2?style=flat-square&labelColor=0a1119)](https://affinity.ghostpaw.dev/) [![runtime deps](https://img.shields.io/badge/runtime_deps-0-7af0b4?style=flat-square&labelColor=0a1119)](package.json) [![MCP Registry](https://img.shields.io/badge/MCP_Registry-io.github.GhostPawJS%2Faffinity-b39dff?style=flat-square&labelColor=0a1119)](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.GhostPawJS%2Faffinity/versions/latest) [![node](https://img.shields.io/badge/node-%E2%89%A524-93a5b9?style=flat-square&labelColor=0a1119)](https://nodejs.org) [![license](https://img.shields.io/npm/l/@ghostpaw/affinity?style=flat-square&labelColor=0a1119&color=93a5b9)](LICENSE)
+
+**Agent contacts: people, promises and yearly dates, with a radar for who is drifting.**
+
+```bash
+npm install @ghostpaw/affinity
+```
 
 A standalone social CRM core for Node.js, built on SQLite.
 
