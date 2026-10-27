@@ -6,6 +6,8 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-28
+
 ### Added
 
 - Search covers tags, attributes, link roles and event text, matches tokens in
@@ -196,7 +198,8 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 - Public read and write namespaces, tool facade, skills, and relationship guidance.
 - Validation, tests, API documentation, lifecycle examples, and release workflows.
 
-[Unreleased]: https://github.com/GhostPawJS/affinity/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/GhostPawJS/affinity/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/GhostPawJS/affinity/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/GhostPawJS/affinity/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/GhostPawJS/affinity/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/GhostPawJS/affinity/compare/v0.2.4...v0.3.0
