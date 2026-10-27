@@ -16,7 +16,7 @@ describe("removeIdentity", () => {
     const { primary: c } = createContact(db, { name: "A", kind: "human" });
     const { primary: id } = addIdentity(db, c.id, {
       type: "email",
-      value: "a@b",
+      value: "a@b.com",
     });
     const r = removeIdentity(db, id.id, 99);
     strictEqual(r.removed[0]?.kind, "identity");
@@ -29,7 +29,7 @@ describe("removeIdentity", () => {
     const { primary: c } = createContact(db, { name: "A", kind: "human" });
     const { primary: id } = addIdentity(db, c.id, {
       type: "email",
-      value: "a@b",
+      value: "a@b.com",
     });
     removeIdentity(db, id.id);
     throws(
@@ -81,7 +81,7 @@ describe("removeIdentity", () => {
     const { primary: c } = createContact(db, { name: "A", kind: "human" });
     const { primary: id } = addIdentity(db, c.id, {
       type: "email",
-      value: "a@b",
+      value: "a@b.com",
     });
     db.prepare(
       "UPDATE contacts SET lifecycle_state = 'merged' WHERE id = ?",

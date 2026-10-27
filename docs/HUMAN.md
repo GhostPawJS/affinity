@@ -318,13 +318,10 @@ For merge detail and lineage, use:
 ## CLI Reference
 
 ```text
-ghostpaw-affinity search <query>
-ghostpaw-affinity review <view>
+ghostpaw-affinity search <query> [--tag T] [--attribute name[=value]]
+ghostpaw-affinity review <view> [--tag T] [--attribute name[=value]]
 ghostpaw-affinity show <owner_profile|contact_profile|link> [--contact JSON --link JSON]
-ghostpaw-affinity contact create <input-json>
-ghostpaw-affinity contact revise <contact-json> --patch JSON
-ghostpaw-affinity contact lifecycle <contact-json> <lifecycleState>
-ghostpaw-affinity contact merge [flags]
+ghostpaw-affinity contact create|revise|lifecycle|export|delete|merge
 ghostpaw-affinity identity add|revise|verify|remove [flags]
 ghostpaw-affinity relationship add|bond|state|tie|untie [flags]
 ghostpaw-affinity commitment record|resolve [flags]
@@ -335,36 +332,48 @@ ghostpaw-affinity duplicate dismiss|undismiss [flags]
 ghostpaw-affinity mcp|skill|tools|describe|call|completions|version|help
 ```
 
-There are 27 domain commands. `review` accepts the existing view names,
+There are 29 domain commands. `review` accepts the existing view names,
 including `contacts.list`, `contacts.duplicates` and `dates.upcoming`.
 `show` selects an inspection kind; contact and link locators are JSON objects.
-Use `help contact` or `contact create --help` for schema-derived help.
-Nested payloads use JSON or `@path` to read a file.
+Use `help contact` or `contact create --help` for schema-derived help; a
+mistyped command suggests the closest one. Nested payloads use JSON or `@path`
+to read a file; repeated array flags accept JSON objects
+(`--entries '{"name":"a","value":"x"}'`) or one JSON array.
+
+Every time field accepts epoch milliseconds, ISO 8601 with `Z` or an offset,
+`YYYY-MM-DD`, `DD.MM.YYYY` (CLI), `today`, `tomorrow`, `yesterday` and signed day offsets
+such as `+3d` or `-2d`. On the CLI, date-only values use local time (midnight,
+or end of day for `dueAt`); through MCP and the tool facade they use UTC.
 
 Global flags: `--db <path>`, `--json`, `--quiet`, `--compact`,
 `--help`/`-h`, `--version`/`-V`/`-v`, `--no-color`.
-`NO_COLOR` is accepted; output uses no terminal colors.
-Noun-verb commands print the full tool result as JSON with `--json` or piped
-stdout. Terminal output shows the summary and payload. `--quiet` suppresses
-stdout. `--compact` removes JSON indentation.
-Array flags repeat; kebab-case flags map to schema properties.
-`--` ends flags. A positional `-`, or piped stdin with no input flags, reads a
-JSON object. Explicit flags override stdin fields.
+`NO_COLOR` is accepted. In a terminal, commands print a readable summary with
+names and dates. With `--json` or piped stdout they print the tool result as
+JSON with ISO date siblings and floats rounded to three decimals; `--compact`
+removes indentation and empty receipt arrays. `--quiet` suppresses stdout.
+Writes list what changed in `data.changes`, and creates warn about likely
+duplicates. Kebab-case flags map to schema properties. `--` ends flags.
+A positional `-`, or piped stdin when no other arguments are given, reads a
+JSON object (`echo '{"name":"Sam","kind":"human"}' | ghostpaw-affinity contact create`).
+Explicit flags override stdin fields.
 Database selection uses `--db`, `GHOSTPAW_AFFINITY_DB`, then
-`~/.ghostpaw/affinity.db`. These commands work offline.
+`~/.ghostpaw/affinity.db`; relative paths resolve against the current
+directory, and `--help` shows the resolved path. A new database is reported on
+stderr. These commands work offline.
 
-| Exit | Noun-verb result |
+| Exit | Result |
 |---|---|
 | 0 | Success, including no_op |
-| 1 | Tool error |
-| 2 | Usage or schema error |
+| 1 | Other tool error |
+| 2 | Usage, schema or invalid input |
 | 3 | Clarification needed or not found |
-| 4 | Conflict or version mismatch |
+| 4 | Conflict, already resolved or version mismatch |
 | 70 | Internal error |
 
 Errors go to stderr. With `--json`, errors also print to stdout.
-Legacy `tools [--json]`, `describe <tool>`, `call <tool> [JSON|-]` and
-`<tool_name> --parameter value` retain their output and exit codes.
+`--version` names the variant: `affinity 0.5.0 (binary, linux-x64)`,
+`(npm)` or `(library)`. Legacy `tools [--json]`, `describe <tool>`,
+`call <tool> [JSON|-]` and `<tool_name> --parameter value` remain available.
 `completions bash|zsh|fish` prints shell scripts.
 
 ```sh

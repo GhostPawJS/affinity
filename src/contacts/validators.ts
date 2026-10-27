@@ -14,7 +14,9 @@ export function assertValidLifecycleTransition(
     throw new AffinityStateError("merged contact is read-only");
   }
   if (to === "merged") {
-    throw new AffinityInvariantError("use mergeContacts to reach merged state");
+    throw new AffinityInvariantError(
+      "use manage_contact merge (CLI: contact merge) to reach merged state",
+    );
   }
   if (from === to) {
     return;

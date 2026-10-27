@@ -137,3 +137,5 @@ export {
   toMutationRefEntity,
   toReceiptEntityRefs,
 } from "./tool_ref.ts";
+
+export { parseTimeInput } from "./parse_time_input.ts";

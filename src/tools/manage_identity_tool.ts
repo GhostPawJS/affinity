@@ -2,10 +2,12 @@ import type { AffinityDb } from "../database.ts";
 import { addIdentity } from "../identities/add_identity.ts";
 import { removeIdentity } from "../identities/remove_identity.ts";
 import { reviseIdentity } from "../identities/revise_identity.ts";
+import { identityTypes } from "../identities/validate_identity_input.ts";
 import { verifyIdentity } from "../identities/verify_identity.ts";
 import type { AddIdentityInput } from "../lib/types/add_identity_input.ts";
 import type { IdentityRecord } from "../lib/types/identity_record.ts";
 import type { ReviseIdentityPatch } from "../lib/types/revise_identity_patch.ts";
+import type { TimeInputs } from "./parse_time_input.ts";
 import {
   booleanSchema,
   defineAffinityTool,
@@ -21,7 +23,9 @@ import {
   resolveContactLocator,
   withToolHandling,
 } from "./tool_resolvers.ts";
+import { toolFailure as invalidToolInput } from "./tool_types.ts";
 import type { ToolResult } from "./tool_types.ts";
+import { validateToolInput } from "./validate_tool_input.ts";
 
 export type ManageIdentityToolInput =
   | { action: "add"; contact: ContactLocator; input: AddIdentityInput }
@@ -40,7 +44,9 @@ function contactLocatorSchema(description: string) {
       contactId: integerSchema("Exact contact id."),
       identity: objectSchema(
         {
-          type: stringSchema("Identity type."),
+          type: stringSchema(
+            `Identity type: ${identityTypes.join(", ")}, or custom:<name> (lowercase a-z, 0-9, underscore or hyphen).`,
+          ),
           value: stringSchema("Identity value."),
         },
         ["type", "value"],
@@ -53,8 +59,24 @@ function contactLocatorSchema(description: string) {
 
 export function manageIdentityToolHandler(
   db: AffinityDb,
-  input: ManageIdentityToolInput,
+  rawInput: TimeInputs<ManageIdentityToolInput>,
 ): ManageIdentityToolResult {
+  const input = structuredClone(rawInput) as ManageIdentityToolInput;
+  const inputError = validateToolInput(manageIdentityTool.inputSchema, input);
+  if (inputError)
+    return invalidToolInput(
+      "protocol",
+      "invalid_input",
+      "Invalid input.",
+      inputError,
+    );
+  if (input.action !== "add" && input.identityId === undefined)
+    return invalidToolInput(
+      "protocol",
+      "invalid_input",
+      "Missing identityId.",
+      "identityId is required.",
+    );
   return withToolHandling<MutationToolData<IdentityRecord>>(() => {
     switch (input.action) {
       case "add": {
@@ -73,6 +95,7 @@ export function manageIdentityToolHandler(
           "revise",
           reviseIdentity(db, input.identityId, input.patch),
           "identity",
+          Object.keys(input.patch),
         );
       case "verify":
         return mutationToolResult(
@@ -91,7 +114,7 @@ export function manageIdentityToolHandler(
 }
 
 export const manageIdentityTool = defineAffinityTool<
-  ManageIdentityToolInput,
+  TimeInputs<ManageIdentityToolInput>,
   ManageIdentityToolResult
 >({
   name: manageIdentityToolName,
@@ -129,7 +152,9 @@ export const manageIdentityTool = defineAffinityTool<
       ),
       input: objectSchema(
         {
-          type: stringSchema("Identity type."),
+          type: stringSchema(
+            `Identity type: ${identityTypes.join(", ")}, or custom:<name> (lowercase a-z, 0-9, underscore or hyphen).`,
+          ),
           value: stringSchema("Identity value."),
           label: stringSchema("Optional label."),
           verified: booleanSchema("Whether the identity starts verified."),
@@ -143,7 +168,9 @@ export const manageIdentityTool = defineAffinityTool<
       ),
       patch: objectSchema(
         {
-          type: stringSchema("Optional identity type."),
+          type: stringSchema(
+            `Optional identity type: ${identityTypes.join(", ")}, or custom:<name> (lowercase a-z, 0-9, underscore or hyphen).`,
+          ),
           value: stringSchema("Optional identity value."),
           label: stringSchema("Optional label."),
         },

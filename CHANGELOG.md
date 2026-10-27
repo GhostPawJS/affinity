@@ -6,6 +6,66 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ## [Unreleased]
 
+### Added
+
+- Search covers tags, attributes, link roles and event text, matches tokens in
+  any order, folds umlauts and diacritics (`Fischbrötchen` = `fischbroetchen`),
+  normalizes phone numbers and ranks an exact name first. Results carry
+  `matchedOn`. `search` and `review contacts.list` accept `tag` and
+  `attribute` (`name` or `name=value`) filters.
+- Review rows carry counterparty names, ISO dates and structured fields;
+  `events.contact_journal` includes `occurredAt`.
+- Open commitments past their due date are flagged `overdue`, sorted first and
+  raise the link on `links.radar`, which now lists `reasons`.
+- Every time field accepts ISO 8601 with offset, `YYYY-MM-DD`, `today`,
+  `tomorrow`, `yesterday` and day offsets such as `+3d`, besides epoch
+  milliseconds. The CLI also accepts `DD.MM.YYYY` and uses local days; MCP and
+  the tool facade use UTC days.
+- `contact_profile` includes recent events, open commitments and structural
+  ties; `recentEventsLimit` applies. Merged contacts point to `mergedInto`.
+- `contact export` (one contact or the whole database as JSON) and
+  `contact delete --confirm` (permanent erase; `lost` remains the soft delete).
+  Library: `read.exportContact`, `read.exportAffinity`, `write.deleteContact`.
+- Creating a contact warns about likely duplicates (`possible_duplicate`) and
+  accepts `identities`. Writes return `data.changes`.
+- `skill` opens with a CLI cheat sheet; `skill --list`, `skill <guide>` and
+  `skill --help` print the embedded workflow guides. Tool tables inline nested
+  parameters with one example per tool.
+- `--version` names the variant: `affinity X (binary, linux-x64)`, `(npm)` or
+  `(library)`.
+- Terminal output is a readable summary with names and dates. Piped JSON adds
+  ISO date siblings and drops `entities` when it repeats `data.items`;
+  `--compact` omits empty receipt arrays. Unknown commands suggest the closest
+  one. A new database is reported on stderr.
+- README and site open with one verified install one-liner per platform; the
+  install check runs them on every release. SHA256SUMS covers `server.mcpb`.
+
+### Changed
+
+- `[api-change-approved]` Identity `type` must be a documented type
+  (`email`, `phone`, `url`, `website`, `handle`, social networks, `address`,
+  `other`, `account_id`, `alias`) or `custom:<name>`; emails, phones and URLs are
+  validated on add and revise. Stored identities are untouched.
+- `[api-change-approved]` Tool handler input types accept time strings; tool
+  results round floats to three decimals (stored values keep full precision).
+- Unknown or immutable patch keys (`notes`, `kind`) are rejected as invalid
+  input instead of returning no_op.
+- Exit codes: invalid input exits 2, conflicts and already-resolved commitments
+  exit 4 (`conflict` instead of `invalid_state`), internal errors exit 70.
+- Search excludes dormant and lost contacts by default (`includeDormant`,
+  `includeLost`); merged contacts never appear in lookups.
+- A broken or cancelled promise no longer counts as recent contact.
+- Error messages name CLI commands and tools instead of library functions, and
+  identity conflicts name the owning contact.
+
+### Fixed
+
+- `echo '{...}' | ghostpaw-affinity contact create` reads the object from stdin.
+  Stdin is only read implicitly when no other arguments are given.
+- Array flags accept JSON objects and JSON arrays (`attribute replace --entries`).
+- Relative `--db` and `GHOSTPAW_AFFINITY_DB` paths resolve against the current
+  directory and show in `--help`.
+
 ## [0.4.1] - 2026-10-27
 
 ### Fixed

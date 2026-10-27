@@ -10,6 +10,7 @@ import type { RecordMilestoneInput } from "../lib/types/record_milestone_input.t
 import type { RecordObservationInput } from "../lib/types/record_observation_input.ts";
 import type { RecordTransactionInput } from "../lib/types/record_transaction_input.ts";
 import type { SocialEventParticipantInput } from "../lib/types/social_event_input.ts";
+import type { TimeInputs } from "./parse_time_input.ts";
 import {
   arraySchema,
   defineAffinityTool,
@@ -21,7 +22,9 @@ import {
 import { type MutationToolData, mutationToolResult } from "./tool_mutation.ts";
 import { recordEventToolName } from "./tool_names.ts";
 import { withToolHandling } from "./tool_resolvers.ts";
+import { toolFailure as invalidToolInput } from "./tool_types.ts";
 import type { ToolResult } from "./tool_types.ts";
+import { validateToolInput } from "./validate_tool_input.ts";
 
 export type RecordEventToolInput =
   | { kind: "interaction"; input: RecordInteractionInput }
@@ -80,8 +83,17 @@ function prepareParticipants(
 
 export function recordEventToolHandler(
   db: AffinityDb,
-  input: RecordEventToolInput,
+  rawInput: TimeInputs<RecordEventToolInput>,
 ): RecordEventToolResult {
+  const input = structuredClone(rawInput) as RecordEventToolInput;
+  const inputError = validateToolInput(recordEventTool.inputSchema, input);
+  if (inputError)
+    return invalidToolInput(
+      "protocol",
+      "invalid_input",
+      "Invalid input.",
+      inputError,
+    );
   return withToolHandling<MutationToolData<EventRecord>>(() => {
     const patched = {
       ...input.input,
@@ -124,7 +136,7 @@ export function recordEventToolHandler(
 }
 
 export const recordEventTool = defineAffinityTool<
-  RecordEventToolInput,
+  TimeInputs<RecordEventToolInput>,
   RecordEventToolResult
 >({
   name: recordEventToolName,
@@ -191,7 +203,7 @@ export const recordEventTool = defineAffinityTool<
                   "observed",
                 ]),
               },
-              ["contactId", "role"],
+              ["role"],
             ),
             "Participant list. Must be non-empty and include the owner contact.",
           ),

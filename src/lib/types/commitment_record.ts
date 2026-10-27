@@ -4,6 +4,8 @@ import type { EventParticipantView } from "./event_participant_view.ts";
 
 /** Promise/agreement projection — CONCEPT.md CommitmentRecord. */
 export interface CommitmentRecord {
+  dueAtIso?: string | null;
+  overdue?: boolean;
   eventId: number;
   type: EventType;
   summary: string;

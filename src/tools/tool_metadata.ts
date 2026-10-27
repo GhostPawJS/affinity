@@ -1,4 +1,5 @@
 import type { AffinityDb } from "../database.ts";
+import { timeInputForms } from "./parse_time_input.ts";
 import type { ToolResult } from "./tool_types.ts";
 
 export type ToolInputDescriptions = Readonly<Record<string, string>>;
@@ -54,6 +55,23 @@ export type ToolDefinitionRegistry = readonly AffinityToolDefinition<
 export function defineAffinityTool<TInput, TResult extends ToolResult<unknown>>(
   definition: AffinityToolDefinition<TInput, TResult>,
 ): AffinityToolDefinition<TInput, TResult> {
+  const visit = (schema: JsonSchema): void => {
+    for (const [key, child] of Object.entries(schema.properties ?? {})) {
+      if (
+        (key.endsWith("At") ||
+          ["now", "asOf", "since", "until"].includes(key)) &&
+        child.type === "integer"
+      ) {
+        child.type = undefined;
+        child.oneOf = [{ type: "integer" }, { type: "string" }];
+        child.description = `${child.description ?? "Time."} Accepts ${timeInputForms}. UTC midnight for dates; dueAt uses UTC end of day.`;
+      }
+      visit(child);
+    }
+    if (schema.items) visit(schema.items);
+    for (const child of schema.oneOf ?? schema.anyOf ?? []) visit(child);
+  };
+  visit(definition.inputSchema);
   return definition;
 }
 

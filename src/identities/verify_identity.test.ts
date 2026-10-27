@@ -12,7 +12,7 @@ describe("verifyIdentity", () => {
     const { primary: c } = createContact(db, { name: "A", kind: "human" });
     const { primary: id } = addIdentity(db, c.id, {
       type: "email",
-      value: "a@b",
+      value: "a@b.com",
     });
     const r = verifyIdentity(db, id.id, 42);
     strictEqual(r.primary.verified, true);
@@ -25,7 +25,7 @@ describe("verifyIdentity", () => {
     const { primary: c } = createContact(db, { name: "A", kind: "human" });
     const { primary: id } = addIdentity(db, c.id, {
       type: "email",
-      value: "a@b",
+      value: "a@b.com",
     });
     db.prepare(
       "UPDATE contacts SET lifecycle_state = 'merged' WHERE id = ?",

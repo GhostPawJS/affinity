@@ -5,6 +5,7 @@ import type { ContactListItem } from "../lib/types/contact_list_item.ts";
 import type { ContactRow } from "../lib/types/contact_row.ts";
 import type { ListContactsFilters } from "../lib/types/list_contacts_filters.ts";
 import type { AffinityListReadOptions } from "../lib/types/read_list_options.ts";
+import { contactAttributeClauses } from "./contact_attribute_clauses.ts";
 import { mapContactRowToContactListItem } from "./mappers.ts";
 
 export function listContacts(
@@ -33,6 +34,9 @@ export function listContacts(
   if (filters?.includeDormant === false || options?.includeDormant === false) {
     clauses.push("lifecycle_state != 'dormant'");
   }
+  const attributeFilters = contactAttributeClauses(filters);
+  clauses.push(...attributeFilters.clauses);
+  params.push(...attributeFilters.params);
   const where = clauses.join(" AND ");
   const rows = db
     .prepare(

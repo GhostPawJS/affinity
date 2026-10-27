@@ -1,6 +1,10 @@
 import type { AffinityDb } from "../database.ts";
+import { CliUsageError } from "../surfaces/cli_args.ts";
 import type { SurfaceTool } from "../surfaces/surface_types.ts";
 import { affinityTools } from "../tools/tool_registry.ts";
+import { toolFailure } from "../tools/tool_types.ts";
+import { normalizeTimeInputs } from "./plain_dates.ts";
+import { timestampSchema } from "./timestamp_schema.ts";
 
 const affinitySurfaceTools: readonly SurfaceTool<AffinityDb>[] =
   affinityTools.map((tool) => ({
@@ -12,8 +16,24 @@ const affinitySurfaceTools: readonly SurfaceTool<AffinityDb>[] =
       : { whenNotToUse: tool.whenNotToUse }),
     readOnly: tool.readOnly,
     sideEffects: tool.sideEffects,
-    inputSchema: { ...tool.inputSchema, type: "object" },
-    handler: tool.handler as SurfaceTool<AffinityDb>["handler"],
+    inputSchema: {
+      ...timestampSchema({ ...tool.inputSchema, type: "object" }),
+      type: "object",
+    },
+    handler: (db, input) => {
+      try {
+        return tool.handler(db, normalizeTimeInputs(input) as never);
+      } catch (error) {
+        if (error instanceof CliUsageError)
+          return toolFailure(
+            "protocol",
+            "invalid_input",
+            "Invalid input.",
+            error.message,
+          );
+        throw error;
+      }
+    },
   }));
 
 const mapping: Record<string, NonNullable<SurfaceTool<AffinityDb>["cli"]>> = {
@@ -76,6 +96,11 @@ const mapping: Record<string, NonNullable<SurfaceTool<AffinityDb>["cli"]>> = {
 const affinityCliSurfaceTools: readonly SurfaceTool<AffinityDb>[] =
   /* @__PURE__ */ affinitySurfaceTools.map((tool) => ({
     ...tool,
+    inputSchema: {
+      ...affinityTools.find((original) => original.name === tool.name)
+        ?.inputSchema,
+      type: "object",
+    },
     ...(mapping[tool.name] ? { cli: mapping[tool.name] } : {}),
   }));
 

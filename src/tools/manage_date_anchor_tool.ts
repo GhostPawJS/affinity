@@ -9,6 +9,7 @@ import type {
 import type { EventRecord } from "../lib/types/event_record.ts";
 import type { ReviseDateAnchorOptions } from "../lib/types/revise_date_anchor_options.ts";
 import type { ReviseDateAnchorPatch } from "../lib/types/revise_date_anchor_patch.ts";
+import type { TimeInputs } from "./parse_time_input.ts";
 import {
   booleanSchema,
   defineAffinityTool,
@@ -26,11 +27,13 @@ import {
   resolveLinkLocator,
   withToolHandling,
 } from "./tool_resolvers.ts";
+import { toolFailure as invalidToolInput } from "./tool_types.ts";
 import type {
   ToolFailure,
   ToolNeedsClarification,
   ToolResult,
 } from "./tool_types.ts";
+import { validateToolInput } from "./validate_tool_input.ts";
 
 type DateAnchorTargetInput =
   | { kind: "contact"; contact: ContactLocator }
@@ -122,10 +125,33 @@ function resolveDateAnchorTarget(
 
 export function manageDateAnchorToolHandler(
   db: AffinityDb,
-  input: ManageDateAnchorToolInput,
+  rawInput: TimeInputs<ManageDateAnchorToolInput>,
 ): ManageDateAnchorToolResult {
+  const input = structuredClone(rawInput) as ManageDateAnchorToolInput;
+  const inputError = validateToolInput(manageDateAnchorTool.inputSchema, input);
+  if (inputError)
+    return invalidToolInput(
+      "protocol",
+      "invalid_input",
+      "Invalid input.",
+      inputError,
+    );
+  if (input.action !== "add" && input.anchorEventId === undefined)
+    return invalidToolInput(
+      "protocol",
+      "invalid_input",
+      "Missing anchorEventId.",
+      "anchorEventId is required.",
+    );
   return withToolHandling<MutationToolData<EventRecord>>(() => {
     if (input.action === "add") {
+      if (!input.input)
+        return invalidToolInput(
+          "protocol",
+          "invalid_input",
+          "Missing input.",
+          "input is required for add.",
+        );
       const resolved = resolveDateAnchorTarget(db, input.input.target);
       if (resolved.kind === "error") {
         return resolved.result;
@@ -141,6 +167,7 @@ export function manageDateAnchorToolHandler(
         "revise",
         reviseDateAnchor(db, input.anchorEventId, input.patch, input.options),
         "date anchor",
+        Object.keys(input.patch),
       );
     }
     return mutationToolResult(
@@ -152,7 +179,7 @@ export function manageDateAnchorToolHandler(
 }
 
 export const manageDateAnchorTool = defineAffinityTool<
-  ManageDateAnchorToolInput,
+  TimeInputs<ManageDateAnchorToolInput>,
   ManageDateAnchorToolResult
 >({
   name: manageDateAnchorToolName,

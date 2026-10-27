@@ -7,6 +7,7 @@ import type { EventRecord } from "../lib/types/event_record.ts";
 import type { RecordCommitmentInput } from "../lib/types/record_commitment_input.ts";
 import type { ResolveCommitmentOptions } from "../lib/types/resolve_commitment_options.ts";
 import type { SocialEventParticipantInput } from "../lib/types/social_event_input.ts";
+import type { TimeInputs } from "./parse_time_input.ts";
 import {
   arraySchema,
   defineAffinityTool,
@@ -18,7 +19,9 @@ import {
 import { type MutationToolData, mutationToolResult } from "./tool_mutation.ts";
 import { manageCommitmentToolName } from "./tool_names.ts";
 import { withToolHandling } from "./tool_resolvers.ts";
+import { toolFailure as invalidToolInput } from "./tool_types.ts";
 import type { ToolResult } from "./tool_types.ts";
+import { validateToolInput } from "./validate_tool_input.ts";
 
 export type ManageCommitmentToolInput =
   | { action: "record"; input: RecordCommitmentInput }
@@ -72,10 +75,26 @@ function prepareParticipants(
 
 export function manageCommitmentToolHandler(
   db: AffinityDb,
-  input: ManageCommitmentToolInput,
+  rawInput: TimeInputs<ManageCommitmentToolInput>,
 ): ManageCommitmentToolResult {
+  const input = structuredClone(rawInput) as ManageCommitmentToolInput;
+  const inputError = validateToolInput(manageCommitmentTool.inputSchema, input);
+  if (inputError)
+    return invalidToolInput(
+      "protocol",
+      "invalid_input",
+      "Invalid input.",
+      inputError,
+    );
   return withToolHandling<MutationToolData<EventRecord>>(() => {
     if (input.action === "record") {
+      if (!input.input)
+        return invalidToolInput(
+          "protocol",
+          "invalid_input",
+          "Missing input.",
+          "input is required for record.",
+        );
       const patched: RecordCommitmentInput = {
         ...input.input,
         participants: prepareParticipants(
@@ -106,7 +125,7 @@ export function manageCommitmentToolHandler(
 }
 
 export const manageCommitmentTool = defineAffinityTool<
-  ManageCommitmentToolInput,
+  TimeInputs<ManageCommitmentToolInput>,
   ManageCommitmentToolResult
 >({
   name: manageCommitmentToolName,
@@ -153,7 +172,7 @@ export const manageCommitmentTool = defineAffinityTool<
                 role: stringSchema("Participant role."),
                 directionality: stringSchema("Optional directionality."),
               },
-              ["contactId", "role"],
+              ["role"],
             ),
             "Participant list. Must be non-empty and include the owner contact.",
           ),

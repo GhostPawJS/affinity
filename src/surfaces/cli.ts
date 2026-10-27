@@ -1,28 +1,32 @@
+import { readFileSync } from "node:fs";
 import { type Readable, Writable } from "node:stream";
+import { CliUsageError } from "./cli_args.ts";
 import { runCliCommand } from "./cli_commands.ts";
-import {
-  type JsonSchema,
-  type SurfaceTool,
-  isErrorResult,
-} from "./surface_types.ts";
+import { cliExitCode, humanResult, plainJson } from "./cli_output.ts";
+import type { JsonSchema, SurfaceTool } from "./surface_types.ts";
 import { validateInput } from "./validate_input.ts";
 
 export interface ToolCliOptions<TCtx> {
+  transformInput?: (input: unknown) => unknown;
+  formatError?: (message: string) => string;
+  reportCreation?: boolean;
+  describeDb?: (db?: string) => string;
+  versionLine?: () => string;
   bin: string;
   version: string;
   description: string;
   tools: readonly SurfaceTool<TCtx>[];
-  openContext(opts: { db?: string }): TCtx | Promise<TCtx>;
+  openContext(opts: { db?: string; stderr?: Writable }): TCtx | Promise<TCtx>;
   closeContext?: (ctx: TCtx) => void | Promise<void>;
   commands?: {
     mcp?: (opts: { db?: string }) => unknown | Promise<unknown>;
-    skill?: () => string | Promise<string>;
+    skill?: (args?: string[]) => string | Promise<string>;
   };
   stdin?: Readable & { isTTY?: boolean };
   stdout?: Writable;
   stderr?: Writable;
 }
-export async function runToolCli<TCtx>(
+async function runToolCliInternal<TCtx>(
   argv: string[],
   providedOptions: ToolCliOptions<TCtx>,
 ): Promise<number> {
@@ -34,7 +38,9 @@ export async function runToolCli<TCtx>(
       .some((arg) => ["--version", "-V", "-v"].includes(arg))
   ) {
     if (!argv.includes("--quiet"))
-      (options.stdout ?? process.stdout).write(`${options.version}\n`);
+      (options.stdout ?? process.stdout).write(
+        `${options.versionLine?.() ?? options.version}\n`,
+      );
     return 0;
   }
   const modern = await runCliCommand(argv, options);
@@ -87,12 +93,12 @@ export async function runToolCli<TCtx>(
   const normalize = (name: string) => name.replace(/[-_]/g, "").toLowerCase();
   if (["help", "--help", "-h"].includes(command)) {
     stdout.write(
-      `${options.bin} ${options.version}\n${options.description}\n\nUsage: ${options.bin} [--db path] <command>\nCommands: tools [--json], describe <tool>, call <tool> [JSON|-], <tool> --parameter value, mcp, skill\nOptions: --help, --version, --compact\n\n${options.tools.map((tool) => `${tool.name}  ${tool.description}`).join("\n")}\n`,
+      `${options.versionLine?.() ?? `${options.bin} ${options.version}`}\n${options.description}\n\nUsage: ${options.bin} [--db path] <command>\nCommands: tools [--json], describe <tool>, call <tool> [JSON|-], <tool> --parameter value, mcp, skill\nOptions: --help, --version, --compact\n\n${options.tools.map((tool) => `${tool.name}  ${tool.description}`).join("\n")}\n`,
     );
     return 0;
   }
   if (["--version", "-V", "-v", "version"].includes(command)) {
-    stdout.write(`${options.version}\n`);
+    stdout.write(`${options.versionLine?.() ?? options.version}\n`);
     return 0;
   }
   if (command === "tools") {
@@ -111,7 +117,14 @@ export async function runToolCli<TCtx>(
   }
   if (command === "skill") {
     if (!options.commands?.skill) return fail("skill command unavailable");
-    stdout.write(await options.commands.skill());
+    try {
+      stdout.write(await options.commands.skill(args));
+    } catch (error) {
+      return fail(
+        `${error instanceof CliUsageError ? "" : "internal error: "}${error instanceof Error ? error.message : String(error)}`,
+        error instanceof CliUsageError ? 2 : 70,
+      );
+    }
     return 0;
   }
   if (command === "mcp") {
@@ -151,7 +164,9 @@ export async function runToolCli<TCtx>(
       input = JSON.parse(
         raw === "-" || (raw === undefined && !stdin.isTTY)
           ? await readStdin()
-          : (raw ?? "{}"),
+          : raw?.startsWith("@")
+            ? readFileSync(raw.slice(1), "utf8")
+            : (raw ?? "{}"),
       );
     } else {
       const values: Record<string, unknown> = {};
@@ -202,41 +217,80 @@ export async function runToolCli<TCtx>(
             ...(Array.isArray(prior) ? prior : []),
             coerce(raw, schema.items ?? {}),
           ];
-        } else values[property] = coerce(raw, schema);
+        } else
+          values[property] =
+            options.transformInput && /At$|^(asOf|now)$/.test(property)
+              ? raw
+              : coerce(raw, schema);
       }
       input = values;
     }
   } catch (cause) {
     return fail(
       `Invalid input: ${cause instanceof Error ? cause.message : String(cause)}`,
-      1,
+      2,
     );
   }
+  try {
+    input = options.transformInput?.(input) ?? input;
+  } catch (cause) {
+    return fail(cause instanceof Error ? cause.message : String(cause), 2);
+  }
   const errors = validateInput(tool.inputSchema, input);
-  if (errors.length) return fail(errors.join("\n"), 1);
+  if (errors.length) return fail(errors.join("\n"), 2);
   let context: TCtx;
   try {
-    context = await options.openContext(ctxOptions);
+    context = await options.openContext(
+      options.reportCreation ? { ...ctxOptions, stderr } : ctxOptions,
+    );
   } catch (cause) {
-    return fail(String(cause), 1);
+    return fail(
+      `internal error: ${cause instanceof Error ? cause.message : String(cause)}`,
+      70,
+    );
   }
   try {
     const result = await tool.handler(
       context,
       input as Record<string, unknown>,
     );
-    stdout.write(`${JSON.stringify(result, null, compact ? undefined : 2)}\n`);
-    if (
-      typeof result === "object" &&
-      result !== null &&
-      "outcome" in result &&
-      result.outcome === "needs_clarification"
-    )
-      return 3;
-    return isErrorResult(result) ? 1 : 0;
+    stdout.write(
+      explicitJson || !(stdout as { isTTY?: boolean }).isTTY
+        ? `${JSON.stringify(plainJson(result, compact, options.formatError), null, compact ? undefined : 2)}\n`
+        : humanResult(result),
+    );
+    const code = cliExitCode(result);
+    if (code) {
+      const r = result as { error?: { message?: string }; summary?: string };
+      const message = r.error?.message ?? r.summary ?? "Tool failed";
+      stderr.write(
+        `${code === 70 ? "internal error: " : ""}${options.formatError?.(message) ?? message}\n`,
+      );
+    }
+    return code;
   } catch (cause) {
-    return fail(String(cause), 1);
+    return fail(
+      `internal error: ${cause instanceof Error ? cause.message : String(cause)}`,
+      70,
+    );
   } finally {
     await options.closeContext?.(context);
+  }
+}
+
+export async function runToolCli<TCtx>(
+  argv: string[],
+  options: ToolCliOptions<TCtx>,
+): Promise<number> {
+  try {
+    return await runToolCliInternal(argv, options);
+  } catch (error) {
+    const message = `internal error: ${error instanceof Error ? error.message : String(error)}`;
+    (options.stderr ?? process.stderr).write(`${message}\n`);
+    if (argv.includes("--json") && !argv.includes("--quiet"))
+      (options.stdout ?? process.stdout).write(
+        `${JSON.stringify({ ok: false, error: { code: "internal_error", message } })}\n`,
+      );
+    return 70;
   }
 }

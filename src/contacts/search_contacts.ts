@@ -5,20 +5,9 @@ import type { ContactListItem } from "../lib/types/contact_list_item.ts";
 import type { ContactRow } from "../lib/types/contact_row.ts";
 import type { ListContactsFilters } from "../lib/types/list_contacts_filters.ts";
 import type { AffinityListReadOptions } from "../lib/types/read_list_options.ts";
+import { contactAttributeClauses } from "./contact_attribute_clauses.ts";
+import { foldSearchText } from "./fold_search_text.ts";
 import { mapContactRowToContactListItem } from "./mappers.ts";
-
-function relevanceScore(
-  name: string,
-  queryLower: string,
-  matchedName: boolean,
-  matchedNormalizedIdentity: boolean,
-): number {
-  const nl = name.toLowerCase();
-  if (matchedNormalizedIdentity) return 1.1;
-  if (nl.startsWith(queryLower)) return 1.0;
-  if (matchedName) return 0.85;
-  return 0.7;
-}
 
 export function searchContacts(
   db: AffinityDb,
@@ -26,85 +15,121 @@ export function searchContacts(
   filters?: ListContactsFilters,
   options?: AffinityListReadOptions,
 ): ContactListItem[] {
-  const q = query.trim();
-  if (q.length === 0) {
-    return [];
-  }
+  const q = foldSearchText(query.trim());
+  if (!q) return [];
   assertDefaultOrdering("searchContacts", options);
   const { limit, offset } = resolveListLimitOffset(options);
-  const queryLower = q.toLowerCase();
-  const pattern = `%${q.replace(/%/g, "").replace(/_/g, "")}%`;
-  const normalizedPattern = `%${queryLower}%`;
-  const clauses: string[] = [
-    "c.deleted_at IS NULL",
-    "c.lifecycle_state != 'merged'",
+  // Load each searchable relation once, avoiding a query per contact.
+  const fields = new Map<number, { text: string; source: string }[]>();
+  const rows = db
+    .prepare(`
+    SELECT contact_id, value || ' ' || normalized_key AS text, 'identity:' || type AS source FROM identities WHERE removed_at IS NULL
+    UNION ALL SELECT contact_id, name || ' ' || COALESCE(value, ''), 'attribute:' || name FROM attributes WHERE deleted_at IS NULL AND contact_id IS NOT NULL
+    UNION ALL SELECT from_contact_id, COALESCE(role, '') || ' ' || COALESCE(bond, ''), 'link_role' FROM links WHERE removed_at IS NULL
+    UNION ALL SELECT to_contact_id, COALESCE(role, '') || ' ' || COALESCE(bond, ''), 'link_role' FROM links WHERE removed_at IS NULL
+    UNION ALL SELECT ep.contact_id, e.summary, 'event' FROM event_participants ep JOIN events e ON e.id = ep.event_id WHERE e.deleted_at IS NULL
+  `)
+    .all() as { contact_id: number; text: string; source: string }[];
+  for (const row of rows) {
+    const values = fields.get(row.contact_id) ?? [];
+    values.push({ text: foldSearchText(row.text), source: row.source });
+    fields.set(row.contact_id, values);
+  }
+  const tokens = q.split(/\s+/);
+  const phone = /^[+\d()\-/.\s]+$/.test(q) && q.replace(/\D/g, "").length >= 3;
+  const digits = q.replace(/\D/g, "").replace(/^00/, "");
+  const attributeFilters = contactAttributeClauses(filters);
+  const clauses = [
+    "deleted_at IS NULL",
+    "lifecycle_state != 'merged'",
+    ...attributeFilters.clauses,
   ];
-  const params: (string | number)[] = [];
+  const params: (string | number)[] = [...attributeFilters.params];
   if (filters?.kind !== undefined) {
-    clauses.push("c.kind = ?");
+    clauses.push("kind = ?");
     params.push(filters.kind);
   }
   if (filters?.lifecycleState !== undefined) {
-    clauses.push("c.lifecycle_state = ?");
+    clauses.push("lifecycle_state = ?");
     params.push(filters.lifecycleState);
   }
-  if (filters?.includeOwner === false) {
-    clauses.push("c.is_owner = 0");
-  }
-  if (filters?.includeDormant === false || options?.includeDormant === false) {
-    clauses.push("c.lifecycle_state != 'dormant'");
-  }
-  const where = clauses.join(" AND ");
-  const sql = `
-    SELECT c.id, c.name, c.kind, c.lifecycle_state, c.is_owner, c.merged_into_contact_id,
-           c.created_at, c.updated_at, c.deleted_at,
-           (
-             SELECT value
-             FROM identities primary_i
-             WHERE primary_i.contact_id = c.id AND primary_i.removed_at IS NULL
-             ORDER BY primary_i.id
-             LIMIT 1
-           ) AS primary_identity,
-           MAX(CASE WHEN i.normalized_key LIKE ? THEN 1 ELSE 0 END) AS matched_normalized_identity
-    FROM contacts c
-    LEFT JOIN identities i ON i.contact_id = c.id AND i.removed_at IS NULL
-    WHERE ${where}
-      AND (c.name LIKE ? OR i.value LIKE ? OR i.normalized_key LIKE ?)
-    GROUP BY c.id
-  `;
-  const rows = db
-    .prepare(sql)
-    .all(
-      normalizedPattern,
-      ...params,
-      pattern,
-      pattern,
-      normalizedPattern,
-    ) as unknown as (ContactRow & {
-    primary_identity: string | null;
-    matched_normalized_identity: number;
-  })[];
-  const scored = rows.map((r) => {
-    const item = mapContactRowToContactListItem(r);
-    const matchedName = r.name.toLowerCase().includes(queryLower);
-    const score = relevanceScore(
-      r.name,
-      queryLower,
-      matchedName,
-      Number(
-        (r as { matched_normalized_identity?: number })
-          .matched_normalized_identity ?? 0,
-      ) > 0,
+  if (filters?.includeOwner === false) clauses.push("is_owner = 0");
+  const contacts = (
+    db
+      .prepare(
+        `SELECT id, name, kind, lifecycle_state, is_owner, (SELECT value FROM identities i WHERE i.contact_id = contacts.id AND i.removed_at IS NULL ORDER BY i.id LIMIT 1) AS primary_identity FROM contacts WHERE ${clauses.join(" AND ")}`,
+      )
+      .all(...params) as (ContactRow & { primary_identity: string | null })[]
+  ).map((row) => ({
+    ...mapContactRowToContactListItem(row),
+    primaryIdentity: row.primary_identity,
+  }));
+  const scored: { item: ContactListItem; score: number }[] = [];
+  for (const contact of contacts) {
+    if (
+      contact.lifecycleState === "dormant" &&
+      !(filters?.includeDormant ?? options?.includeDormant)
+    )
+      continue;
+    if (contact.lifecycleState === "lost" && !filters?.includeLost) continue;
+    const name = foldSearchText(contact.name);
+    // The owner takes part in nearly every event and link, so only its own
+    // name, identities and attributes count as matches.
+    const values = [
+      { text: name, source: "name" },
+      ...(fields.get(contact.id) ?? []).filter(
+        (field) =>
+          !contact.isOwner ||
+          (field.source !== "event" && field.source !== "link_role"),
+      ),
+    ];
+    const phoneFields = phone
+      ? values.filter(
+          (field) =>
+            field.source === "identity:phone" &&
+            field.text
+              .split(" ")
+              .join("")
+              .replace(/[^\d]/g, "")
+              .replace(/^00/, "")
+              .includes(digits),
+        )
+      : [];
+    if (
+      !phoneFields.length &&
+      !tokens.every((token) =>
+        values.some((field) => field.text.includes(token)),
+      )
+    )
+      continue;
+    const matchedOn = [
+      ...new Set(
+        [
+          ...values.filter((field) =>
+            tokens.some((token) => field.text.includes(token)),
+          ),
+          ...phoneFields,
+        ].map((field) => field.source),
+      ),
+    ];
+    const identities = values.filter((field) =>
+      field.source.startsWith("identity:"),
     );
-    return {
-      item: {
-        ...item,
-        primaryIdentity:
-          (r as { primary_identity?: string | null }).primary_identity ?? null,
-      },
-      score,
-    };
-  });
-  scored.sort((a, b) => b.score - a.score);
-  return scored.slice(offset, offset + limit).map((s) => s.item);
+    const score =
+      name === q
+        ? 5
+        : name.startsWith(q) || tokens.every((token) => name.includes(token))
+          ? 4
+          : phoneFields.length ||
+              identities.some((field) => field.text.split(" ").includes(q))
+            ? 3
+            : identities.some((field) =>
+                  tokens.every((token) => field.text.includes(token)),
+                )
+              ? 2
+              : 1;
+    scored.push({ item: { ...contact, matchedOn }, score });
+  }
+  scored.sort((a, b) => b.score - a.score || a.item.id - b.item.id);
+  return scored.slice(offset, offset + limit).map(({ item }) => item);
 }

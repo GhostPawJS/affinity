@@ -5,6 +5,7 @@ import type {
 
 /** Compact portfolio row — CONCEPT.md ContactListItem. */
 export interface ContactListItem {
+  matchedOn?: string[];
   id: number;
   name: string;
   kind: ContactKind;

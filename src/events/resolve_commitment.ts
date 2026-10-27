@@ -12,9 +12,9 @@ import {
   assertParticipantContactsLive,
   validateSocialEventInput,
 } from "../events/validators.ts";
+import { AffinityConflictError } from "../lib/errors/affinity_conflict_error.ts";
 import { AffinityInvariantError } from "../lib/errors/affinity_invariant_error.ts";
 import { AffinityNotFoundError } from "../lib/errors/affinity_not_found_error.ts";
-import { AffinityStateError } from "../lib/errors/affinity_state_error.ts";
 import { AffinityValidationError } from "../lib/errors/affinity_validation_error.ts";
 import type { CommitmentResolutionKind } from "../lib/types/commitment_resolution_kind.ts";
 import type { DerivedLinkEffect } from "../lib/types/derived_link_effect.ts";
@@ -62,13 +62,19 @@ export function resolveCommitment(
       throw new AffinityInvariantError("not a commitment event");
     }
     const open = db
-      .prepare("SELECT resolved_at FROM open_commitments WHERE event_id = ?")
-      .get(commitmentEventId) as { resolved_at: number | null } | undefined;
+      .prepare(
+        "SELECT resolved_at, resolution FROM open_commitments WHERE event_id = ?",
+      )
+      .get(commitmentEventId) as
+      | { resolved_at: number | null; resolution: string }
+      | undefined;
     if (!open) {
       throw new AffinityNotFoundError("open commitment not found");
     }
     if (open.resolved_at !== null) {
-      throw new AffinityStateError("commitment already resolved");
+      throw new AffinityConflictError(
+        `Commitment #${commitmentEventId} is already resolved (${open.resolution})`,
+      );
     }
     const now = resolveNow(options?.now);
     const originalParticipants = loadEventParticipantViews(
@@ -83,7 +89,9 @@ export function resolveCommitment(
       )
       .run(resolution, now, now, commitmentEventId);
     if (Number(result.changes ?? 0) === 0) {
-      throw new AffinityStateError("commitment already resolved");
+      throw new AffinityConflictError(
+        `Commitment #${commitmentEventId} is already resolved (${open.resolution})`,
+      );
     }
     const shouldCreateResolvingEvent =
       options?.resolvingEvent !== undefined || resolution === "broken";

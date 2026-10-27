@@ -1,4 +1,4 @@
-import { strictEqual } from "node:assert/strict";
+import { deepStrictEqual, strictEqual } from "node:assert/strict";
 import { describe, it } from "node:test";
 import { createContact } from "../contacts/create_contact.ts";
 import { createInitializedAffinityDb } from "../lib/testing/create_initialized_affinity_db.ts";
@@ -112,7 +112,10 @@ describe("manage_commitment_tool", () => {
       Array.isArray(inputProps?.properties?.commitmentType?.enum),
       true,
     );
-    strictEqual(inputProps?.properties?.occurredAt?.type, "integer");
+    deepStrictEqual(inputProps?.properties?.occurredAt?.oneOf, [
+      { type: "integer" },
+      { type: "string" },
+    ]);
     strictEqual(inputProps?.properties?.summary?.type, "string");
     strictEqual(inputProps?.properties?.significance?.type, "integer");
     strictEqual(inputProps?.properties?.participants?.type, "array");

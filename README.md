@@ -6,101 +6,93 @@
 
 **Agent contacts: people, promises and yearly dates, with a radar for who is drifting.**
 
-```bash
-npm install @ghostpaw/affinity
-```
-
-A standalone social CRM core for Node.js, built on SQLite.
-
-Affinity treats contacts, identities, relationship mechanics, structural ties,
-journal evidence, commitments, recurring dates, attributes, and graph review as
-one coherent model instead of separate systems. It ships as a single prebundled
-blob with zero runtime dependencies, designed for two audiences at once: human
-developers working directly in code, and LLM agents operating through a
-structured `soul` / `tools` / `skills` runtime.
-
-## MCP server
-
-Every client below starts the same stdio server: `npx -y @ghostpaw/affinity mcp`.
-Contacts live in `~/.ghostpaw/affinity.db` unless the `GHOSTPAW_AFFINITY_DB`
-environment variable (absolute path) or `--db <path>` says otherwise.
-
-**Claude Code**
-
-```bash
-claude mcp add ghostpaw-affinity -- npx -y @ghostpaw/affinity mcp
-```
-
-or as a plugin, which also installs the skill:
-
-```bash
-/plugin marketplace add GhostPawJS/affinity
-/plugin install ghostpaw-affinity@ghostpaw-affinity
-```
-
-**Codex CLI** (`~/.affinity/config.toml`)
-
-```toml
-[mcp_servers.ghostpaw-affinity]
-command = "npx"
-args = ["-y", "@ghostpaw/affinity", "mcp"]
-```
-
-**Cursor** (`.cursor/mcp.json`), **Claude Desktop** (`claude_desktop_config.json`)
-or a project `.mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "ghostpaw-affinity": {
-      "command": "npx",
-      "args": ["-y", "@ghostpaw/affinity", "mcp"]
-    }
-  }
-}
-```
-
-Claude Desktop users can also install `server.mcpb` from the
-[latest GitHub release](https://github.com/GhostPawJS/affinity/releases/latest).
-A Dockerfile is included for container hosts:
-`docker build -t ghostpaw-affinity . && docker run -i --rm -v affinity:/data ghostpaw-affinity`.
-
-The server speaks MCP 2026-07-28 (stateless, `server/discover`) and the
-initialize-based revisions 2025-11-25, 2025-06-18, 2025-03-26 and 2024-11-05.
-
-### CLI
-
-```bash
-npx -y @ghostpaw/affinity tools
-npx -y @ghostpaw/affinity call manage_contact '{"action":"create","input":{"name":"Sam","kind":"human"}}'
-npx -y @ghostpaw/affinity call search_affinity '{"query":"Sam"}'
-```
-
-Install globally for the `ghostpaw-affinity` binary: `npm i -g @ghostpaw/affinity`.
-`ghostpaw-affinity mcp` starts the stdio server.
-
-### Agent Skill
-
-`SKILL.md` (repo root) and `skills/affinity/SKILL.md` follow the
-[Agent Skills](https://agentskills.io) format and ship in the npm package.
-Copy `skills/affinity/` into your agent's skills folder, or print it:
-
-```bash
-npx -y @ghostpaw/affinity skill > SKILL.md
-```
+A local social CRM: contacts, identities, relationships, journal events,
+commitments and recurring dates in one SQLite file. One self-contained binary
+per platform, an MCP server, and a zero-dependency TypeScript library.
 
 ## Install
 
+Each line downloads the latest release for one platform, checks it against
+`SHA256SUMS`, puts `ghostpaw-affinity` on your `PATH` and prints the version.
 
-The [npm package](https://www.npmjs.com/package/@ghostpaw/affinity) requires Node 24+:
+**Linux x64**
 
 ```sh
-npm install -g @ghostpaw/affinity
-npx -y @ghostpaw/affinity --help
+cd "$(mktemp -d)" && T=linux-x64 && V=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/GhostPawJS/affinity/releases/latest | sed 's|.*/v||') && F=ghostpaw-affinity-$V-$T.tar.gz && U=https://github.com/GhostPawJS/affinity/releases/download/v$V && curl -fsSL -O "$U/$F" -O "$U/SHA256SUMS" && grep " $F\$" SHA256SUMS | sha256sum -c - && tar -xzf "$F" ghostpaw-affinity && mkdir -p ~/.local/bin && mv ghostpaw-affinity ~/.local/bin/ && { case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.profile; export PATH="$HOME/.local/bin:$PATH";; esac; } && ghostpaw-affinity --version
 ```
 
-Standalone binaries are available from [GitHub Releases](https://github.com/GhostPawJS/affinity/releases)
-for linux-x64, linux-arm64, darwin-arm64, darwin-x64 and windows-x64.
+**Linux arm64**
+
+```sh
+cd "$(mktemp -d)" && T=linux-arm64 && V=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/GhostPawJS/affinity/releases/latest | sed 's|.*/v||') && F=ghostpaw-affinity-$V-$T.tar.gz && U=https://github.com/GhostPawJS/affinity/releases/download/v$V && curl -fsSL -O "$U/$F" -O "$U/SHA256SUMS" && grep " $F\$" SHA256SUMS | sha256sum -c - && tar -xzf "$F" ghostpaw-affinity && mkdir -p ~/.local/bin && mv ghostpaw-affinity ~/.local/bin/ && { case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.profile; export PATH="$HOME/.local/bin:$PATH";; esac; } && ghostpaw-affinity --version
+```
+
+**macOS Apple silicon**
+
+```sh
+cd "$(mktemp -d)" && T=darwin-arm64 && V=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/GhostPawJS/affinity/releases/latest | sed 's|.*/v||') && F=ghostpaw-affinity-$V-$T.tar.gz && U=https://github.com/GhostPawJS/affinity/releases/download/v$V && curl -fsSL -O "$U/$F" -O "$U/SHA256SUMS" && grep " $F\$" SHA256SUMS | shasum -a 256 -c - && tar -xzf "$F" ghostpaw-affinity && sudo mkdir -p /usr/local/bin && sudo mv ghostpaw-affinity /usr/local/bin/ && ghostpaw-affinity --version
+```
+
+**macOS Intel**
+
+```sh
+cd "$(mktemp -d)" && T=darwin-x64 && V=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/GhostPawJS/affinity/releases/latest | sed 's|.*/v||') && F=ghostpaw-affinity-$V-$T.tar.gz && U=https://github.com/GhostPawJS/affinity/releases/download/v$V && curl -fsSL -O "$U/$F" -O "$U/SHA256SUMS" && grep " $F\$" SHA256SUMS | shasum -a 256 -c - && tar -xzf "$F" ghostpaw-affinity && sudo mkdir -p /usr/local/bin && sudo mv ghostpaw-affinity /usr/local/bin/ && ghostpaw-affinity --version
+```
+
+**Windows x64 (PowerShell)**
+
+```powershell
+$r='GhostPawJS/affinity'; $v=(irm "https://api.github.com/repos/$r/releases/latest").tag_name; $f="ghostpaw-affinity-$($v.TrimStart('v'))-windows-x64.zip"; $u="https://github.com/$r/releases/download/$v"; $t=(New-Item -ItemType Directory (Join-Path $env:TEMP ([guid]::NewGuid()))).FullName; iwr "$u/$f" -OutFile "$t\$f" -UseBasicParsing; iwr "$u/SHA256SUMS" -OutFile "$t\SHA256SUMS" -UseBasicParsing; $want=((Get-Content "$t\SHA256SUMS" | Where-Object { $_ -like "* $f" }) -split '\s+')[0]; if (-not $want -or (Get-FileHash "$t\$f" -Algorithm SHA256).Hash -ne $want) { throw "checksum mismatch for $f" }; $d=Join-Path $env:LOCALAPPDATA 'Programs\ghostpaw\bin'; Expand-Archive "$t\$f" $t -Force; New-Item -ItemType Directory -Force $d | Out-Null; Copy-Item "$t\ghostpaw-affinity.exe" $d -Force; $p=[Environment]::GetEnvironmentVariable('Path','User'); if (";$p;" -notlike "*;$d;*") { [Environment]::SetEnvironmentVariable('Path',"$p;$d",'User') }; $env:Path="$d;$env:Path"; ghostpaw-affinity --version
+```
+
+Linux installs to `~/.local/bin` (added to `~/.profile` if missing), macOS to
+`/usr/local/bin` (asks for sudo), Windows to `%LOCALAPPDATA%\Programs\ghostpaw\bin`
+(added to the user `PATH`; open a new terminal afterwards).
+
+Then:
+
+```sh
+ghostpaw-affinity contact create '{"name":"Sam","kind":"human"}'
+ghostpaw-affinity search sam
+ghostpaw-affinity skill            # cheat sheet and tool reference
+```
+
+Contacts live in `~/.ghostpaw/affinity.db` unless `--db <path>` or the
+`GHOSTPAW_AFFINITY_DB` environment variable says otherwise; relative paths
+resolve against the current directory.
+
+A session with the linux-x64 binary against a fresh database:
+
+![ghostpaw-affinity session: version, contact create, identity add, event and commitment record, search, review commitments.open and show contact_profile](https://raw.githubusercontent.com/GhostPawJS/affinity/main/docs/assets/cli.png)
+
+The same session as an [animated GIF](https://raw.githubusercontent.com/GhostPawJS/affinity/main/docs/assets/cli.gif).
+
+### npx / npm (for npm-based environments)
+
+The [npm package](https://www.npmjs.com/package/@ghostpaw/affinity) needs Node 24+
+and has zero runtime dependencies:
+
+```sh
+npx -y @ghostpaw/affinity --help
+npm install -g @ghostpaw/affinity   # provides ghostpaw-affinity
+```
+
+### Library (for harnesses)
+
+```sh
+npm install @ghostpaw/affinity
+```
+
+```ts
+import { DatabaseSync } from "node:sqlite";
+import { initAffinityTables, read, write, tools } from "@ghostpaw/affinity";
+```
+
+See [Quick Start](#quick-start) and [docs/LLM.md](docs/LLM.md) for the tool facade.
+
+### Other installers and verification
+
+Interactive installers (also verify `SHA256SUMS`):
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/GhostPawJS/affinity/main/install.sh | sh
@@ -109,14 +101,6 @@ curl -fsSL https://raw.githubusercontent.com/GhostPawJS/affinity/main/install.sh
 ```powershell
 irm https://raw.githubusercontent.com/GhostPawJS/affinity/main/install.ps1 | iex
 ```
-
-A session with the 0.4.1 linux-x64 binary against a fresh database (output piped through `jq` to keep it short):
-
-![ghostpaw-affinity 0.4.1: version, contact create, identity add, event and commitment record, search, review commitments.open and show contact_profile](https://raw.githubusercontent.com/GhostPawJS/affinity/main/docs/assets/cli.png)
-
-The same session as an [animated GIF](https://raw.githubusercontent.com/GhostPawJS/affinity/main/docs/assets/cli.gif).
-
-Other release installers:
 
 ```sh
 mise use -g github:GhostPawJS/affinity
@@ -155,8 +139,8 @@ packages:
       - name: ghostpaw-affinity
 ```
 
-Install scripts verify SHA256SUMS. To verify a downloaded archive's
-[build attestation](https://cli.github.com/manual/gh_attestation_verify):
+`SHA256SUMS` covers every archive and `server.mcpb`. To verify a downloaded
+archive's [build attestation](https://cli.github.com/manual/gh_attestation_verify):
 
 ```sh
 gh attestation verify <archive> -R GhostPawJS/affinity
@@ -169,32 +153,99 @@ download on macOS, remove quarantine with
 Linux binaries require glibc 2.28+; use npx on Alpine.
 See the [binary build workflow](.github/workflows/release-binaries.yml).
 
-Sizes for 0.4.0 (Node 26.12.1 inside each binary):
+Each archive is roughly 40-46 MB (the binary embeds the Node runtime, 105-150 MB
+unpacked); the npm package is about 2 MB unpacked. Every release, including the
+one-liners above, is installed and run on ubuntu-24.04, macos-15 and
+windows-2025 by the [install check](.github/workflows/install-check.yml).
 
-| Target | Archive | Binary |
-|---|---|---|
-| linux-x64 | 41.7 MB tar.gz | 117.6 MB |
-| linux-arm64 | 41.2 MB tar.gz | 115.3 MB |
-| darwin-arm64 | 44.9 MB tar.gz | 146.8 MB |
-| darwin-x64 | 46.4 MB tar.gz | 149.7 MB |
-| windows-x64 | 38.4 MB zip | 105.7 MB |
+## MCP server
 
-The npm package is 2003 KB unpacked and needs Node 24+. Every release is
-installed and run on ubuntu-24.04, macos-15 and windows-2025 by the
-[install check](.github/workflows/install-check.yml).
+Every client below starts the same stdio server: `ghostpaw-affinity mcp`.
+Without the binary, use `npx -y @ghostpaw/affinity mcp` as the command instead.
 
-The install check runs on ubuntu-24.04, macos-15 and windows-2025.
+**Claude Code**
+
+```bash
+claude mcp add ghostpaw-affinity -- ghostpaw-affinity mcp
+```
+
+or as a plugin, which also installs the skill:
+
+```bash
+/plugin marketplace add GhostPawJS/affinity
+/plugin install ghostpaw-affinity@ghostpaw-affinity
+```
+
+**Codex CLI** (`~/.codex/config.toml`)
+
+```toml
+[mcp_servers.ghostpaw-affinity]
+command = "ghostpaw-affinity"
+args = ["mcp"]
+```
+
+**Cursor** (`.cursor/mcp.json`), **Claude Desktop** (`claude_desktop_config.json`)
+or a project `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "ghostpaw-affinity": {
+      "command": "ghostpaw-affinity",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+Claude Desktop users can also install `server.mcpb` from the
+[latest GitHub release](https://github.com/GhostPawJS/affinity/releases/latest).
+A Dockerfile is included for container hosts:
+`docker build -t ghostpaw-affinity . && docker run -i --rm -v affinity:/data ghostpaw-affinity`.
+
+The server speaks MCP 2026-07-28 (stateless, `server/discover`) and the
+initialize-based revisions 2025-11-25, 2025-06-18, 2025-03-26 and 2024-11-05.
+
+### Agent Skill
+
+`SKILL.md` (repo root) and `skills/affinity/SKILL.md` follow the
+[Agent Skills](https://agentskills.io) format and ship in the npm package.
+Copy `skills/affinity/` into your agent's skills folder, or print it:
+
+```bash
+ghostpaw-affinity skill > SKILL.md
+ghostpaw-affinity skill --list       # workflow guides
+ghostpaw-affinity skill bootstrap-and-cold-start
+```
 
 ## CLI
 
+```sh
+export GHOSTPAW_AFFINITY_DB=~/crm/affinity.db      # or --db <path>
+ghostpaw-affinity contact create '{"name":"Fox","kind":"human","bootstrapOwner":true}'
+ghostpaw-affinity search "jana"                     # names, identities, tags, attributes, roles, events
+ghostpaw-affinity contact create '{"name":"Jana Petersen","kind":"human"}'
+ghostpaw-affinity identity add --contact '{"contactId":2}' --input '{"type":"email","value":"jana@example.com"}'
+ghostpaw-affinity event record --kind interaction --input '{"type":"conversation","occurredAt":"today","summary":"Call re pilot","significance":6,"participants":[{"contactId":2,"role":"recipient","directionality":"mutual"}]}'
+ghostpaw-affinity commitment record --input '{"commitmentType":"promise","occurredAt":"today","dueAt":"+3d","summary":"Send proposal","significance":6,"participants":[{"contactId":2,"role":"recipient"}]}'
+ghostpaw-affinity attribute set --target '{"kind":"contact","contact":{"contactId":2}}' --name tag:gastro --value null
+ghostpaw-affinity review contacts.list --tag gastro
+ghostpaw-affinity review contacts.list --attribute pipeline_stage=proposal
+ghostpaw-affinity review commitments.open            # overdue promises are flagged
+ghostpaw-affinity review links.radar                 # who is drifting, with reasons
+ghostpaw-affinity show contact_profile --contact '{"contactId":2}'
+ghostpaw-affinity contact export --contact '{"contactId":2}'   # omit --contact for the whole database
+ghostpaw-affinity contact delete --contact '{"contactId":2}' --confirm
+```
+
+`ghostpaw-affinity skill` prints the full cheat sheet; `skill --list` and
+`skill <guide>` print the workflow guides.
+
 ```text
-ghostpaw-affinity search <query>
-ghostpaw-affinity review <view>
+ghostpaw-affinity search <query> [--tag T] [--attribute name[=value]]
+ghostpaw-affinity review <view> [--tag T] [--attribute name[=value]]
 ghostpaw-affinity show <owner_profile|contact_profile|link> [--contact JSON --link JSON]
-ghostpaw-affinity contact create <input-json>
-ghostpaw-affinity contact revise <contact-json> --patch JSON
-ghostpaw-affinity contact lifecycle <contact-json> <lifecycleState>
-ghostpaw-affinity contact merge [flags]
+ghostpaw-affinity contact create|revise|lifecycle|export|delete|merge
 ghostpaw-affinity identity add|revise|verify|remove [flags]
 ghostpaw-affinity relationship add|bond|state|tie|untie [flags]
 ghostpaw-affinity commitment record|resolve [flags]
@@ -205,43 +256,49 @@ ghostpaw-affinity duplicate dismiss|undismiss [flags]
 ghostpaw-affinity mcp|skill|tools|describe|call|completions|version|help
 ```
 
-There are 27 domain commands. `review` accepts the existing view names,
+There are 29 domain commands. `review` accepts the existing view names,
 including `contacts.list`, `contacts.duplicates` and `dates.upcoming`.
 `show` selects an inspection kind; contact and link locators are JSON objects.
-Use `help contact` or `contact create --help` for schema-derived help.
-Nested payloads use JSON or `@path` to read a file.
+Use `help contact` or `contact create --help` for schema-derived help; a
+mistyped command suggests the closest one. Nested payloads use JSON or `@path`
+to read a file; repeated array flags accept JSON objects
+(`--entries '{"name":"a","value":"x"}'`) or one JSON array.
+
+Every time field accepts epoch milliseconds, ISO 8601 with `Z` or an offset,
+`YYYY-MM-DD`, `DD.MM.YYYY` (CLI), `today`, `tomorrow`, `yesterday` and signed day offsets
+such as `+3d` or `-2d`. On the CLI, date-only values use local time (midnight,
+or end of day for `dueAt`); through MCP and the tool facade they use UTC.
 
 Global flags: `--db <path>`, `--json`, `--quiet`, `--compact`,
 `--help`/`-h`, `--version`/`-V`/`-v`, `--no-color`.
-`NO_COLOR` is accepted; output uses no terminal colors.
-Noun-verb commands print the full tool result as JSON with `--json` or piped
-stdout. Terminal output shows the summary and payload. `--quiet` suppresses
-stdout. `--compact` removes JSON indentation.
-Array flags repeat; kebab-case flags map to schema properties.
-`--` ends flags. A positional `-`, or piped stdin with no input flags, reads a
-JSON object. Explicit flags override stdin fields.
+`NO_COLOR` is accepted. In a terminal, commands print a readable summary with
+names and dates. With `--json` or piped stdout they print the tool result as
+JSON with ISO date siblings and floats rounded to three decimals; `--compact`
+removes indentation and empty receipt arrays. `--quiet` suppresses stdout.
+Writes list what changed in `data.changes`, and creates warn about likely
+duplicates. Kebab-case flags map to schema properties. `--` ends flags.
+A positional `-`, or piped stdin when no other arguments are given, reads a
+JSON object (`echo '{"name":"Sam","kind":"human"}' | ghostpaw-affinity contact create`).
+Explicit flags override stdin fields.
 Database selection uses `--db`, `GHOSTPAW_AFFINITY_DB`, then
-`~/.ghostpaw/affinity.db`. These commands work offline.
+`~/.ghostpaw/affinity.db`; relative paths resolve against the current
+directory, and `--help` shows the resolved path. A new database is reported on
+stderr. These commands work offline.
 
-| Exit | Noun-verb result |
+| Exit | Result |
 |---|---|
 | 0 | Success, including no_op |
-| 1 | Tool error |
-| 2 | Usage or schema error |
+| 1 | Other tool error |
+| 2 | Usage, schema or invalid input |
 | 3 | Clarification needed or not found |
-| 4 | Conflict or version mismatch |
+| 4 | Conflict, already resolved or version mismatch |
 | 70 | Internal error |
 
 Errors go to stderr. With `--json`, errors also print to stdout.
-Legacy `tools [--json]`, `describe <tool>`, `call <tool> [JSON|-]` and
-`<tool_name> --parameter value` retain their output and exit codes.
+`--version` names the variant: `affinity 0.5.0 (binary, linux-x64)`,
+`(npm)` or `(library)`. Legacy `tools [--json]`, `describe <tool>`,
+`call <tool> [JSON|-]` and `<tool_name> --parameter value` remain available.
 `completions bash|zsh|fish` prints shell scripts.
-
-```sh
-ghostpaw-affinity contact create '{"name":"Sam","kind":"human"}' --db /tmp/affinity-example.db --json
-ghostpaw-affinity search Sam --db /tmp/affinity-example.db --json
-ghostpaw-affinity review contacts.list --db /tmp/affinity-example.db --json
-```
 
 ## Quick Start
 

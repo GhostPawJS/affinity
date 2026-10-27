@@ -1,7 +1,7 @@
 import { ok, strictEqual, throws } from "node:assert/strict";
 import { describe, it } from "node:test";
 import { createContact } from "../contacts/create_contact.ts";
-import { AffinityStateError } from "../lib/errors/affinity_state_error.ts";
+import { AffinityConflictError } from "../lib/errors/affinity_conflict_error.ts";
 import { AffinityValidationError } from "../lib/errors/affinity_validation_error.ts";
 import { createInitializedAffinityDb } from "../lib/testing/create_initialized_affinity_db.ts";
 import { recordCommitment } from "./record_commitment.ts";
@@ -42,7 +42,7 @@ describe("recordCommitment + resolveCommitment", () => {
     strictEqual(Number(openAfter.c), 0);
     throws(
       () => resolveCommitment(db, ev.id, "kept"),
-      (e: unknown) => e instanceof AffinityStateError,
+      (e: unknown) => e instanceof AffinityConflictError,
     );
     db.close();
   });

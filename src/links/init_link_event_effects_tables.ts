@@ -26,6 +26,14 @@ export function initLinkEventEffectsTables(db: AffinityDb): void {
       )
     )
   `);
+  const columns = db.prepare("PRAGMA table_info(link_event_effects)").all() as {
+    name: string;
+  }[];
+  if (!columns.some((column) => column.name === "counts_for_recency")) {
+    db.exec(
+      "ALTER TABLE link_event_effects ADD COLUMN counts_for_recency INTEGER NOT NULL DEFAULT 1",
+    );
+  }
   db.exec(
     "CREATE INDEX IF NOT EXISTS idx_link_event_effects_link_time ON link_event_effects(link_id, occurred_at DESC, event_id DESC)",
   );

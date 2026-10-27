@@ -139,7 +139,7 @@ test("CLI JSON args and stdin, errors, clarification and usage exit codes", asyn
   );
   for (const value of ["[]", "{}", '{"someValue":"wrong"}', "{"]) {
     const result = await invoke(["call", "test_tool", value]);
-    assert.equal(result.code, 1);
+    assert.equal(result.code, 2);
     assert.equal(result.opens, 0);
     assert.ok(result.err);
     assert.equal(result.out, "");
@@ -179,7 +179,7 @@ test("handler throws still close the context", async () => {
       },
     }),
   });
-  assert.equal(code, 1);
+  assert.equal(code, 70);
   assert.equal(closed, true);
 });
 

@@ -21,13 +21,18 @@ const fail = (message) => {
 const run = (args) => {
   const r = spawnSync(binary, args, { encoding: "utf8" });
   if (r.status !== 0) fail(`${args.join(" ")} exited ${r.status}\n${r.stderr}`);
-  if (r.stderr) fail(`${args.join(" ")} wrote to stderr:\n${r.stderr}`);
+  // The first write reports the new database file; nothing else may reach stderr.
+  const stderr = r.stderr.replace(/^created .+\n/m, "");
+  if (stderr) fail(`${args.join(" ")} wrote to stderr:\n${r.stderr}`);
   return r.stdout;
 };
 
 const version = run(["--version"]).trim();
-if (version !== pkg.version)
-  fail(`--version printed ${version}, expected ${pkg.version}`);
+const target = `${process.platform === "win32" ? "windows" : process.platform}-${process.arch}`;
+if (version !== `affinity ${pkg.version} (binary, ${target})`)
+  fail(
+    `--version printed ${version}, expected affinity ${pkg.version} (binary, ${target})`,
+  );
 run(["--help"]);
 const added = JSON.parse(
   run([

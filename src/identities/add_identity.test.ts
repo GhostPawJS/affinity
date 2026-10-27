@@ -15,10 +15,10 @@ describe("addIdentity", () => {
     const { primary: c } = createContact(db, { name: "A", kind: "human" });
     const r = addIdentity(db, c.id, {
       type: "email",
-      value: "a@b",
+      value: "a@b.com",
     });
     strictEqual(r.primary.type, "email");
-    strictEqual(r.primary.value, "a@b");
+    strictEqual(r.primary.value, "a@b.com");
     strictEqual(r.created[0]?.kind, "identity");
     db.close();
   });
@@ -26,10 +26,10 @@ describe("addIdentity", () => {
   it("rejects duplicate normalized key", async () => {
     const db = await createInitializedAffinityDb();
     const { primary: c } = createContact(db, { name: "A", kind: "human" });
-    addIdentity(db, c.id, { type: "email", value: "a@b" });
+    addIdentity(db, c.id, { type: "email", value: "a@b.com" });
     const { primary: c2 } = createContact(db, { name: "B", kind: "human" });
     throws(
-      () => addIdentity(db, c2.id, { type: "email", value: "A@B" }),
+      () => addIdentity(db, c2.id, { type: "email", value: "A@B.COM" }),
       (e: unknown) => e instanceof AffinityConflictError,
     );
     db.close();
@@ -38,7 +38,7 @@ describe("addIdentity", () => {
   it("rejects missing contact", async () => {
     const db = await createInitializedAffinityDb();
     throws(
-      () => addIdentity(db, 999, { type: "email", value: "a@b" }),
+      () => addIdentity(db, 999, { type: "email", value: "a@b.com" }),
       (e: unknown) => e instanceof AffinityNotFoundError,
     );
     db.close();
@@ -84,7 +84,7 @@ describe("addIdentity", () => {
       "UPDATE contacts SET lifecycle_state = 'merged' WHERE id = ?",
     ).run(c.id);
     throws(
-      () => addIdentity(db, c.id, { type: "email", value: "a@b" }),
+      () => addIdentity(db, c.id, { type: "email", value: "a@b.com" }),
       (e: unknown) => e instanceof AffinityStateError,
     );
     db.close();

@@ -69,7 +69,7 @@
   "tools": [
     {
       "name": "search_affinity",
-      "description": "Search contacts by name or identity, including exact natural-key lookups like email-style identifiers."
+      "description": "Search contacts by name, identity, attributes, link roles, bonds and event text. All whitespace tokens must match. Dormant and lost contacts are excluded by default; use includeDormant and includeLost to include them."
     },
     {
       "name": "review_affinity",
@@ -81,7 +81,7 @@
     },
     {
       "name": "manage_contact",
-      "description": "Create a contact, revise one contact's core fields, or change lifecycle state. ALWAYS search_affinity first before creating — duplicates corrupt the graph."
+      "description": "Create, revise, export or permanently delete a contact (confirm: true required; owner cannot be deleted). Export without contact exports the whole database. Lifecycle lost is soft delete. ALWAYS search_affinity first before creating — duplicates corrupt the graph."
     },
     {
       "name": "merge_contacts",
@@ -89,7 +89,7 @@
     },
     {
       "name": "manage_duplicate_dismissal",
-      "description": "Dismiss or un-dismiss a duplicate candidate pair so it does not resurface in listDuplicateCandidates."
+      "description": "Dismiss or un-dismiss a duplicate candidate pair so it does not resurface in review_affinity contacts.duplicates."
     },
     {
       "name": "manage_identity",

@@ -6,6 +6,7 @@ export const AFFINITY_MAX_LIST_LIMIT = 250;
 
 /** Shared list-style read controls — CONCEPT.md Global query contract. */
 export interface AffinityListReadOptions {
+  now?: number;
   limit?: number;
   offset?: number;
   sort?: string;

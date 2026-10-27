@@ -2,6 +2,7 @@ import type { AffinityDb } from "../database.ts";
 import type { DismissedPairRef } from "../lib/types/dismissed_pair_ref.ts";
 import { dismissDuplicate } from "../merges/dismiss_duplicate.ts";
 import { undismissDuplicate } from "../merges/undismiss_duplicate.ts";
+import type { TimeInputs } from "./parse_time_input.ts";
 import {
   defineAffinityTool,
   enumSchema,
@@ -10,13 +11,16 @@ import {
   objectSchema,
   stringSchema,
 } from "./tool_metadata.ts";
+import type { MutationToolData } from "./tool_mutation.ts";
 import { manageDuplicateDismissalToolName } from "./tool_names.ts";
 import {
   type ContactLocator,
   resolveContactLocator,
   withToolHandling,
 } from "./tool_resolvers.ts";
+import { toolFailure as invalidToolInput } from "./tool_types.ts";
 import { type ToolResult, toolSuccess } from "./tool_types.ts";
+import { validateToolInput } from "./validate_tool_input.ts";
 
 export interface ManageDuplicateDismissalToolInput {
   action: "dismiss" | "undismiss";
@@ -25,10 +29,17 @@ export interface ManageDuplicateDismissalToolInput {
   reason?: string | null;
 }
 
-export interface DismissalToolData {
-  action: string;
-  primary: DismissedPairRef;
-}
+export type DismissalToolData = Omit<
+  MutationToolData<DismissedPairRef>,
+  "changes"
+> & {
+  changes: {
+    entity: "duplicate_dismissal";
+    leftContactId: number;
+    rightContactId: number;
+    action: string;
+  }[];
+};
 
 export type ManageDuplicateDismissalToolResult = ToolResult<DismissalToolData>;
 
@@ -52,8 +63,20 @@ function contactLocatorSchema(description: string) {
 
 export function manageDuplicateDismissalToolHandler(
   db: AffinityDb,
-  input: ManageDuplicateDismissalToolInput,
+  rawInput: TimeInputs<ManageDuplicateDismissalToolInput>,
 ): ManageDuplicateDismissalToolResult {
+  const input = structuredClone(rawInput) as ManageDuplicateDismissalToolInput;
+  const inputError = validateToolInput(
+    manageDuplicateDismissalTool.inputSchema,
+    input,
+  );
+  if (inputError)
+    return invalidToolInput(
+      "protocol",
+      "invalid_input",
+      "Invalid input.",
+      inputError,
+    );
   return withToolHandling<DismissalToolData>(() => {
     const left = resolveContactLocator(db, input.left, "left");
     if (!left.ok) {
@@ -64,6 +87,14 @@ export function manageDuplicateDismissalToolHandler(
       return right.result;
     }
 
+    const leftContactId = Math.min(left.value.id, right.value.id);
+    const rightContactId = Math.max(left.value.id, right.value.id);
+    const existed =
+      db
+        .prepare(
+          "SELECT 1 FROM dismissed_duplicates WHERE left_id = ? AND right_id = ?",
+        )
+        .get(leftContactId, rightContactId) !== undefined;
     if (input.action === "dismiss") {
       const receipt = dismissDuplicate(
         db,
@@ -73,25 +104,49 @@ export function manageDuplicateDismissalToolHandler(
       );
       return toolSuccess(
         `Dismissed pair #${receipt.primary.leftContactId} / #${receipt.primary.rightContactId}.`,
-        { action: "dismiss", primary: receipt.primary },
+        {
+          ...receipt,
+          action: "dismiss",
+          changes: [
+            {
+              entity: "duplicate_dismissal",
+              leftContactId,
+              rightContactId,
+              action: existed ? "updated" : "created",
+            },
+          ],
+        },
       );
     }
 
     const receipt = undismissDuplicate(db, left.value.id, right.value.id);
     return toolSuccess(
       `Un-dismissed pair #${receipt.primary.leftContactId} / #${receipt.primary.rightContactId}.`,
-      { action: "undismiss", primary: receipt.primary },
+      {
+        ...receipt,
+        action: "undismiss",
+        changes: existed
+          ? [
+              {
+                entity: "duplicate_dismissal",
+                leftContactId,
+                rightContactId,
+                action: "removed",
+              },
+            ]
+          : [],
+      },
     );
   }, "Duplicate dismissal failed.");
 }
 
 export const manageDuplicateDismissalTool = defineAffinityTool<
-  ManageDuplicateDismissalToolInput,
+  TimeInputs<ManageDuplicateDismissalToolInput>,
   ManageDuplicateDismissalToolResult
 >({
   name: manageDuplicateDismissalToolName,
   description:
-    "Dismiss or un-dismiss a duplicate candidate pair so it does not resurface in listDuplicateCandidates.",
+    "Dismiss or un-dismiss a duplicate candidate pair so it does not resurface in review_affinity contacts.duplicates.",
   whenToUse:
     "Use dismiss after confirming two contacts are different people (not duplicates). Use undismiss to re-surface a pair for re-evaluation.",
   whenNotToUse:

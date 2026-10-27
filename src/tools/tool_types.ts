@@ -31,6 +31,7 @@ export type ToolWarningCode =
   | "already_in_state"
   | "derived_value_used"
   | "empty_result"
+  | "possible_duplicate"
   | "partial_match"
   | "unchanged";
 
@@ -63,10 +64,13 @@ export interface ToolEntityRef {
 }
 
 export interface ToolListItem extends ToolEntityRef {
+  [key: string]: unknown;
   snippet?: string | undefined;
 }
 
 export interface ToolWarning {
+  contactId?: number;
+  score?: number;
   code: ToolWarningCode;
   message: string;
 }
@@ -137,7 +141,7 @@ function withOptionalFields<T extends ToolBaseResult>(
   if (options.warnings && options.warnings.length > 0) {
     result.warnings = options.warnings;
   }
-  return result;
+  return roundToolValues(result);
 }
 
 export function toolWarning(
@@ -236,4 +240,20 @@ export function toolFailure(
     },
     options,
   );
+}
+
+function roundToolValues<T>(value: T): T {
+  if (typeof value === "number")
+    return (
+      Number.isInteger(value) ? value : Math.round(value * 1000) / 1000
+    ) as T;
+  if (Array.isArray(value)) return value.map(roundToolValues) as T;
+  if (value !== null && typeof value === "object")
+    return Object.fromEntries(
+      Object.entries(value).map(([key, child]) => [
+        key,
+        roundToolValues(child),
+      ]),
+    ) as T;
+  return value;
 }

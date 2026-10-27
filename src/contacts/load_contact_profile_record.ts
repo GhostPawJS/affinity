@@ -55,13 +55,25 @@ export function loadContactProfileRecord(
   const topLinks = linkRows.map((l) => mapLinkRowToLinkListItem(l));
   const activeDates = loadActiveDatesForContact(db, contactId);
   const contactRollup = loadContactRollup(db, contactId);
+  const winner =
+    row.merged_into_contact_id === null
+      ? null
+      : getContactRowById(db, row.merged_into_contact_id);
   return {
+    ...(winner ? { mergedInto: { id: winner.id, name: winner.name } } : {}),
     contact: mapContactRowToContactCore(row),
     identities,
     attributes,
     topLinks,
     activeDates,
-    warnings: contactRollup?.warnings ?? [],
+    warnings: [
+      ...(contactRollup?.warnings ?? []),
+      ...(winner
+        ? [
+            `Contact #${row.id} was merged into #${winner.id} ${winner.name}; use contactId ${winner.id}`,
+          ]
+        : []),
+    ],
     rollups: contactRollup?.rollup ?? null,
   };
 }

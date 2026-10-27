@@ -1,0 +1,34 @@
+{
+  "targets": [
+    {
+      "id": "linux-x64",
+      "label": "Linux x64",
+      "shell": "sh",
+      "cmd": "cd \"$(mktemp -d)\" && T=linux-x64 && V=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/GhostPawJS/affinity/releases/latest | sed 's|.*/v||') && F=ghostpaw-affinity-$V-$T.tar.gz && U=https://github.com/GhostPawJS/affinity/releases/download/v$V && curl -fsSL -O \"$U/$F\" -O \"$U/SHA256SUMS\" && grep \" $F\\$\" SHA256SUMS | sha256sum -c - && tar -xzf \"$F\" ghostpaw-affinity && mkdir -p ~/.local/bin && mv ghostpaw-affinity ~/.local/bin/ && { case \":$PATH:\" in *\":$HOME/.local/bin:\"*) ;; *) echo 'export PATH=\"$HOME/.local/bin:$PATH\"' >> ~/.profile; export PATH=\"$HOME/.local/bin:$PATH\";; esac; } && ghostpaw-affinity --version"
+    },
+    {
+      "id": "linux-arm64",
+      "label": "Linux arm64",
+      "shell": "sh",
+      "cmd": "cd \"$(mktemp -d)\" && T=linux-arm64 && V=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/GhostPawJS/affinity/releases/latest | sed 's|.*/v||') && F=ghostpaw-affinity-$V-$T.tar.gz && U=https://github.com/GhostPawJS/affinity/releases/download/v$V && curl -fsSL -O \"$U/$F\" -O \"$U/SHA256SUMS\" && grep \" $F\\$\" SHA256SUMS | sha256sum -c - && tar -xzf \"$F\" ghostpaw-affinity && mkdir -p ~/.local/bin && mv ghostpaw-affinity ~/.local/bin/ && { case \":$PATH:\" in *\":$HOME/.local/bin:\"*) ;; *) echo 'export PATH=\"$HOME/.local/bin:$PATH\"' >> ~/.profile; export PATH=\"$HOME/.local/bin:$PATH\";; esac; } && ghostpaw-affinity --version"
+    },
+    {
+      "id": "darwin-arm64",
+      "label": "macOS Apple silicon",
+      "shell": "sh",
+      "cmd": "cd \"$(mktemp -d)\" && T=darwin-arm64 && V=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/GhostPawJS/affinity/releases/latest | sed 's|.*/v||') && F=ghostpaw-affinity-$V-$T.tar.gz && U=https://github.com/GhostPawJS/affinity/releases/download/v$V && curl -fsSL -O \"$U/$F\" -O \"$U/SHA256SUMS\" && grep \" $F\\$\" SHA256SUMS | shasum -a 256 -c - && tar -xzf \"$F\" ghostpaw-affinity && sudo mkdir -p /usr/local/bin && sudo mv ghostpaw-affinity /usr/local/bin/ && ghostpaw-affinity --version"
+    },
+    {
+      "id": "darwin-x64",
+      "label": "macOS Intel",
+      "shell": "sh",
+      "cmd": "cd \"$(mktemp -d)\" && T=darwin-x64 && V=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/GhostPawJS/affinity/releases/latest | sed 's|.*/v||') && F=ghostpaw-affinity-$V-$T.tar.gz && U=https://github.com/GhostPawJS/affinity/releases/download/v$V && curl -fsSL -O \"$U/$F\" -O \"$U/SHA256SUMS\" && grep \" $F\\$\" SHA256SUMS | shasum -a 256 -c - && tar -xzf \"$F\" ghostpaw-affinity && sudo mkdir -p /usr/local/bin && sudo mv ghostpaw-affinity /usr/local/bin/ && ghostpaw-affinity --version"
+    },
+    {
+      "id": "windows-x64",
+      "label": "Windows x64 (PowerShell)",
+      "shell": "powershell",
+      "cmd": "$r='GhostPawJS/affinity'; $v=(irm \"https://api.github.com/repos/$r/releases/latest\").tag_name; $f=\"ghostpaw-affinity-$($v.TrimStart('v'))-windows-x64.zip\"; $u=\"https://github.com/$r/releases/download/$v\"; $t=(New-Item -ItemType Directory (Join-Path $env:TEMP ([guid]::NewGuid()))).FullName; iwr \"$u/$f\" -OutFile \"$t\\$f\" -UseBasicParsing; iwr \"$u/SHA256SUMS\" -OutFile \"$t\\SHA256SUMS\" -UseBasicParsing; $want=((Get-Content \"$t\\SHA256SUMS\" | Where-Object { $_ -like \"* $f\" }) -split '\\s+')[0]; if (-not $want -or (Get-FileHash \"$t\\$f\" -Algorithm SHA256).Hash -ne $want) { throw \"checksum mismatch for $f\" }; $d=Join-Path $env:LOCALAPPDATA 'Programs\\ghostpaw\\bin'; Expand-Archive \"$t\\$f\" $t -Force; New-Item -ItemType Directory -Force $d | Out-Null; Copy-Item \"$t\\ghostpaw-affinity.exe\" $d -Force; $p=[Environment]::GetEnvironmentVariable('Path','User'); if (\";$p;\" -notlike \"*;$d;*\") { [Environment]::SetEnvironmentVariable('Path',\"$p;$d\",'User') }; $env:Path=\"$d;$env:Path\"; ghostpaw-affinity --version"
+    }
+  ]
+}

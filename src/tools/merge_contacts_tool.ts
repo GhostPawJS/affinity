@@ -1,6 +1,7 @@
 import type { AffinityDb } from "../database.ts";
 import type { MergePrimary } from "../lib/types/merge_primary.ts";
 import { mergeContacts } from "../merges/merge_contacts.ts";
+import type { TimeInputs } from "./parse_time_input.ts";
 import {
   defineAffinityTool,
   integerSchema,
@@ -14,7 +15,9 @@ import {
   resolveContactLocator,
   withToolHandling,
 } from "./tool_resolvers.ts";
+import { toolFailure as invalidToolInput } from "./tool_types.ts";
 import type { ToolResult } from "./tool_types.ts";
+import { validateToolInput } from "./validate_tool_input.ts";
 
 export interface MergeContactsToolInput {
   winner: ContactLocator;
@@ -47,8 +50,17 @@ function contactLocatorSchema(description: string) {
 
 export function mergeContactsToolHandler(
   db: AffinityDb,
-  input: MergeContactsToolInput,
+  rawInput: TimeInputs<MergeContactsToolInput>,
 ): MergeContactsToolResult {
+  const input = structuredClone(rawInput) as MergeContactsToolInput;
+  const inputError = validateToolInput(mergeContactsTool.inputSchema, input);
+  if (inputError)
+    return invalidToolInput(
+      "protocol",
+      "invalid_input",
+      "Invalid input.",
+      inputError,
+    );
   return withToolHandling<MutationToolData<MergePrimary>>(() => {
     const winner = resolveContactLocator(db, input.winner, "winner");
     if (!winner.ok) {
@@ -74,7 +86,7 @@ export function mergeContactsToolHandler(
 }
 
 export const mergeContactsTool = defineAffinityTool<
-  MergeContactsToolInput,
+  TimeInputs<MergeContactsToolInput>,
   MergeContactsToolResult
 >({
   name: mergeContactsToolName,

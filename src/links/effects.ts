@@ -464,11 +464,14 @@ export function applyEventEffectToLink(
           1,
           Math.round((params.occurredAt - latest.occurred_at) / DAY_MS),
         );
-  const cadenceAfter = nextCadenceDays({
-    kind: linkKind,
-    currentCadenceDays: cadenceBefore,
-    gapDays,
-  });
+  const cadenceAfter =
+    commitmentResolution === "broken" || commitmentResolution === "cancelled"
+      ? cadenceBefore
+      : nextCadenceDays({
+          kind: linkKind,
+          currentCadenceDays: cadenceBefore,
+          gapDays,
+        });
   const stateAfter = deriveStateAfter({
     stateBefore,
     eventType: params.eventType,
@@ -527,6 +530,14 @@ export function applyEventEffectToLink(
     params.now,
     params.now,
   );
+  if (
+    commitmentResolution === "broken" ||
+    commitmentResolution === "cancelled"
+  ) {
+    db.prepare(
+      "UPDATE link_event_effects SET counts_for_recency = 0 WHERE event_id = ? AND link_id = ?",
+    ).run(params.eventId, params.linkId);
+  }
   refreshLinkRollup(db, params.linkId, params.now);
   return {
     linkId: params.linkId,

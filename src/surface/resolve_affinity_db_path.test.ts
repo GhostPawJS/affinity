@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { test } from "node:test";
 import { resolveAffinityDbPath } from "./resolve_affinity_db_path.ts";
 
@@ -14,7 +14,7 @@ test("database path precedence is flag, environment, home default", () => {
   );
   assert.equal(
     resolveAffinityDbPath({ env: { GHOSTPAW_AFFINITY_DB: "env" } }),
-    "env",
+    resolve("env"),
   );
   assert.equal(
     resolveAffinityDbPath({ env: {} }),

@@ -56,6 +56,12 @@
   ".:exports.read": {
     "kind": "object"
   },
+  ".:exports.read.exportAffinity": {
+    "kind": "function"
+  },
+  ".:exports.read.exportContact": {
+    "kind": "function"
+  },
   ".:exports.read.getAffinityChart": {
     "kind": "function"
   },
@@ -508,6 +514,15 @@
   ".:exports.tools.affinityToolMappings.45": {
     "kind": "object"
   },
+  ".:exports.tools.affinityToolMappings.46": {
+    "kind": "object"
+  },
+  ".:exports.tools.affinityToolMappings.47": {
+    "kind": "object"
+  },
+  ".:exports.tools.affinityToolMappings.48": {
+    "kind": "object"
+  },
   ".:exports.tools.affinityToolMappings.5": {
     "kind": "object"
   },
@@ -747,7 +762,7 @@
   },
   ".:exports.tools.manageContactTool.description": {
     "kind": "string",
-    "value": "Create a contact, revise one contact's core fields, or change lifecycle state. ALWAYS search_affinity first before creating — duplicates corrupt the graph."
+    "value": "Create, revise, export or permanently delete a contact (confirm: true required; owner cannot be deleted). Export without contact exports the whole database. Lifecycle lost is soft delete. ALWAYS search_affinity first before creating — duplicates corrupt the graph."
   },
   ".:exports.tools.manageContactTool.handler": {
     "kind": "function"
@@ -851,7 +866,7 @@
   },
   ".:exports.tools.manageDuplicateDismissalTool.description": {
     "kind": "string",
-    "value": "Dismiss or un-dismiss a duplicate candidate pair so it does not resurface in listDuplicateCandidates."
+    "value": "Dismiss or un-dismiss a duplicate candidate pair so it does not resurface in review_affinity contacts.duplicates."
   },
   ".:exports.tools.manageDuplicateDismissalTool.handler": {
     "kind": "function"
@@ -1072,6 +1087,9 @@
   ".:exports.tools.oneOfSchema": {
     "kind": "function"
   },
+  ".:exports.tools.parseTimeInput": {
+    "kind": "function"
+  },
   ".:exports.tools.recordEventTool": {
     "kind": "object"
   },
@@ -1187,7 +1205,7 @@
   },
   ".:exports.tools.searchAffinityTool.description": {
     "kind": "string",
-    "value": "Search contacts by name or identity, including exact natural-key lookups like email-style identifiers."
+    "value": "Search contacts by name, identity, attributes, link roles, bonds and event text. All whitespace tokens must match. Dormant and lost contacts are excluded by default; use includeDormant and includeLost to include them."
   },
   ".:exports.tools.searchAffinityTool.handler": {
     "kind": "function"
@@ -1318,6 +1336,9 @@
     "kind": "function"
   },
   ".:exports.write.createContact": {
+    "kind": "function"
+  },
+  ".:exports.write.deleteContact": {
     "kind": "function"
   },
   ".:exports.write.dismissDuplicate": {
@@ -1456,7 +1477,7 @@
     "kind": "type",
     "type": "AffinityErrorCode",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -1780,11 +1801,11 @@
     "kind": "type",
     "type": "AffinitySkillRegistry",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => ArrayIterator<AffinitySkill>",
         "optional": false
       },
-      "__@unscopables@525": {
+      "__@unscopables@533": {
         "type": "{ readonly [x: number]: boolean | undefined; readonly length?: boolean | undefined; toString?: boolean | undefined; toLocaleString?: boolean | undefined; concat?: boolean | undefined; join?: boolean | undefined; slice?: boolean | undefined; indexOf?: boolean | undefined; lastIndexOf?: boolean | undefined; every?: boolean | undefined; some?: boolean | undefined; forEach?: boolean | undefined; map?: boolean | undefined; filter?: boolean | undefined; reduce?: boolean | undefined; reduceRight?: boolean | undefined; find?: boolean | undefined; findIndex?: boolean | undefined; entries?: boolean | undefined; keys?: boolean | undefined; values?: boolean | undefined; includes?: boolean | undefined; flatMap?: boolean | undefined; flat?: boolean | undefined; at?: boolean | undefined; findLast?: boolean | undefined; findLastIndex?: boolean | undefined; toReversed?: boolean | undefined; toSorted?: boolean | undefined; toSpliced?: boolean | undefined; with?: boolean | undefined; [Symbol.iterator]?: boolean | undefined; readonly [Symbol.unscopables]?: boolean | undefined; }",
         "optional": false
       },
@@ -2128,7 +2149,7 @@
     "kind": "type",
     "type": "AffinityErrorCode",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -2608,6 +2629,14 @@
   ".:public.read": {
     "kind": "namespace"
   },
+  ".:public.read.exportAffinity": {
+    "kind": "value",
+    "type": "(db: AffinityDb) => { version: number; exportedAt: number; exportedAtIso: string; contacts: { contact: Record<string, unknown>; identities: Record<string, unknown>[]; attributes: Record<string, unknown>[]; links: Record<string, unknown>[]; events: (Record<string, unknown> & { participants: Record<string, unknown>[]; })[]; commitments: Record<string, unknown>[]; dates: Record<string, unknown>[]; mergeHistory: Record<string, unknown>[]; }[]; }"
+  },
+  ".:public.read.exportContact": {
+    "kind": "value",
+    "type": "(db: AffinityDb, id: number) => { contact: Record<string, unknown>; identities: Record<string, unknown>[]; attributes: Record<string, unknown>[]; links: Record<string, unknown>[]; events: (Record<string, unknown> & { participants: Record<string, unknown>[]; })[]; commitments: Record<string, unknown>[]; dates: Record<string, unknown>[]; mergeHistory: Record<string, unknown>[]; }"
+  },
   ".:public.read.getAffinityChart": {
     "kind": "value",
     "type": "(db: AffinityDb, options?: AffinityChartReadOptions) => AffinityChartRecord"
@@ -2736,11 +2765,11 @@
     "kind": "type",
     "type": "AffinitySkillRegistry",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => ArrayIterator<AffinitySkill>",
         "optional": false
       },
-      "__@unscopables@525": {
+      "__@unscopables@533": {
         "type": "{ readonly [x: number]: boolean | undefined; readonly length?: boolean | undefined; toString?: boolean | undefined; toLocaleString?: boolean | undefined; concat?: boolean | undefined; join?: boolean | undefined; slice?: boolean | undefined; indexOf?: boolean | undefined; lastIndexOf?: boolean | undefined; every?: boolean | undefined; some?: boolean | undefined; forEach?: boolean | undefined; map?: boolean | undefined; filter?: boolean | undefined; reduce?: boolean | undefined; reduceRight?: boolean | undefined; find?: boolean | undefined; findIndex?: boolean | undefined; entries?: boolean | undefined; keys?: boolean | undefined; values?: boolean | undefined; includes?: boolean | undefined; flatMap?: boolean | undefined; flat?: boolean | undefined; at?: boolean | undefined; findLast?: boolean | undefined; findLastIndex?: boolean | undefined; toReversed?: boolean | undefined; toSorted?: boolean | undefined; toSpliced?: boolean | undefined; with?: boolean | undefined; [Symbol.iterator]?: boolean | undefined; readonly [Symbol.unscopables]?: boolean | undefined; }",
         "optional": false
       },
@@ -3180,7 +3209,7 @@
     "kind": "type",
     "type": "JsonSchemaType",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -3405,7 +3434,7 @@
     "kind": "type",
     "type": "string",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -3773,7 +3802,7 @@
     "kind": "type",
     "type": "ContactKind",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -3988,7 +4017,7 @@
     "kind": "type",
     "type": "ContactLifecycleState",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -4203,7 +4232,7 @@
     "kind": "type",
     "type": "EventType",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -4418,7 +4447,7 @@
     "kind": "type",
     "type": "LinkKind",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -4637,7 +4666,7 @@
     "kind": "type",
     "type": "RelationalLinkKind",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -4852,7 +4881,7 @@
     "kind": "type",
     "type": "StructuralLinkKind",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -5067,7 +5096,7 @@
     "kind": "type",
     "type": "LinkState",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -5282,7 +5311,7 @@
     "kind": "type",
     "type": "ToolEntityKind",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -5523,7 +5552,7 @@
     "kind": "type",
     "type": "ToolNextStepHintKind",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -5738,7 +5767,7 @@
     "kind": "type",
     "type": "ToolOutcomeKind",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -5957,12 +5986,20 @@
         "type": "ToolWarningCode",
         "optional": false
       },
+      "contactId": {
+        "type": "number | undefined",
+        "optional": true
+      },
       "message": {
         "type": "string",
         "optional": false
+      },
+      "score": {
+        "type": "number | undefined",
+        "optional": true
       }
     },
-    "definition": "interface ToolWarning { code: ToolWarningCode; message: string; }",
+    "definition": "interface ToolWarning { contactId?: number; score?: number; code: ToolWarningCode; message: string; }",
     "references": {
       "ToolWarningCode": ".:public.tools.AffinityToolDefinition.types.AffinityToolDefinition.types.ToolResult.types.ToolFailure.types.ToolBaseResult.types.ToolWarning.types.ToolWarningCode"
     }
@@ -5971,7 +6008,7 @@
     "kind": "type",
     "type": "ToolWarningCode",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -6180,13 +6217,13 @@
         "optional": false
       }
     },
-    "definition": "type ToolWarningCode = \"already_in_state\" | \"derived_value_used\" | \"empty_result\" | \"partial_match\" | \"unchanged\";"
+    "definition": "type ToolWarningCode = \"already_in_state\" | \"derived_value_used\" | \"empty_result\" | \"possible_duplicate\" | \"partial_match\" | \"unchanged\";"
   },
   ".:public.tools.AffinityToolDefinition.types.AffinityToolDefinition.types.ToolResult.types.ToolFailure.types.ToolErrorCode": {
     "kind": "type",
     "type": "ToolErrorCode",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -6401,7 +6438,7 @@
     "kind": "type",
     "type": "ToolErrorKind",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -6655,7 +6692,7 @@
     "kind": "type",
     "type": "ToolClarificationCode",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -6913,7 +6950,7 @@
     "kind": "type",
     "type": "ToolSideEffects",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -7205,7 +7242,7 @@
   },
   ".:public.tools.affinityTools": {
     "kind": "value",
-    "type": "(AffinityToolDefinition<InspectAffinityItemToolInput, InspectAffinityItemToolResult> | AffinityToolDefinition<ManageAttributeToolInput, ManageAttributeToolResult> | AffinityToolDefinition<ManageCommitmentToolInput, ManageCommitmentToolResult> | AffinityToolDefinition<ManageContactToolInput, ManageContactToolResult> | AffinityToolDefinition<ManageDuplicateDismissalToolInput, ManageDuplicateDismissalToolResult> | AffinityToolDefinition<ManageDateAnchorToolInput, ManageDateAnchorToolResult> | AffinityToolDefinition<ManageIdentityToolInput, ManageIdentityToolResult> | AffinityToolDefinition<ManageRelationshipToolInput, ManageRelationshipToolResult> | AffinityToolDefinition<MergeContactsToolInput, MergeContactsToolResult> | AffinityToolDefinition<RecordEventToolInput, RecordEventToolResult> | AffinityToolDefinition<ReviewAffinityToolInput, ReviewAffinityToolResult> | AffinityToolDefinition<SearchAffinityToolInput, SearchAffinityToolResult>)[]"
+    "type": "(AffinityToolDefinition<{ kind: \"owner_profile\"; topLinksLimit?: number | undefined; } | { kind: \"contact_profile\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; recentEventsLimit?: number | undefined; topLinksLimit?: number | undefined; } | { kind: \"link\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; recentEventsLimit?: number | undefined; }, InspectAffinityItemToolResult> | AffinityToolDefinition<{ action: \"set\"; target: { kind: \"contact\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; } | { kind: \"link\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; }; name: string; value: string | null; } | { action: \"unset\"; target: { kind: \"contact\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; } | { kind: \"link\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; }; name: string; removedAt?: string | number | undefined; } | { action: \"replace\"; target: { kind: \"contact\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; } | { kind: \"link\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; }; entries: readonly { name: string; value: string | null; }[]; }, ManageAttributeToolResult> | AffinityToolDefinition<{ action: \"record\"; input: { commitmentType: \"promise\" | \"agreement\"; dueAt?: string | number | null | undefined; now?: string | number | undefined; occurredAt: string | number; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { action: \"resolve\"; commitmentEventId: number; resolution: CommitmentResolutionKind; options?: { now?: string | number | undefined; resolvingEvent?: { type?: Exclude<EventType, \"date_anchor\"> | undefined; occurredAt?: string | number | undefined; summary?: string | undefined; significance?: number | undefined; participants?: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[] | undefined; provenance?: unknown; } | undefined; } | undefined; }, ManageCommitmentToolResult> | AffinityToolDefinition<{ action: \"export\"; contact?: { contactId: number; } | { identity: { type: string; value: string; }; } | undefined; } | { action: \"delete\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; confirm?: boolean | undefined; } | { action: \"create\"; input: { name: string; kind: ContactKind; now?: string | number | undefined; bootstrapOwner?: boolean | undefined; identities?: readonly { type: string; value: string; label?: string | null | undefined; verified?: boolean | undefined; now?: string | number | undefined; }[] | undefined; }; } | { action: \"revise\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; patch: { name?: string | undefined; }; } | { action: \"set_lifecycle\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; lifecycleState: ContactLifecycleState; options?: { now?: string | number | undefined; provenance?: unknown; } | undefined; }, ManageContactToolResult> | AffinityToolDefinition<{ action: \"dismiss\" | \"undismiss\"; left: { contactId: number; } | { identity: { type: string; value: string; }; }; right: { contactId: number; } | { identity: { type: string; value: string; }; }; reason?: string | null; }, ManageDuplicateDismissalToolResult> | AffinityToolDefinition<{ action: \"add\"; input: { now?: string | number | undefined; summary: string; significance: number; recurrenceKind: EventRecurrenceKind; anchorMonth: number; anchorDay: number; force?: boolean | undefined; target: { kind: \"contact\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; } | { kind: \"link\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; }; }; } | { action: \"revise\"; anchorEventId: number; patch: { recurrenceKind?: EventRecurrenceKind | undefined; anchorMonth?: number | undefined; anchorDay?: number | undefined; summary?: string | undefined; significance?: number | undefined; }; options?: { now?: string | number | undefined; force?: boolean | undefined; } | undefined; } | { action: \"remove\"; anchorEventId: number; removedAt?: string | number | undefined; }, ManageDateAnchorToolResult> | AffinityToolDefinition<{ action: \"add\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; input: { type: string; value: string; label?: string | null | undefined; verified?: boolean | undefined; now?: string | number | undefined; }; } | { action: \"revise\"; identityId: number; patch: { type?: string | undefined; value?: string | undefined; label?: string | null | undefined; }; } | { action: \"verify\"; identityId: number; verifiedAt?: string | number | undefined; } | { action: \"remove\"; identityId: number; removedAt?: string | number | undefined; }, ManageIdentityToolResult> | AffinityToolDefinition<{ action: \"seed_social_link\"; from: { contactId: number; } | { identity: { type: string; value: string; }; }; to: { contactId: number; } | { identity: { type: string; value: string; }; }; input?: { kind: RelationalLinkKind; now?: string | number | undefined; role?: string | null | undefined; rank?: number | undefined; affinity?: number | undefined; trust?: number | undefined; state?: LinkState | undefined; cadenceDays?: number | null | undefined; bond?: string | null | undefined; } | undefined; kind?: string | undefined; role?: string | undefined; } | { action: \"revise_bond\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; bond: string | null; options?: { now?: string | number | undefined; provenance?: unknown; } | undefined; } | { action: \"override_state\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; state: LinkState; options?: { now?: string | number | undefined; provenance?: unknown; } | undefined; } | { action: \"set_structural_tie\"; from: { contactId: number; } | { identity: { type: string; value: string; }; }; to: { contactId: number; } | { identity: { type: string; value: string; }; }; input?: { kind: StructuralLinkKind; now?: string | number | undefined; role?: string | null | undefined; } | undefined; kind?: string | undefined; role?: string | undefined; } | { action: \"remove_structural_tie\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; removedAt?: string | number | undefined; }, ManageRelationshipToolResult> | AffinityToolDefinition<{ winner: { contactId: number; } | { identity: { type: string; value: string; }; }; loser: { contactId: number; } | { identity: { type: string; value: string; }; }; reasonSummary?: string | null; now?: string | number; }, MergeContactsToolResult> | AffinityToolDefinition<{ kind: \"interaction\"; input: { type: InteractionEventType; now?: string | number | undefined; occurredAt: string | number; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { kind: \"observation\"; input: { now?: string | number | undefined; occurredAt: string | number; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { kind: \"milestone\"; input: { now?: string | number | undefined; occurredAt: string | number; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { kind: \"transaction\"; input: { now?: string | number | undefined; occurredAt: string | number; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; }, RecordEventToolResult> | AffinityToolDefinition<{ view: ReviewAffinityToolView; now?: string | number; contact?: { contactId: number; } | { identity: { type: string; value: string; }; }; link?: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; contactIds?: readonly number[]; kind?: ContactKind | LinkKind; lifecycleState?: ContactLifecycleState; linkState?: LinkState; attribute?: string | readonly string[]; tag?: string | readonly string[]; includeLost?: boolean; includeOwner?: boolean; includeDormant?: boolean; includeArchived?: boolean; includeObserved?: boolean; eventTypes?: readonly EventType[]; momentKind?: EventMomentKind; commitmentType?: \"promise\" | \"agreement\"; recurrenceKind?: EventRecurrenceKind; horizonDays?: number; exactOnly?: boolean; minScore?: number; includeDismissed?: boolean; since?: string | number; until?: string | number; limit?: number; offset?: number; }, ReviewAffinityToolResult> | AffinityToolDefinition<{ query: string; kind?: ContactKind; lifecycleState?: ContactLifecycleState; attribute?: string | readonly string[]; tag?: string | readonly string[]; includeLost?: boolean; includeOwner?: boolean; includeDormant?: boolean; limit?: number; offset?: number; }, SearchAffinityToolResult>)[]"
   },
   ".:public.tools.arraySchema": {
     "kind": "value",
@@ -7240,15 +7277,15 @@
   },
   ".:public.tools.getAffinityToolByName": {
     "kind": "value",
-    "type": "(name: string) => AffinityToolDefinition<InspectAffinityItemToolInput, InspectAffinityItemToolResult> | AffinityToolDefinition<ManageAttributeToolInput, ManageAttributeToolResult> | AffinityToolDefinition<ManageCommitmentToolInput, ManageCommitmentToolResult> | AffinityToolDefinition<ManageContactToolInput, ManageContactToolResult> | AffinityToolDefinition<ManageDuplicateDismissalToolInput, ManageDuplicateDismissalToolResult> | AffinityToolDefinition<ManageDateAnchorToolInput, ManageDateAnchorToolResult> | AffinityToolDefinition<ManageIdentityToolInput, ManageIdentityToolResult> | AffinityToolDefinition<ManageRelationshipToolInput, ManageRelationshipToolResult> | AffinityToolDefinition<MergeContactsToolInput, MergeContactsToolResult> | AffinityToolDefinition<RecordEventToolInput, RecordEventToolResult> | AffinityToolDefinition<ReviewAffinityToolInput, ReviewAffinityToolResult> | AffinityToolDefinition<SearchAffinityToolInput, SearchAffinityToolResult> | null"
+    "type": "(name: string) => AffinityToolDefinition<TimeInputs<InspectAffinityItemToolInput>, InspectAffinityItemToolResult> | AffinityToolDefinition<TimeInputs<ManageAttributeToolInput>, ManageAttributeToolResult> | AffinityToolDefinition<TimeInputs<ManageCommitmentToolInput>, ManageCommitmentToolResult> | AffinityToolDefinition<TimeInputs<ManageContactToolInput>, ManageContactToolResult> | AffinityToolDefinition<{ action: \"dismiss\" | \"undismiss\"; left: { contactId: number; } | { identity: { type: string; value: string; }; }; right: { contactId: number; } | { identity: { type: string; value: string; }; }; reason?: string | null; }, ManageDuplicateDismissalToolResult> | AffinityToolDefinition<TimeInputs<ManageDateAnchorToolInput>, ManageDateAnchorToolResult> | AffinityToolDefinition<TimeInputs<ManageIdentityToolInput>, ManageIdentityToolResult> | AffinityToolDefinition<TimeInputs<ManageRelationshipToolInput>, ManageRelationshipToolResult> | AffinityToolDefinition<{ winner: { contactId: number; } | { identity: { type: string; value: string; }; }; loser: { contactId: number; } | { identity: { type: string; value: string; }; }; reasonSummary?: string | null; now?: string | number; }, MergeContactsToolResult> | AffinityToolDefinition<TimeInputs<RecordEventToolInput>, RecordEventToolResult> | AffinityToolDefinition<{ view: ReviewAffinityToolView; now?: string | number; contact?: { contactId: number; } | { identity: { type: string; value: string; }; }; link?: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; contactIds?: readonly number[]; kind?: ContactKind | LinkKind; lifecycleState?: ContactLifecycleState; linkState?: LinkState; attribute?: string | readonly string[]; tag?: string | readonly string[]; includeLost?: boolean; includeOwner?: boolean; includeDormant?: boolean; includeArchived?: boolean; includeObserved?: boolean; eventTypes?: readonly EventType[]; momentKind?: EventMomentKind; commitmentType?: \"promise\" | \"agreement\"; recurrenceKind?: EventRecurrenceKind; horizonDays?: number; exactOnly?: boolean; minScore?: number; includeDismissed?: boolean; since?: string | number; until?: string | number; limit?: number; offset?: number; }, ReviewAffinityToolResult> | AffinityToolDefinition<{ query: string; kind?: ContactKind; lifecycleState?: ContactLifecycleState; attribute?: string | readonly string[]; tag?: string | readonly string[]; includeLost?: boolean; includeOwner?: boolean; includeDormant?: boolean; limit?: number; offset?: number; }, SearchAffinityToolResult> | null"
   },
   ".:public.tools.inspectAffinityItemTool": {
     "kind": "value",
-    "type": "AffinityToolDefinition<InspectAffinityItemToolInput, InspectAffinityItemToolResult>"
+    "type": "AffinityToolDefinition<{ kind: \"owner_profile\"; topLinksLimit?: number | undefined; } | { kind: \"contact_profile\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; recentEventsLimit?: number | undefined; topLinksLimit?: number | undefined; } | { kind: \"link\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; recentEventsLimit?: number | undefined; }, InspectAffinityItemToolResult>"
   },
   ".:public.tools.inspectAffinityItemToolHandler": {
     "kind": "value",
-    "type": "(db: AffinityDb, input: InspectAffinityItemToolInput) => InspectAffinityItemToolResult"
+    "type": "(db: AffinityDb, rawInput: TimeInputs<InspectAffinityItemToolInput>) => InspectAffinityItemToolResult"
   },
   ".:public.tools.inspectAffinityItemToolName": {
     "kind": "value",
@@ -7312,7 +7349,7 @@
     "kind": "type",
     "type": "JsonSchemaType",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -7543,7 +7580,7 @@
   },
   ".:public.tools.listAffinityToolDefinitions": {
     "kind": "value",
-    "type": "() => (AffinityToolDefinition<InspectAffinityItemToolInput, InspectAffinityItemToolResult> | AffinityToolDefinition<ManageAttributeToolInput, ManageAttributeToolResult> | AffinityToolDefinition<ManageCommitmentToolInput, ManageCommitmentToolResult> | AffinityToolDefinition<ManageContactToolInput, ManageContactToolResult> | AffinityToolDefinition<ManageDuplicateDismissalToolInput, ManageDuplicateDismissalToolResult> | AffinityToolDefinition<ManageDateAnchorToolInput, ManageDateAnchorToolResult> | AffinityToolDefinition<ManageIdentityToolInput, ManageIdentityToolResult> | AffinityToolDefinition<ManageRelationshipToolInput, ManageRelationshipToolResult> | AffinityToolDefinition<MergeContactsToolInput, MergeContactsToolResult> | AffinityToolDefinition<RecordEventToolInput, RecordEventToolResult> | AffinityToolDefinition<ReviewAffinityToolInput, ReviewAffinityToolResult> | AffinityToolDefinition<SearchAffinityToolInput, SearchAffinityToolResult>)[]"
+    "type": "() => (AffinityToolDefinition<TimeInputs<InspectAffinityItemToolInput>, InspectAffinityItemToolResult> | AffinityToolDefinition<TimeInputs<ManageAttributeToolInput>, ManageAttributeToolResult> | AffinityToolDefinition<TimeInputs<ManageCommitmentToolInput>, ManageCommitmentToolResult> | AffinityToolDefinition<TimeInputs<ManageContactToolInput>, ManageContactToolResult> | AffinityToolDefinition<{ action: \"dismiss\" | \"undismiss\"; left: { contactId: number; } | { identity: { type: string; value: string; }; }; right: { contactId: number; } | { identity: { type: string; value: string; }; }; reason?: string | null; }, ManageDuplicateDismissalToolResult> | AffinityToolDefinition<TimeInputs<ManageDateAnchorToolInput>, ManageDateAnchorToolResult> | AffinityToolDefinition<TimeInputs<ManageIdentityToolInput>, ManageIdentityToolResult> | AffinityToolDefinition<TimeInputs<ManageRelationshipToolInput>, ManageRelationshipToolResult> | AffinityToolDefinition<{ winner: { contactId: number; } | { identity: { type: string; value: string; }; }; loser: { contactId: number; } | { identity: { type: string; value: string; }; }; reasonSummary?: string | null; now?: string | number; }, MergeContactsToolResult> | AffinityToolDefinition<TimeInputs<RecordEventToolInput>, RecordEventToolResult> | AffinityToolDefinition<{ view: ReviewAffinityToolView; now?: string | number; contact?: { contactId: number; } | { identity: { type: string; value: string; }; }; link?: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; contactIds?: readonly number[]; kind?: ContactKind | LinkKind; lifecycleState?: ContactLifecycleState; linkState?: LinkState; attribute?: string | readonly string[]; tag?: string | readonly string[]; includeLost?: boolean; includeOwner?: boolean; includeDormant?: boolean; includeArchived?: boolean; includeObserved?: boolean; eventTypes?: readonly EventType[]; momentKind?: EventMomentKind; commitmentType?: \"promise\" | \"agreement\"; recurrenceKind?: EventRecurrenceKind; horizonDays?: number; exactOnly?: boolean; minScore?: number; includeDismissed?: boolean; since?: string | number; until?: string | number; limit?: number; offset?: number; }, ReviewAffinityToolResult> | AffinityToolDefinition<{ query: string; kind?: ContactKind; lifecycleState?: ContactLifecycleState; attribute?: string | readonly string[]; tag?: string | readonly string[]; includeLost?: boolean; includeOwner?: boolean; includeDormant?: boolean; limit?: number; offset?: number; }, SearchAffinityToolResult>)[]"
   },
   ".:public.tools.literalSchema": {
     "kind": "value",
@@ -7551,11 +7588,11 @@
   },
   ".:public.tools.manageAttributeTool": {
     "kind": "value",
-    "type": "AffinityToolDefinition<ManageAttributeToolInput, ManageAttributeToolResult>"
+    "type": "AffinityToolDefinition<{ action: \"set\"; target: { kind: \"contact\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; } | { kind: \"link\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; }; name: string; value: string | null; } | { action: \"unset\"; target: { kind: \"contact\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; } | { kind: \"link\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; }; name: string; removedAt?: string | number | undefined; } | { action: \"replace\"; target: { kind: \"contact\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; } | { kind: \"link\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; }; entries: readonly { name: string; value: string | null; }[]; }, ManageAttributeToolResult>"
   },
   ".:public.tools.manageAttributeToolHandler": {
     "kind": "value",
-    "type": "(db: AffinityDb, input: ManageAttributeToolInput) => ManageAttributeToolResult"
+    "type": "(db: AffinityDb, rawInput: TimeInputs<ManageAttributeToolInput>) => ManageAttributeToolResult"
   },
   ".:public.tools.manageAttributeToolName": {
     "kind": "value",
@@ -7563,11 +7600,11 @@
   },
   ".:public.tools.manageCommitmentTool": {
     "kind": "value",
-    "type": "AffinityToolDefinition<ManageCommitmentToolInput, ManageCommitmentToolResult>"
+    "type": "AffinityToolDefinition<{ action: \"record\"; input: { commitmentType: \"promise\" | \"agreement\"; dueAt?: string | number | null | undefined; now?: string | number | undefined; occurredAt: string | number; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { action: \"resolve\"; commitmentEventId: number; resolution: CommitmentResolutionKind; options?: { now?: string | number | undefined; resolvingEvent?: { type?: Exclude<EventType, \"date_anchor\"> | undefined; occurredAt?: string | number | undefined; summary?: string | undefined; significance?: number | undefined; participants?: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[] | undefined; provenance?: unknown; } | undefined; } | undefined; }, ManageCommitmentToolResult>"
   },
   ".:public.tools.manageCommitmentToolHandler": {
     "kind": "value",
-    "type": "(db: AffinityDb, input: ManageCommitmentToolInput) => ManageCommitmentToolResult"
+    "type": "(db: AffinityDb, rawInput: TimeInputs<ManageCommitmentToolInput>) => ManageCommitmentToolResult"
   },
   ".:public.tools.manageCommitmentToolName": {
     "kind": "value",
@@ -7575,11 +7612,11 @@
   },
   ".:public.tools.manageContactTool": {
     "kind": "value",
-    "type": "AffinityToolDefinition<ManageContactToolInput, ManageContactToolResult>"
+    "type": "AffinityToolDefinition<{ action: \"export\"; contact?: { contactId: number; } | { identity: { type: string; value: string; }; } | undefined; } | { action: \"delete\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; confirm?: boolean | undefined; } | { action: \"create\"; input: { name: string; kind: ContactKind; now?: string | number | undefined; bootstrapOwner?: boolean | undefined; identities?: readonly { type: string; value: string; label?: string | null | undefined; verified?: boolean | undefined; now?: string | number | undefined; }[] | undefined; }; } | { action: \"revise\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; patch: { name?: string | undefined; }; } | { action: \"set_lifecycle\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; lifecycleState: ContactLifecycleState; options?: { now?: string | number | undefined; provenance?: unknown; } | undefined; }, ManageContactToolResult>"
   },
   ".:public.tools.manageContactToolHandler": {
     "kind": "value",
-    "type": "(db: AffinityDb, input: ManageContactToolInput) => ManageContactToolResult"
+    "type": "{ (db: AffinityDb, input: TimeInputs<Exclude<ManageContactToolInput, { action: \"export\" | \"delete\"; }>>): ToolResult<MutationToolData<ContactListItem>>; (db: AffinityDb, input: TimeInputs<ManageContactToolInput>): ManageContactToolResult; }"
   },
   ".:public.tools.manageContactToolName": {
     "kind": "value",
@@ -7587,11 +7624,11 @@
   },
   ".:public.tools.manageDateAnchorTool": {
     "kind": "value",
-    "type": "AffinityToolDefinition<ManageDateAnchorToolInput, ManageDateAnchorToolResult>"
+    "type": "AffinityToolDefinition<{ action: \"add\"; input: { now?: string | number | undefined; summary: string; significance: number; recurrenceKind: EventRecurrenceKind; anchorMonth: number; anchorDay: number; force?: boolean | undefined; target: { kind: \"contact\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; } | { kind: \"link\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; }; }; } | { action: \"revise\"; anchorEventId: number; patch: { recurrenceKind?: EventRecurrenceKind | undefined; anchorMonth?: number | undefined; anchorDay?: number | undefined; summary?: string | undefined; significance?: number | undefined; }; options?: { now?: string | number | undefined; force?: boolean | undefined; } | undefined; } | { action: \"remove\"; anchorEventId: number; removedAt?: string | number | undefined; }, ManageDateAnchorToolResult>"
   },
   ".:public.tools.manageDateAnchorToolHandler": {
     "kind": "value",
-    "type": "(db: AffinityDb, input: ManageDateAnchorToolInput) => ManageDateAnchorToolResult"
+    "type": "(db: AffinityDb, rawInput: TimeInputs<ManageDateAnchorToolInput>) => ManageDateAnchorToolResult"
   },
   ".:public.tools.manageDateAnchorToolName": {
     "kind": "value",
@@ -7599,11 +7636,11 @@
   },
   ".:public.tools.manageDuplicateDismissalTool": {
     "kind": "value",
-    "type": "AffinityToolDefinition<ManageDuplicateDismissalToolInput, ManageDuplicateDismissalToolResult>"
+    "type": "AffinityToolDefinition<{ action: \"dismiss\" | \"undismiss\"; left: { contactId: number; } | { identity: { type: string; value: string; }; }; right: { contactId: number; } | { identity: { type: string; value: string; }; }; reason?: string | null; }, ManageDuplicateDismissalToolResult>"
   },
   ".:public.tools.manageDuplicateDismissalToolHandler": {
     "kind": "value",
-    "type": "(db: AffinityDb, input: ManageDuplicateDismissalToolInput) => ManageDuplicateDismissalToolResult"
+    "type": "(db: AffinityDb, rawInput: TimeInputs<ManageDuplicateDismissalToolInput>) => ManageDuplicateDismissalToolResult"
   },
   ".:public.tools.manageDuplicateDismissalToolName": {
     "kind": "value",
@@ -7611,11 +7648,11 @@
   },
   ".:public.tools.manageIdentityTool": {
     "kind": "value",
-    "type": "AffinityToolDefinition<ManageIdentityToolInput, ManageIdentityToolResult>"
+    "type": "AffinityToolDefinition<{ action: \"add\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; input: { type: string; value: string; label?: string | null | undefined; verified?: boolean | undefined; now?: string | number | undefined; }; } | { action: \"revise\"; identityId: number; patch: { type?: string | undefined; value?: string | undefined; label?: string | null | undefined; }; } | { action: \"verify\"; identityId: number; verifiedAt?: string | number | undefined; } | { action: \"remove\"; identityId: number; removedAt?: string | number | undefined; }, ManageIdentityToolResult>"
   },
   ".:public.tools.manageIdentityToolHandler": {
     "kind": "value",
-    "type": "(db: AffinityDb, input: ManageIdentityToolInput) => ManageIdentityToolResult"
+    "type": "(db: AffinityDb, rawInput: TimeInputs<ManageIdentityToolInput>) => ManageIdentityToolResult"
   },
   ".:public.tools.manageIdentityToolName": {
     "kind": "value",
@@ -7623,11 +7660,11 @@
   },
   ".:public.tools.manageRelationshipTool": {
     "kind": "value",
-    "type": "AffinityToolDefinition<ManageRelationshipToolInput, ManageRelationshipToolResult>"
+    "type": "AffinityToolDefinition<{ action: \"seed_social_link\"; from: { contactId: number; } | { identity: { type: string; value: string; }; }; to: { contactId: number; } | { identity: { type: string; value: string; }; }; input?: { kind: RelationalLinkKind; now?: string | number | undefined; role?: string | null | undefined; rank?: number | undefined; affinity?: number | undefined; trust?: number | undefined; state?: LinkState | undefined; cadenceDays?: number | null | undefined; bond?: string | null | undefined; } | undefined; kind?: string | undefined; role?: string | undefined; } | { action: \"revise_bond\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; bond: string | null; options?: { now?: string | number | undefined; provenance?: unknown; } | undefined; } | { action: \"override_state\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; state: LinkState; options?: { now?: string | number | undefined; provenance?: unknown; } | undefined; } | { action: \"set_structural_tie\"; from: { contactId: number; } | { identity: { type: string; value: string; }; }; to: { contactId: number; } | { identity: { type: string; value: string; }; }; input?: { kind: StructuralLinkKind; now?: string | number | undefined; role?: string | null | undefined; } | undefined; kind?: string | undefined; role?: string | undefined; } | { action: \"remove_structural_tie\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; removedAt?: string | number | undefined; }, ManageRelationshipToolResult>"
   },
   ".:public.tools.manageRelationshipToolHandler": {
     "kind": "value",
-    "type": "(db: AffinityDb, input: ManageRelationshipToolInput) => ManageRelationshipToolResult"
+    "type": "(db: AffinityDb, rawInput: TimeInputs<ManageRelationshipToolInput>) => ManageRelationshipToolResult"
   },
   ".:public.tools.manageRelationshipToolName": {
     "kind": "value",
@@ -7639,11 +7676,11 @@
   },
   ".:public.tools.mergeContactsTool": {
     "kind": "value",
-    "type": "AffinityToolDefinition<MergeContactsToolInput, MergeContactsToolResult>"
+    "type": "AffinityToolDefinition<{ winner: { contactId: number; } | { identity: { type: string; value: string; }; }; loser: { contactId: number; } | { identity: { type: string; value: string; }; }; reasonSummary?: string | null; now?: string | number; }, MergeContactsToolResult>"
   },
   ".:public.tools.mergeContactsToolHandler": {
     "kind": "value",
-    "type": "(db: AffinityDb, input: MergeContactsToolInput) => MergeContactsToolResult"
+    "type": "(db: AffinityDb, rawInput: TimeInputs<MergeContactsToolInput>) => MergeContactsToolResult"
   },
   ".:public.tools.mergeContactsToolName": {
     "kind": "value",
@@ -7663,6 +7700,10 @@
       },
       "archived": {
         "type": "EntityRef[]",
+        "optional": false
+      },
+      "changes": {
+        "type": "{ entity: string; id: number; action: string; fields?: string[]; }[]",
         "optional": false
       },
       "created": {
@@ -7708,6 +7749,10 @@
         "type": "EntityRef[]",
         "optional": false
       },
+      "changes": {
+        "type": "{ entity: string; id: number; action: string; fields?: string[]; }[]",
+        "optional": false
+      },
       "created": {
         "type": "EntityRef[]",
         "optional": false
@@ -7729,7 +7774,7 @@
         "optional": false
       }
     },
-    "definition": "interface MutationToolData<TPrimary> { action: string; primary: TPrimary; created: MutationReceipt<TPrimary>[\"created\"]; updated: MutationReceipt<TPrimary>[\"updated\"]; archived: MutationReceipt<TPrimary>[\"archived\"]; removed: MutationReceipt<TPrimary>[\"removed\"]; affectedLinks: number[]; derivedEffects: MutationReceipt<TPrimary>[\"derivedEffects\"]; }",
+    "definition": "interface MutationToolData<TPrimary> { changes: { entity: string; id: number; action: string; fields?: string[]; }[]; action: string; primary: TPrimary; created: MutationReceipt<TPrimary>[\"created\"]; updated: MutationReceipt<TPrimary>[\"updated\"]; archived: MutationReceipt<TPrimary>[\"archived\"]; removed: MutationReceipt<TPrimary>[\"removed\"]; affectedLinks: number[]; derivedEffects: MutationReceipt<TPrimary>[\"derivedEffects\"]; }",
     "references": {
       "MutationReceipt": ".:public.tools.MutationToolData.types.MutationToolData.types.MutationReceipt",
       "TPrimary": ".:public.tools.MutationToolData.types.MutationToolData.types.TPrimary"
@@ -7866,7 +7911,7 @@
     "kind": "type",
     "type": "EventMomentKind",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -8106,7 +8151,7 @@
   },
   ".:public.tools.mutationToolResult": {
     "kind": "value",
-    "type": "<TPrimary>(action: string, receipt: MutationReceipt<TPrimary>, entitySummary: string) => ToolResult<MutationToolData<TPrimary>>"
+    "type": "<TPrimary>(action: string, receipt: MutationReceipt<TPrimary>, entitySummary: string, fields?: string[]) => ToolResult<MutationToolData<TPrimary>>"
   },
   ".:public.tools.nullableStringSchema": {
     "kind": "value",
@@ -8124,13 +8169,17 @@
     "kind": "value",
     "type": "(schemas: ReadonlyArray<JsonSchema>, description?: string) => JsonSchema"
   },
+  ".:public.tools.parseTimeInput": {
+    "kind": "value",
+    "type": "(value: number | string, field?: string, now?: number) => number"
+  },
   ".:public.tools.recordEventTool": {
     "kind": "value",
-    "type": "AffinityToolDefinition<RecordEventToolInput, RecordEventToolResult>"
+    "type": "AffinityToolDefinition<{ kind: \"interaction\"; input: { type: InteractionEventType; now?: string | number | undefined; occurredAt: string | number; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { kind: \"observation\"; input: { now?: string | number | undefined; occurredAt: string | number; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { kind: \"milestone\"; input: { now?: string | number | undefined; occurredAt: string | number; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { kind: \"transaction\"; input: { now?: string | number | undefined; occurredAt: string | number; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; }, RecordEventToolResult>"
   },
   ".:public.tools.recordEventToolHandler": {
     "kind": "value",
-    "type": "(db: AffinityDb, input: RecordEventToolInput) => RecordEventToolResult"
+    "type": "(db: AffinityDb, rawInput: TimeInputs<RecordEventToolInput>) => RecordEventToolResult"
   },
   ".:public.tools.recordEventToolName": {
     "kind": "value",
@@ -8138,7 +8187,7 @@
   },
   ".:public.tools.resolveContactLocator": {
     "kind": "value",
-    "type": "(db: AffinityDb, locator: ContactLocator, field?: string) => ResolvedTarget<ContactRow>"
+    "type": "(db: AffinityDb, locator: ContactLocator, field?: string, allowMerged?: boolean) => ResolvedTarget<ContactRow>"
   },
   ".:public.tools.ResolvedTarget": {
     "kind": "type",
@@ -8185,11 +8234,11 @@
   },
   ".:public.tools.reviewAffinityTool": {
     "kind": "value",
-    "type": "AffinityToolDefinition<ReviewAffinityToolInput, ReviewAffinityToolResult>"
+    "type": "AffinityToolDefinition<{ view: ReviewAffinityToolView; now?: string | number; contact?: { contactId: number; } | { identity: { type: string; value: string; }; }; link?: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; contactIds?: readonly number[]; kind?: ContactKind | LinkKind; lifecycleState?: ContactLifecycleState; linkState?: LinkState; attribute?: string | readonly string[]; tag?: string | readonly string[]; includeLost?: boolean; includeOwner?: boolean; includeDormant?: boolean; includeArchived?: boolean; includeObserved?: boolean; eventTypes?: readonly EventType[]; momentKind?: EventMomentKind; commitmentType?: \"promise\" | \"agreement\"; recurrenceKind?: EventRecurrenceKind; horizonDays?: number; exactOnly?: boolean; minScore?: number; includeDismissed?: boolean; since?: string | number; until?: string | number; limit?: number; offset?: number; }, ReviewAffinityToolResult>"
   },
   ".:public.tools.reviewAffinityToolHandler": {
     "kind": "value",
-    "type": "(db: AffinityDb, input: ReviewAffinityToolInput) => ReviewAffinityToolResult"
+    "type": "(db: AffinityDb, rawInput: TimeInputs<ReviewAffinityToolInput>) => ReviewAffinityToolResult"
   },
   ".:public.tools.reviewAffinityToolName": {
     "kind": "value",
@@ -8197,11 +8246,11 @@
   },
   ".:public.tools.searchAffinityTool": {
     "kind": "value",
-    "type": "AffinityToolDefinition<SearchAffinityToolInput, SearchAffinityToolResult>"
+    "type": "AffinityToolDefinition<{ query: string; kind?: ContactKind; lifecycleState?: ContactLifecycleState; attribute?: string | readonly string[]; tag?: string | readonly string[]; includeLost?: boolean; includeOwner?: boolean; includeDormant?: boolean; limit?: number; offset?: number; }, SearchAffinityToolResult>"
   },
   ".:public.tools.searchAffinityToolHandler": {
     "kind": "value",
-    "type": "(db: AffinityDb, input: SearchAffinityToolInput) => SearchAffinityToolResult"
+    "type": "(db: AffinityDb, rawInput: TimeInputs<SearchAffinityToolInput>) => SearchAffinityToolResult"
   },
   ".:public.tools.searchAffinityToolName": {
     "kind": "value",
@@ -8297,11 +8346,11 @@
     "kind": "type",
     "type": "ToolDefinitionRegistry",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => ArrayIterator<AffinityToolDefinition<never, ToolResult<unknown>>>",
         "optional": false
       },
-      "__@unscopables@525": {
+      "__@unscopables@533": {
         "type": "{ readonly [x: number]: boolean | undefined; readonly length?: boolean | undefined; toString?: boolean | undefined; toLocaleString?: boolean | undefined; concat?: boolean | undefined; join?: boolean | undefined; slice?: boolean | undefined; indexOf?: boolean | undefined; lastIndexOf?: boolean | undefined; every?: boolean | undefined; some?: boolean | undefined; forEach?: boolean | undefined; map?: boolean | undefined; filter?: boolean | undefined; reduce?: boolean | undefined; reduceRight?: boolean | undefined; find?: boolean | undefined; findIndex?: boolean | undefined; entries?: boolean | undefined; keys?: boolean | undefined; values?: boolean | undefined; includes?: boolean | undefined; flatMap?: boolean | undefined; flat?: boolean | undefined; at?: boolean | undefined; findLast?: boolean | undefined; findLastIndex?: boolean | undefined; toReversed?: boolean | undefined; toSorted?: boolean | undefined; toSpliced?: boolean | undefined; with?: boolean | undefined; [Symbol.iterator]?: boolean | undefined; readonly [Symbol.unscopables]?: boolean | undefined; }",
         "optional": false
       },
@@ -8435,11 +8484,11 @@
     "kind": "type",
     "type": "ToolDefinitionRegistry",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => ArrayIterator<AffinityToolDefinition<never, ToolResult<unknown>>>",
         "optional": false
       },
-      "__@unscopables@525": {
+      "__@unscopables@533": {
         "type": "{ readonly [x: number]: boolean | undefined; readonly length?: boolean | undefined; toString?: boolean | undefined; toLocaleString?: boolean | undefined; concat?: boolean | undefined; join?: boolean | undefined; slice?: boolean | undefined; indexOf?: boolean | undefined; lastIndexOf?: boolean | undefined; every?: boolean | undefined; some?: boolean | undefined; forEach?: boolean | undefined; map?: boolean | undefined; filter?: boolean | undefined; reduce?: boolean | undefined; reduceRight?: boolean | undefined; find?: boolean | undefined; findIndex?: boolean | undefined; entries?: boolean | undefined; keys?: boolean | undefined; values?: boolean | undefined; includes?: boolean | undefined; flatMap?: boolean | undefined; flat?: boolean | undefined; at?: boolean | undefined; findLast?: boolean | undefined; findLastIndex?: boolean | undefined; toReversed?: boolean | undefined; toSorted?: boolean | undefined; toSpliced?: boolean | undefined; with?: boolean | undefined; [Symbol.iterator]?: boolean | undefined; readonly [Symbol.unscopables]?: boolean | undefined; }",
         "optional": false
       },
@@ -8574,7 +8623,7 @@
     "kind": "type",
     "type": "ToolEntityKind",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -8932,7 +8981,7 @@
         "optional": true
       }
     },
-    "definition": "interface ToolListItem extends ToolEntityRef { snippet?: string | undefined; }",
+    "definition": "interface ToolListItem extends ToolEntityRef { [key: string]: unknown; snippet?: string | undefined; }",
     "references": {
       "ToolEntityRef": ".:public.tools.AffinityToolDefinition.types.AffinityToolDefinition.types.ToolResult.types.ToolFailure.types.ToolBaseResult.types.ToolEntityRef"
     }
@@ -9013,7 +9062,7 @@
     "kind": "type",
     "type": "ToolOutcomeKind",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -9231,7 +9280,7 @@
     "kind": "type",
     "type": "string",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -9488,7 +9537,7 @@
     "kind": "type",
     "type": "ToolSideEffects",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -9761,9 +9810,17 @@
         "type": "ToolWarningCode",
         "optional": false
       },
+      "contactId": {
+        "type": "number | undefined",
+        "optional": true
+      },
       "message": {
         "type": "string",
         "optional": false
+      },
+      "score": {
+        "type": "number | undefined",
+        "optional": true
       }
     },
     "definition": "type index_ToolWarning = ToolWarning;",
@@ -9882,7 +9939,7 @@
     "kind": "type",
     "type": "EventRecurrenceKind",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -10361,6 +10418,10 @@
         "type": "number | undefined",
         "optional": true
       },
+      "now": {
+        "type": "number | undefined",
+        "optional": true
+      },
       "offset": {
         "type": "number | undefined",
         "optional": true
@@ -10407,6 +10468,10 @@
         "type": "number | undefined",
         "optional": true
       },
+      "now": {
+        "type": "number | undefined",
+        "optional": true
+      },
       "offset": {
         "type": "number | undefined",
         "optional": true
@@ -10424,7 +10489,7 @@
         "optional": true
       }
     },
-    "definition": "interface AffinityListReadOptions { limit?: number; offset?: number; sort?: string; descending?: boolean; includeArchived?: boolean; includeDormant?: boolean; includeObserved?: boolean; since?: number; until?: number; }"
+    "definition": "interface AffinityListReadOptions { now?: number; limit?: number; offset?: number; sort?: string; descending?: boolean; includeArchived?: boolean; includeDormant?: boolean; includeObserved?: boolean; since?: number; until?: number; }"
   },
   ".:public.types.AttributeEntry": {
     "kind": "type",
@@ -10567,7 +10632,7 @@
     "kind": "type",
     "type": "string",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -10785,7 +10850,7 @@
     "kind": "type",
     "type": "string",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -11067,9 +11132,17 @@
         "type": "number | null | undefined",
         "optional": true
       },
+      "dueAtIso": {
+        "type": "string | null | undefined",
+        "optional": true
+      },
       "eventId": {
         "type": "number",
         "optional": false
+      },
+      "overdue": {
+        "type": "boolean | undefined",
+        "optional": true
       },
       "participants": {
         "type": "readonly EventParticipantView[]",
@@ -11101,9 +11174,17 @@
         "type": "number | null | undefined",
         "optional": true
       },
+      "dueAtIso": {
+        "type": "string | null | undefined",
+        "optional": true
+      },
       "eventId": {
         "type": "number",
         "optional": false
+      },
+      "overdue": {
+        "type": "boolean | undefined",
+        "optional": true
       },
       "participants": {
         "type": "readonly EventParticipantView[]",
@@ -11122,7 +11203,7 @@
         "optional": false
       }
     },
-    "definition": "interface CommitmentRecord { eventId: number; type: EventType; summary: string; participants: readonly EventParticipantView[]; dueAt?: number | null; resolutionState: CommitmentResolutionState; }",
+    "definition": "interface CommitmentRecord { dueAtIso?: string | null; overdue?: boolean; eventId: number; type: EventType; summary: string; participants: readonly EventParticipantView[]; dueAt?: number | null; resolutionState: CommitmentResolutionState; }",
     "references": {
       "CommitmentResolutionState": ".:public.types.CommitmentRecord.types.CommitmentRecord.types.CommitmentResolutionState",
       "EventParticipantView": ".:public.types.CommitmentRecord.types.CommitmentRecord.types.EventParticipantView",
@@ -11133,7 +11214,7 @@
     "kind": "type",
     "type": "CommitmentResolutionState",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -11370,7 +11451,7 @@
     "kind": "type",
     "type": "EventParticipantRole",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -11585,7 +11666,7 @@
     "kind": "type",
     "type": "CommitmentResolutionKind",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -11803,7 +11884,7 @@
     "kind": "type",
     "type": "CommitmentResolutionKind",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -12018,7 +12099,7 @@
     "kind": "type",
     "type": "CommitmentResolutionState",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -12321,6 +12402,10 @@
         "type": "number | undefined",
         "optional": true
       },
+      "now": {
+        "type": "number | undefined",
+        "optional": true
+      },
       "offset": {
         "type": "number | undefined",
         "optional": true
@@ -12371,6 +12456,10 @@
         "type": "number | undefined",
         "optional": true
       },
+      "now": {
+        "type": "number | undefined",
+        "optional": true
+      },
       "offset": {
         "type": "number | undefined",
         "optional": true
@@ -12398,7 +12487,7 @@
     "kind": "type",
     "type": "ContactKind",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -12616,7 +12705,7 @@
     "kind": "type",
     "type": "ContactLifecycleState",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -12854,6 +12943,10 @@
         "type": "ContactLifecycleState",
         "optional": false
       },
+      "matchedOn": {
+        "type": "string[] | undefined",
+        "optional": true
+      },
       "name": {
         "type": "string",
         "optional": false
@@ -12892,6 +12985,10 @@
         "type": "ContactLifecycleState",
         "optional": false
       },
+      "matchedOn": {
+        "type": "string[] | undefined",
+        "optional": true
+      },
       "name": {
         "type": "string",
         "optional": false
@@ -12901,7 +12998,7 @@
         "optional": true
       }
     },
-    "definition": "interface ContactListItem { id: number; name: string; kind: ContactKind; lifecycleState: ContactLifecycleState; isOwner: boolean; primaryIdentity?: string | null; lastMeaningfulEventAt?: number | null; }",
+    "definition": "interface ContactListItem { matchedOn?: string[]; id: number; name: string; kind: ContactKind; lifecycleState: ContactLifecycleState; isOwner: boolean; primaryIdentity?: string | null; lastMeaningfulEventAt?: number | null; }",
     "references": {
       "ContactKind": ".:public.tools.AffinityToolDefinition.types.AffinityToolDefinition.types.ToolResult.types.ToolFailure.types.ToolBaseResult.types.ToolEntityRef.types.ContactKind",
       "ContactLifecycleState": ".:public.tools.AffinityToolDefinition.types.AffinityToolDefinition.types.ToolResult.types.ToolFailure.types.ToolBaseResult.types.ToolEntityRef.types.ContactLifecycleState"
@@ -12988,6 +13085,14 @@
     "kind": "type",
     "type": "ContactProfileReadOptions",
     "members": {
+      "now": {
+        "type": "number | undefined",
+        "optional": true
+      },
+      "recentEventsLimit": {
+        "type": "number | undefined",
+        "optional": true
+      },
       "topLinksLimit": {
         "type": "number | undefined",
         "optional": true
@@ -13002,12 +13107,20 @@
     "kind": "type",
     "type": "ContactProfileReadOptions",
     "members": {
+      "now": {
+        "type": "number | undefined",
+        "optional": true
+      },
+      "recentEventsLimit": {
+        "type": "number | undefined",
+        "optional": true
+      },
       "topLinksLimit": {
         "type": "number | undefined",
         "optional": true
       }
     },
-    "definition": "interface ContactProfileReadOptions { topLinksLimit?: number; }"
+    "definition": "interface ContactProfileReadOptions { recentEventsLimit?: number; now?: number; topLinksLimit?: number; }"
   },
   ".:public.types.ContactProfileRecord": {
     "kind": "type",
@@ -13029,8 +13142,24 @@
         "type": "readonly IdentityRecord[]",
         "optional": false
       },
+      "mergedInto": {
+        "type": "{ id: number; name: string; } | undefined",
+        "optional": true
+      },
+      "openCommitments": {
+        "type": "readonly CommitmentRecord[] | undefined",
+        "optional": true
+      },
+      "recentEvents": {
+        "type": "readonly (EventRecord & { occurredAtIso: string; })[] | undefined",
+        "optional": true
+      },
       "rollups": {
         "type": "OpaqueRollup | null | undefined",
+        "optional": true
+      },
+      "ties": {
+        "type": "readonly { id: number; kind: string; role: string | null; contactId: number; name: string; }[] | undefined",
         "optional": true
       },
       "topLinks": {
@@ -13067,8 +13196,24 @@
         "type": "readonly IdentityRecord[]",
         "optional": false
       },
+      "mergedInto": {
+        "type": "{ id: number; name: string; } | undefined",
+        "optional": true
+      },
+      "openCommitments": {
+        "type": "readonly CommitmentRecord[] | undefined",
+        "optional": true
+      },
+      "recentEvents": {
+        "type": "readonly (EventRecord & { occurredAtIso: string; })[] | undefined",
+        "optional": true
+      },
       "rollups": {
         "type": "OpaqueRollup | null | undefined",
+        "optional": true
+      },
+      "ties": {
+        "type": "readonly { id: number; kind: string; role: string | null; contactId: number; name: string; }[] | undefined",
         "optional": true
       },
       "topLinks": {
@@ -13080,14 +13225,77 @@
         "optional": false
       }
     },
-    "definition": "interface ContactProfileRecord { contact: ContactCore; identities: readonly IdentityRecord[]; attributes: readonly AttributeEntry[]; topLinks: readonly LinkListItem[]; activeDates: readonly UpcomingDateRecord[]; warnings: readonly string[]; rollups?: OpaqueRollup | null; }",
+    "definition": "interface ContactProfileRecord { contact: ContactCore; recentEvents?: readonly (EventRecord & { occurredAtIso: string; })[]; openCommitments?: readonly CommitmentRecord[]; ties?: readonly { id: number; kind: string; role: string | null; contactId: number; name: string; }[]; mergedInto?: { id: number; name: string; }; identities: readonly IdentityRecord[]; attributes: readonly AttributeEntry[]; topLinks: readonly LinkListItem[]; activeDates: readonly UpcomingDateRecord[]; warnings: readonly string[]; rollups?: OpaqueRollup | null; }",
     "references": {
       "AttributeEntry": ".:public.types.AttributeEntry.types.AttributeEntry",
+      "CommitmentRecord": ".:public.types.CommitmentRecord.types.CommitmentRecord",
       "ContactCore": ".:public.types.ContactCore.types.ContactCore",
+      "EventRecord": ".:public.types.ContactProfileRecord.types.ContactProfileRecord.types.EventRecord",
       "IdentityRecord": ".:public.types.ContactProfileRecord.types.ContactProfileRecord.types.IdentityRecord",
       "LinkListItem": ".:public.types.ContactProfileRecord.types.ContactProfileRecord.types.LinkListItem",
       "OpaqueRollup": ".:public.types.ContactProfileRecord.types.ContactProfileRecord.types.OpaqueRollup",
       "UpcomingDateRecord": ".:public.types.ContactProfileRecord.types.ContactProfileRecord.types.UpcomingDateRecord"
+    }
+  },
+  ".:public.types.ContactProfileRecord.types.ContactProfileRecord.types.EventRecord": {
+    "kind": "type",
+    "type": "EventRecord",
+    "members": {
+      "anchorContactId": {
+        "type": "number | null | undefined",
+        "optional": true
+      },
+      "anchorDay": {
+        "type": "number | null | undefined",
+        "optional": true
+      },
+      "anchorLinkId": {
+        "type": "number | null | undefined",
+        "optional": true
+      },
+      "anchorMonth": {
+        "type": "number | null | undefined",
+        "optional": true
+      },
+      "id": {
+        "type": "number",
+        "optional": false
+      },
+      "momentKind": {
+        "type": "EventMomentKind | null",
+        "optional": false
+      },
+      "occurredAt": {
+        "type": "number",
+        "optional": false
+      },
+      "participants": {
+        "type": "readonly EventParticipantView[]",
+        "optional": false
+      },
+      "recurrenceKind": {
+        "type": "EventRecurrenceKind | null | undefined",
+        "optional": true
+      },
+      "significance": {
+        "type": "number",
+        "optional": false
+      },
+      "summary": {
+        "type": "string",
+        "optional": false
+      },
+      "type": {
+        "type": "EventType",
+        "optional": false
+      }
+    },
+    "definition": "interface EventRecord { id: number; type: EventType; occurredAt: number; summary: string; significance: number; momentKind: EventMomentKind | null; participants: readonly EventParticipantView[]; recurrenceKind?: EventRecurrenceKind | null; anchorMonth?: number | null; anchorDay?: number | null; anchorContactId?: number | null; anchorLinkId?: number | null; }",
+    "references": {
+      "EventMomentKind": ".:public.tools.MutationToolData.types.MutationToolData.types.MutationReceipt.types.DerivedLinkEffect.types.EventMomentKind",
+      "EventParticipantView": ".:public.types.CommitmentRecord.types.CommitmentRecord.types.EventParticipantView",
+      "EventRecurrenceKind": ".:public.types.AddDateAnchorInput.types.AddDateAnchorInput.types.EventRecurrenceKind",
+      "EventType": ".:public.tools.AffinityToolDefinition.types.AffinityToolDefinition.types.ToolResult.types.ToolFailure.types.ToolBaseResult.types.ToolEntityRef.types.EventType"
     }
   },
   ".:public.types.ContactProfileRecord.types.ContactProfileRecord.types.IdentityRecord": {
@@ -13132,7 +13340,7 @@
     "kind": "type",
     "type": "string",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -13936,7 +14144,7 @@
     "kind": "type",
     "type": "EventMomentKind",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -14223,76 +14431,15 @@
     },
     "definition": "type EventMutationReceipt = MutationReceipt<EventRecord>;",
     "references": {
-      "EventRecord": ".:public.types.EventMutationReceipt.types.EventMutationReceipt.types.EventRecord",
+      "EventRecord": ".:public.types.ContactProfileRecord.types.ContactProfileRecord.types.EventRecord",
       "MutationReceipt": ".:public.tools.MutationToolData.types.MutationToolData.types.MutationReceipt"
-    }
-  },
-  ".:public.types.EventMutationReceipt.types.EventMutationReceipt.types.EventRecord": {
-    "kind": "type",
-    "type": "EventRecord",
-    "members": {
-      "anchorContactId": {
-        "type": "number | null | undefined",
-        "optional": true
-      },
-      "anchorDay": {
-        "type": "number | null | undefined",
-        "optional": true
-      },
-      "anchorLinkId": {
-        "type": "number | null | undefined",
-        "optional": true
-      },
-      "anchorMonth": {
-        "type": "number | null | undefined",
-        "optional": true
-      },
-      "id": {
-        "type": "number",
-        "optional": false
-      },
-      "momentKind": {
-        "type": "EventMomentKind | null",
-        "optional": false
-      },
-      "occurredAt": {
-        "type": "number",
-        "optional": false
-      },
-      "participants": {
-        "type": "readonly EventParticipantView[]",
-        "optional": false
-      },
-      "recurrenceKind": {
-        "type": "EventRecurrenceKind | null | undefined",
-        "optional": true
-      },
-      "significance": {
-        "type": "number",
-        "optional": false
-      },
-      "summary": {
-        "type": "string",
-        "optional": false
-      },
-      "type": {
-        "type": "EventType",
-        "optional": false
-      }
-    },
-    "definition": "interface EventRecord { id: number; type: EventType; occurredAt: number; summary: string; significance: number; momentKind: EventMomentKind | null; participants: readonly EventParticipantView[]; recurrenceKind?: EventRecurrenceKind | null; anchorMonth?: number | null; anchorDay?: number | null; anchorContactId?: number | null; anchorLinkId?: number | null; }",
-    "references": {
-      "EventMomentKind": ".:public.tools.MutationToolData.types.MutationToolData.types.MutationReceipt.types.DerivedLinkEffect.types.EventMomentKind",
-      "EventParticipantView": ".:public.types.CommitmentRecord.types.CommitmentRecord.types.EventParticipantView",
-      "EventRecurrenceKind": ".:public.types.AddDateAnchorInput.types.AddDateAnchorInput.types.EventRecurrenceKind",
-      "EventType": ".:public.tools.AffinityToolDefinition.types.AffinityToolDefinition.types.ToolResult.types.ToolFailure.types.ToolBaseResult.types.ToolEntityRef.types.EventType"
     }
   },
   ".:public.types.EventParticipantRole": {
     "kind": "type",
     "type": "EventParticipantRole",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -14583,14 +14730,14 @@
     },
     "definition": "type types_EventRecord = EventRecord;",
     "references": {
-      "EventRecord": ".:public.types.EventMutationReceipt.types.EventMutationReceipt.types.EventRecord"
+      "EventRecord": ".:public.types.ContactProfileRecord.types.ContactProfileRecord.types.EventRecord"
     }
   },
   ".:public.types.EventRecurrenceKind": {
     "kind": "type",
     "type": "EventRecurrenceKind",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -14937,7 +15084,7 @@
     "kind": "type",
     "type": "EventType",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -15375,7 +15522,7 @@
     "kind": "type",
     "type": "string",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -15593,7 +15740,7 @@
     "kind": "type",
     "type": "InteractionEventType",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -15811,7 +15958,7 @@
     "kind": "type",
     "type": "InteractionEventType",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -16113,7 +16260,7 @@
     "definition": "interface LinkDetailRecord { link: LinkListItem; counterparty: ContactCore; recentEvents: readonly EventRecord[]; moments: readonly MomentRecord[]; rollups?: OpaqueRollup | null; derivation?: OpaqueDerivation | null; }",
     "references": {
       "ContactCore": ".:public.types.ContactCore.types.ContactCore",
-      "EventRecord": ".:public.types.EventMutationReceipt.types.EventMutationReceipt.types.EventRecord",
+      "EventRecord": ".:public.types.ContactProfileRecord.types.ContactProfileRecord.types.EventRecord",
       "LinkListItem": ".:public.types.ContactProfileRecord.types.ContactProfileRecord.types.LinkListItem",
       "MomentRecord": ".:public.types.LinkDetailRecord.types.LinkDetailRecord.types.MomentRecord",
       "OpaqueDerivation": ".:public.types.LinkDetailRecord.types.LinkDetailRecord.types.OpaqueDerivation",
@@ -16164,7 +16311,7 @@
     "kind": "type",
     "type": "LinkKind",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -16720,7 +16867,7 @@
     "kind": "type",
     "type": "LinkState",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -16938,7 +17085,15 @@
     "kind": "type",
     "type": "ListContactsFilters",
     "members": {
+      "attribute": {
+        "type": "string | string[] | undefined",
+        "optional": true
+      },
       "includeDormant": {
+        "type": "boolean | undefined",
+        "optional": true
+      },
+      "includeLost": {
         "type": "boolean | undefined",
         "optional": true
       },
@@ -16952,6 +17107,10 @@
       },
       "lifecycleState": {
         "type": "ContactLifecycleState | undefined",
+        "optional": true
+      },
+      "tag": {
+        "type": "string | string[] | undefined",
         "optional": true
       }
     },
@@ -16964,7 +17123,15 @@
     "kind": "type",
     "type": "ListContactsFilters",
     "members": {
+      "attribute": {
+        "type": "string | string[] | undefined",
+        "optional": true
+      },
       "includeDormant": {
+        "type": "boolean | undefined",
+        "optional": true
+      },
+      "includeLost": {
         "type": "boolean | undefined",
         "optional": true
       },
@@ -16979,9 +17146,13 @@
       "lifecycleState": {
         "type": "ContactLifecycleState | undefined",
         "optional": true
+      },
+      "tag": {
+        "type": "string | string[] | undefined",
+        "optional": true
       }
     },
-    "definition": "interface ListContactsFilters { kind?: ContactKind; lifecycleState?: ContactLifecycleState; includeOwner?: boolean; includeDormant?: boolean; }",
+    "definition": "interface ListContactsFilters { attribute?: string | string[]; tag?: string | string[]; includeLost?: boolean; kind?: ContactKind; lifecycleState?: ContactLifecycleState; includeOwner?: boolean; includeDormant?: boolean; }",
     "references": {
       "ContactKind": ".:public.tools.AffinityToolDefinition.types.AffinityToolDefinition.types.ToolResult.types.ToolFailure.types.ToolBaseResult.types.ToolEntityRef.types.ContactKind",
       "ContactLifecycleState": ".:public.tools.AffinityToolDefinition.types.AffinityToolDefinition.types.ToolResult.types.ToolFailure.types.ToolBaseResult.types.ToolEntityRef.types.ContactLifecycleState"
@@ -17505,6 +17676,10 @@
         "type": "number",
         "optional": false
       },
+      "reasons": {
+        "type": "string[] | undefined",
+        "optional": true
+      },
       "recencyScore": {
         "type": "number",
         "optional": false
@@ -17543,6 +17718,10 @@
         "type": "number",
         "optional": false
       },
+      "reasons": {
+        "type": "string[] | undefined",
+        "optional": true
+      },
       "recencyScore": {
         "type": "number",
         "optional": false
@@ -17556,7 +17735,7 @@
         "optional": false
       }
     },
-    "definition": "interface RadarRecord { linkId: number; contactId: number; driftPriority: number; recencyScore: number; normalizedRank: number; trust: number; recommendedReason: string; }"
+    "definition": "interface RadarRecord { reasons?: string[]; linkId: number; contactId: number; driftPriority: number; recencyScore: number; normalizedRank: number; trust: number; recommendedReason: string; }"
   },
   ".:public.types.RecordCommitmentInput": {
     "kind": "type",
@@ -17979,7 +18158,7 @@
     "kind": "type",
     "type": "RelationalLinkKind",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -18685,7 +18864,7 @@
     "kind": "type",
     "type": "StructuralLinkKind",
     "members": {
-      "__@iterator@505": {
+      "__@iterator@513": {
         "type": "() => StringIterator<string>",
         "optional": false
       },
@@ -18965,6 +19144,10 @@
   ".:public.write.createContact": {
     "kind": "value",
     "type": "(db: AffinityDb, input: CreateContactInput) => ContactMutationReceipt"
+  },
+  ".:public.write.deleteContact": {
+    "kind": "value",
+    "type": "(db: AffinityDb, locatorId: number, options: { confirm?: boolean; }) => { contactId: number; removed: { entity: string; count: number; ids: number[]; }[]; affectedLinks: number[]; }"
   },
   ".:public.write.dismissDuplicate": {
     "kind": "value",

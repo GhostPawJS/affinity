@@ -12,6 +12,7 @@ import type { IdentityMutationReceipt } from "../lib/types/mutation_receipt.ts";
 import type { ReviseIdentityPatch } from "../lib/types/revise_identity_patch.ts";
 import { resolveNow } from "../resolve_now.ts";
 import { withTransaction } from "../with_transaction.ts";
+import { validateIdentityInput } from "./validate_identity_input.ts";
 
 export function reviseIdentity(
   db: AffinityDb,
@@ -45,6 +46,7 @@ export function reviseIdentity(
     if (nextType.length === 0 || nextValue.length === 0) {
       throw new AffinityValidationError("type and value must be non-empty");
     }
+    validateIdentityInput(nextType, nextValue);
     const nextLabel = patch.label !== undefined ? patch.label : row.label;
     const nkNext = normalizeIdentityKey(nextType, nextValue);
     if (nkNext !== row.normalized_key) {

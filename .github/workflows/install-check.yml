@@ -36,10 +36,16 @@ jobs:
           export PATH="$GHOSTPAW_INSTALL_DIR:$PATH"
           if [ "$RUNNER_OS" = Linux ]; then export GHOSTPAW_VERIFY=attestation; fi
           curl -fsSL https://raw.githubusercontent.com/GhostPawJS/affinity/main/install.sh | sh -s -- --version "$version"
-          test "$(ghostpaw-affinity --version)" = "$version"
+          target=${{ matrix.os == 'ubuntu-24.04' && 'linux-x64' || 'darwin-arm64' }}
+          test "$(ghostpaw-affinity --version)" = "affinity $version (binary, $target)"
           echo "Version: $version verified on $RUNNER_OS" >> "$GITHUB_STEP_SUMMARY"
           ghostpaw-affinity contact create '{"name":"Install check marker","kind":"human"}'  --db "$RUNNER_TEMP/affinity.db" --json | jq -e '.ok == true'
           echo 'Contact create: passed' >> "$GITHUB_STEP_SUMMARY"
+          echo '{"name":"Stdin marker","kind":"human"}' | ghostpaw-affinity contact create --db "$RUNNER_TEMP/affinity.db" --json | jq -e '.ok == true'
+          ghostpaw-affinity search marker --db "$RUNNER_TEMP/affinity.db" --json | jq -e '.data.count == 2'
+          ghostpaw-affinity skill --list | grep -q bootstrap-and-cold-start
+          ghostpaw-affinity skill bootstrap-and-cold-start | grep -q '^#'
+          echo 'Stdin create, search and skill guides: passed' >> "$GITHUB_STEP_SUMMARY"
           cat > "$RUNNER_TEMP/requests.jsonl" <<'JSON'
           {"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"install-check","version":"1"}}}
           {"jsonrpc":"2.0","method":"notifications/initialized"}
@@ -64,7 +70,7 @@ jobs:
           $env:GHOSTPAW_VERSION = $version
           $env:GHOSTPAW_INSTALL_DIR = Join-Path $env:RUNNER_TEMP 'affinity-bin'
           irm https://raw.githubusercontent.com/GhostPawJS/affinity/main/install.ps1 | iex
-          if ((ghostpaw-affinity --version) -ne $version) { throw 'Version mismatch' }
+          if ((ghostpaw-affinity --version) -ne "affinity $version (binary, windows-x64)") { throw 'Version mismatch' }
           "Version: $version verified on Windows" >> $env:GITHUB_STEP_SUMMARY
           $db = Join-Path $env:RUNNER_TEMP 'affinity.db'
           $added = ghostpaw-affinity contact create '{"name":"Install check marker","kind":"human"}'  --db $db --json | ConvertFrom-Json
@@ -85,3 +91,31 @@ jobs:
           if (-not ($messages | Where-Object { $_.id -eq 1 -and $_.result.serverInfo })) { throw 'Missing serverInfo' }
           if (-not ($messages | Where-Object { $_.id -eq 2 -and 'search_affinity' -in $_.result.tools.name })) { throw 'Missing search_affinity' }
           'MCP initialize and tools/list: passed' >> $env:GITHUB_STEP_SUMMARY
+      - name: README one-liner (POSIX)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          target=${{ matrix.os == 'ubuntu-24.04' && 'linux-x64' || 'darwin-arm64' }}
+          cmd=$(curl -fsSL https://raw.githubusercontent.com/GhostPawJS/affinity/main/site/data/install.json | jq -r --arg t "$target" '.targets[] | select(.id == $t) | .cmd')
+          test -n "$cmd"
+          out=$(sh -c "$cmd")
+          echo "$out"
+          latest=$(gh release view --json tagName --jq .tagName)
+          echo "$out" | grep -qx "affinity ${latest#v} (binary, $target)"
+          if [ "$target" = linux-x64 ]; then installed="$HOME/.local/bin/ghostpaw-affinity"; else installed=/usr/local/bin/ghostpaw-affinity; fi
+          test "$("$installed" --version)" = "affinity ${latest#v} (binary, $target)"
+          echo "README one-liner for $target: passed" >> "$GITHUB_STEP_SUMMARY"
+      - name: README one-liner (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $cmd = ((irm https://raw.githubusercontent.com/GhostPawJS/affinity/main/site/data/install.json).targets | Where-Object { $_.id -eq 'windows-x64' }).cmd
+          if (-not $cmd) { throw 'Missing windows-x64 one-liner' }
+          $out = Invoke-Expression $cmd
+          $latest = (gh release view --json tagName --jq .tagName).TrimStart('v')
+          if (($out | Select-Object -Last 1) -ne "affinity $latest (binary, windows-x64)") { throw "Unexpected output: $out" }
+          $installed = Join-Path $env:LOCALAPPDATA 'Programs\ghostpaw\bin\ghostpaw-affinity.exe'
+          if ((& $installed --version) -ne "affinity $latest (binary, windows-x64)") { throw "Unexpected installed binary at $installed" }
+          'README one-liner for windows-x64: passed' >> $env:GITHUB_STEP_SUMMARY

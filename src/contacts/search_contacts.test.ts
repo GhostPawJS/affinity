@@ -54,7 +54,7 @@ describe("searchContacts", () => {
     db.prepare(
       "UPDATE contacts SET lifecycle_state = 'dormant' WHERE id = ?",
     ).run(dormant.id);
-    const all = searchContacts(db, "Bob");
+    const all = searchContacts(db, "Bob", { includeDormant: true });
     strictEqual(all.length, 2);
     const filtered = searchContacts(db, "Bob", undefined, {
       includeDormant: false,

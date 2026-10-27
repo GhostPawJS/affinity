@@ -5,6 +5,7 @@ import { resolveListLimitOffset } from "../lib/read/resolve_list_limit_offset.ts
 import type { LinkListReadFilters } from "../lib/types/link_list_read_filters.ts";
 import type { RadarRecord } from "../lib/types/radar_record.ts";
 import type { AffinityListReadOptions } from "../lib/types/read_list_options.ts";
+import { resolveNow } from "../resolve_now.ts";
 
 function deriveRadarReason(
   drift: number,
@@ -36,13 +37,15 @@ export function listRadar(
   if (ownerId === null) {
     return [];
   }
+  const now = resolveNow(options?.now);
+  const overdue = `EXISTS (SELECT 1 FROM open_commitments oc JOIN events e ON e.id = oc.event_id JOIN event_participants ep ON ep.event_id = e.id WHERE ep.contact_id = CASE WHEN l.from_contact_id = ${ownerId} THEN l.to_contact_id ELSE l.from_contact_id END AND e.deleted_at IS NULL AND oc.resolved_at IS NULL AND oc.due_at < ${now})`;
   const { limit, offset } = resolveListLimitOffset(options);
   const clauses: string[] = [
     "l.removed_at IS NULL",
     "l.is_structural = 0",
-    "l.from_contact_id = ?",
+    "(l.from_contact_id = ? OR l.to_contact_id = ?)",
   ];
-  const params: (string | number)[] = [ownerId];
+  const params: (string | number)[] = [ownerId, ownerId];
   if (filters?.kind !== undefined) {
     clauses.push("l.kind = ?");
     params.push(filters.kind);
@@ -65,6 +68,7 @@ export function listRadar(
     .prepare(
       `SELECT
          l.id,
+         ${overdue} AS overdue_commitment,
          l.from_contact_id,
          l.to_contact_id,
          l.trust,
@@ -73,14 +77,15 @@ export function listRadar(
          lr.recency_score,
          lr.normalized_rank
        FROM links l
-       INNER JOIN contacts c_to ON c_to.id = l.to_contact_id
+       INNER JOIN contacts c_to ON c_to.id = CASE WHEN l.from_contact_id = ${ownerId} THEN l.to_contact_id ELSE l.from_contact_id END
          AND c_to.deleted_at IS NULL AND c_to.lifecycle_state != 'merged'
        LEFT JOIN link_rollups lr ON lr.link_id = l.id
        WHERE ${where}
-       ORDER BY COALESCE(lr.radar_score, 0) DESC
+       ORDER BY ${overdue} DESC, COALESCE(lr.radar_score, 0) DESC
        LIMIT ? OFFSET ?`,
     )
     .all(...params, limit, offset) as {
+    overdue_commitment: number;
     id: number;
     from_contact_id: number;
     to_contact_id: number;
@@ -94,7 +99,10 @@ export function listRadar(
     linkId: row.id,
     contactId:
       row.from_contact_id === ownerId ? row.to_contact_id : row.from_contact_id,
-    driftPriority: row.drift_priority ?? 0,
+    reasons: row.overdue_commitment ? ["overdue_commitment"] : [],
+    driftPriority: row.overdue_commitment
+      ? Math.max(1, row.drift_priority ?? 0)
+      : (row.drift_priority ?? 0),
     recencyScore: row.recency_score ?? 0,
     normalizedRank: row.normalized_rank ?? 0,
     trust: row.trust ?? 0,

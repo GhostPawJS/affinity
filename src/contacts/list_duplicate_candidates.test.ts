@@ -161,7 +161,7 @@ describe("listDuplicateCandidates", () => {
       kind: "human",
     });
     addIdentity(db, winner.id, { type: "email", value: "ada@example.com" });
-    addIdentity(db, loser.id, { type: "phone", value: "1234" });
+    addIdentity(db, loser.id, { type: "phone", value: "12345" });
     mergeContacts(db, { winnerContactId: winner.id, loserContactId: loser.id });
     const matches = listDuplicateCandidates(db);
     strictEqual(

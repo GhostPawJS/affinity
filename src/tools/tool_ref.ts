@@ -35,6 +35,7 @@ export function toContactListToolItem(
 ): ToolListItem {
   return {
     ...toContactEntityRef(value),
+    ...("matchedOn" in value ? { matchedOn: value.matchedOn } : {}),
     subtitle: "kind" in value ? value.kind : undefined,
   };
 }
@@ -90,7 +91,9 @@ export function toEventEntityRef(value: EventRecord): ToolEntityRef {
 
 export function toEventListToolItem(value: EventRecord): ToolListItem {
   return {
+    ...value,
     ...toEventEntityRef(value),
+    occurredAtIso: new Date(value.occurredAt).toISOString(),
     snippet: `${value.participants.length} participant(s)`,
   };
 }

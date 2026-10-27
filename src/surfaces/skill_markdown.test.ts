@@ -70,3 +70,16 @@ test("reference base changes only workflow link targets", () => {
     ),
   );
 });
+
+test("without a cheat sheet the existing markdown is byte-identical", () => {
+  assert.equal(
+    renderSkillMarkdown({
+      ...spec,
+      tools: [],
+      workflows: [],
+      principles: [],
+      packageName: "@example/tool",
+    }),
+    "---\nname: example\ndescription: \"Manage records. Use when maintaining records.\"\n---\n\n# example\n\nA record engine.\n\n## Calling tools\n\nMCP: connect to example, then call a tool by name with its JSON arguments.\n\nCLI: `example call <tool> '<JSON object>'` or `example <tool> --parameter value` (without a global install: `npx -y @example/tool <tool> ...`).\n\nInspect schemas with `example describe <tool>`. Use `--db <path>` to select a database.\n\n## Workflow guides\n\n\n## Principles\n\n",
+  );
+});

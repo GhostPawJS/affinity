@@ -22,3 +22,5 @@ export {
   listMoments,
   listOpenCommitments,
 } from "./events/index.ts";
+export { exportContact } from "./contacts/export_contact.ts";
+export { exportAffinity } from "./contacts/export_affinity.ts";

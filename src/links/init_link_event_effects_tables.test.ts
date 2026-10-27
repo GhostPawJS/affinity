@@ -58,3 +58,30 @@ describe("initLinkEventEffectsTables", () => {
     db.close();
   });
 });
+
+it("idempotently migrates existing tables with recency enabled by default", () => {
+  const db = new DatabaseSync(":memory:");
+  try {
+    initContactsTables(db);
+    initLinksTables(db);
+    initEventsTables(db);
+    initLinkEventEffectsTables(db);
+    db.exec("ALTER TABLE link_event_effects DROP COLUMN counts_for_recency");
+    initLinkEventEffectsTables(db);
+    initLinkEventEffectsTables(db);
+    const columns = db
+      .prepare("PRAGMA table_info(link_event_effects)")
+      .all() as { name: string; dflt_value: string }[];
+    strictEqual(
+      columns.filter((column) => column.name === "counts_for_recency").length,
+      1,
+    );
+    strictEqual(
+      columns.find((column) => column.name === "counts_for_recency")
+        ?.dflt_value,
+      "1",
+    );
+  } finally {
+    db.close();
+  }
+});

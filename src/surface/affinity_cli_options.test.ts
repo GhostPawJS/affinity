@@ -11,6 +11,7 @@ import {
   affinityMcpSurfaceTools,
   affinitySurfaceTools,
 } from "./affinity_surface_tools.ts";
+import { timestampSchema } from "./timestamp_schema.ts";
 
 test("affinity noun verb create, search, show and not found use a file database", async () => {
   const dir = mkdtempSync(join(tmpdir(), "affinity-cli-"));
@@ -75,9 +76,16 @@ test("affinity noun verb create, search, show and not found use a file database"
   }
 });
 
-test("affinity command tree covers every tool and action once without changing MCP metadata", () => {
+test("affinity command tree covers every tool and action once with matching MCP metadata and timestamp string support", () => {
   const commands = cliCommands(affinitySurfaceTools);
-  assert.equal(commands.length, 27);
+  assert.equal(
+    commands.length,
+    affinitySurfaceTools.reduce(
+      (count, tool) =>
+        count + (tool.inputSchema.properties?.action?.enum?.length ?? 1),
+      0,
+    ),
+  );
   assert.equal(
     new Set(commands.map((command) => command.path)).size,
     commands.length,
@@ -94,7 +102,10 @@ test("affinity command tree covers every tool and action once without changing M
       );
   }
   assert.deepEqual(
-    affinitySurfaceTools.map(({ cli: _cli, ...tool }) => tool),
+    affinitySurfaceTools.map(({ cli: _cli, ...tool }) => ({
+      ...tool,
+      inputSchema: timestampSchema(tool.inputSchema),
+    })),
     affinityMcpSurfaceTools,
   );
   assert.ok(affinityMcpSurfaceTools.every((tool) => !("cli" in tool)));

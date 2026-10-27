@@ -46,7 +46,13 @@ export function assertParticipantContactsLive(
       throw new AffinityNotFoundError("contact not found");
     }
     if (row.lifecycle_state === "merged") {
-      throw new AffinityStateError("merged contact is read-only");
+      const winner =
+        row.merged_into_contact_id === null
+          ? null
+          : getContactRowById(db, row.merged_into_contact_id);
+      throw new AffinityStateError(
+        `Contact #${id} was merged into #${row.merged_into_contact_id} ${winner?.name ?? ""}; use contactId ${row.merged_into_contact_id}`,
+      );
     }
   }
 }

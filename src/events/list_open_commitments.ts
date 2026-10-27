@@ -6,6 +6,7 @@ import type { CommitmentRecord } from "../lib/types/commitment_record.ts";
 import type { CommitmentResolutionState } from "../lib/types/commitment_resolution_state.ts";
 import type { ListOpenCommitmentsFilters } from "../lib/types/list_open_commitments_filters.ts";
 import type { AffinityListReadOptions } from "../lib/types/read_list_options.ts";
+import { resolveNow } from "../resolve_now.ts";
 import { batchLoadEventParticipantViews } from "./loaders.ts";
 import type { EventType } from "./types.ts";
 
@@ -30,6 +31,7 @@ export function listOpenCommitments(
   options?: AffinityListReadOptions,
 ): CommitmentRecord[] {
   assertDefaultOrdering("listOpenCommitments", options);
+  const now = resolveNow(options?.now);
   const { limit, offset } = resolveListLimitOffset(options);
   const clauses: string[] = ["e.deleted_at IS NULL", "oc.resolved_at IS NULL"];
   const params: (number | string)[] = [];
@@ -69,7 +71,7 @@ export function listOpenCommitments(
         "horizonDays must be a non-negative integer",
       );
     }
-    const anchor = options?.since ?? Date.now();
+    const anchor = options?.since ?? now;
     clauses.push("oc.due_at IS NOT NULL");
     clauses.push("oc.due_at <= ?");
     params.push(anchor + filters.horizonDays * DAY_MS);
@@ -102,6 +104,8 @@ export function listOpenCommitments(
     summary: r.summary,
     participants: partsByEvent.get(r.event_id) ?? [],
     dueAt: r.due_at,
+    dueAtIso: r.due_at === null ? null : new Date(r.due_at).toISOString(),
+    overdue: r.due_at !== null && r.due_at < now,
     resolutionState: mapResolution(r.resolved_at, r.resolution),
   }));
 }

@@ -14,6 +14,7 @@ import type { AddIdentityInput } from "../lib/types/add_identity_input.ts";
 import type { IdentityMutationReceipt } from "../lib/types/mutation_receipt.ts";
 import { resolveNow } from "../resolve_now.ts";
 import { withTransaction } from "../with_transaction.ts";
+import { validateIdentityInput } from "./validate_identity_input.ts";
 
 export function addIdentity(
   db: AffinityDb,
@@ -33,6 +34,7 @@ export function addIdentity(
     if (type.length === 0 || value.length === 0) {
       throw new AffinityValidationError("type and value must be non-empty");
     }
+    validateIdentityInput(type, value);
     const nk = normalizeIdentityKey(type, value);
     assertNoIdentityCollision(db, nk);
     const now = resolveNow(input.now);

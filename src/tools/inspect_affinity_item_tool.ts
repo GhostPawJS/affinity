@@ -4,6 +4,7 @@ import type { AffinityDb } from "../database.ts";
 import type { ContactProfileRecord } from "../lib/types/contact_profile_record.ts";
 import type { LinkDetailRecord } from "../lib/types/link_detail_record.ts";
 import { getLinkDetail } from "../links/get_link_detail.ts";
+import type { TimeInputs } from "./parse_time_input.ts";
 import {
   defineAffinityTool,
   enumSchema,
@@ -20,14 +21,17 @@ import {
   resolveLinkLocator,
   withToolHandling,
 } from "./tool_resolvers.ts";
+import { toolFailure as invalidToolInput } from "./tool_types.ts";
 import type { ToolResult } from "./tool_types.ts";
 import { toolFailure, toolSuccess } from "./tool_types.ts";
+import { validateToolInput } from "./validate_tool_input.ts";
 
 export type InspectAffinityItemToolInput =
   | { kind: "owner_profile"; topLinksLimit?: number }
   | {
       kind: "contact_profile";
       contact: ContactLocator;
+      recentEventsLimit?: number;
       topLinksLimit?: number;
     }
   | {
@@ -82,8 +86,20 @@ function linkLocatorSchema(description: string) {
 
 export function inspectAffinityItemToolHandler(
   db: AffinityDb,
-  input: InspectAffinityItemToolInput,
+  rawInput: TimeInputs<InspectAffinityItemToolInput>,
 ): InspectAffinityItemToolResult {
+  const input = structuredClone(rawInput) as InspectAffinityItemToolInput;
+  const inputError = validateToolInput(
+    inspectAffinityItemTool.inputSchema,
+    input,
+  );
+  if (inputError)
+    return invalidToolInput(
+      "protocol",
+      "invalid_input",
+      "Invalid input.",
+      inputError,
+    );
   return withToolHandling<InspectAffinityItemToolData>(() => {
     if (input.kind === "owner_profile") {
       const detail = getOwnerProfile(
@@ -103,22 +119,28 @@ export function inspectAffinityItemToolHandler(
       return toolSuccess(
         `Loaded owner profile for ${detail.contact.name}.`,
         { kind: input.kind, detail },
-        { entities: [toContactEntityRef(detail.contact)] },
+        {
+          entities: [toContactEntityRef(detail.contact)],
+          warnings: detail.mergedInto
+            ? [{ code: "partial_match", message: detail.warnings.join("; ") }]
+            : undefined,
+        },
       );
     }
 
     if (input.kind === "contact_profile") {
-      const contact = resolveContactLocator(db, input.contact, "contact");
+      const contact = resolveContactLocator(db, input.contact, "contact", true);
       if (!contact.ok) {
         return contact.result;
       }
-      const detail = getContactProfile(
-        db,
-        contact.value.id,
-        input.topLinksLimit === undefined
-          ? undefined
-          : { topLinksLimit: input.topLinksLimit },
-      );
+      const detail = getContactProfile(db, contact.value.id, {
+        ...(input.topLinksLimit === undefined
+          ? {}
+          : { topLinksLimit: input.topLinksLimit }),
+        ...(input.recentEventsLimit === undefined
+          ? {}
+          : { recentEventsLimit: input.recentEventsLimit }),
+      });
       if (!detail) {
         return toolFailure(
           "domain",
@@ -130,7 +152,12 @@ export function inspectAffinityItemToolHandler(
       return toolSuccess(
         `Loaded contact profile for ${detail.contact.name}.`,
         { kind: input.kind, detail },
-        { entities: [toContactEntityRef(detail.contact)] },
+        {
+          entities: [toContactEntityRef(detail.contact)],
+          warnings: detail.mergedInto
+            ? [{ code: "partial_match", message: detail.warnings.join("; ") }]
+            : undefined,
+        },
       );
     }
 
@@ -167,7 +194,7 @@ export function inspectAffinityItemToolHandler(
 }
 
 export const inspectAffinityItemTool = defineAffinityTool<
-  InspectAffinityItemToolInput,
+  TimeInputs<InspectAffinityItemToolInput>,
   InspectAffinityItemToolResult
 >({
   name: inspectAffinityItemToolName,

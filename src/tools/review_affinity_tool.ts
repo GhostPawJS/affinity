@@ -22,6 +22,8 @@ import { listRadar } from "../links/list_radar.ts";
 import type { LinkKind, LinkState } from "../links/types.ts";
 import { getMergeHistory } from "../merges/get_merge_history.ts";
 import { listDismissedDuplicates } from "../merges/list_dismissed_duplicates.ts";
+import { enrichReviewItem } from "./enrich_review_item.ts";
+import type { TimeInputs } from "./parse_time_input.ts";
 import {
   arraySchema,
   booleanSchema,
@@ -30,6 +32,7 @@ import {
   integerSchema,
   numberSchema,
   objectSchema,
+  oneOfSchema,
   stringSchema,
 } from "./tool_metadata.ts";
 import { reviewAffinityToolName } from "./tool_names.ts";
@@ -46,6 +49,7 @@ import {
   withToolHandling,
 } from "./tool_resolvers.ts";
 import { summarizeCount } from "./tool_summary.ts";
+import { toolFailure as invalidToolInput } from "./tool_types.ts";
 import type { ToolListItem, ToolResult } from "./tool_types.ts";
 import {
   toolFailure,
@@ -53,6 +57,7 @@ import {
   toolSuccess,
   toolWarning,
 } from "./tool_types.ts";
+import { validateToolInput } from "./validate_tool_input.ts";
 
 export type ReviewAffinityToolView =
   | "contacts.list"
@@ -72,12 +77,16 @@ export type ReviewAffinityToolView =
 
 export interface ReviewAffinityToolInput {
   view: ReviewAffinityToolView;
+  now?: number;
   contact?: ContactLocator;
   link?: LinkLocator;
   contactIds?: number[];
   kind?: ContactKind | LinkKind;
   lifecycleState?: ContactLifecycleState;
   linkState?: LinkState;
+  attribute?: string | string[];
+  tag?: string | string[];
+  includeLost?: boolean;
   includeOwner?: boolean;
   includeDormant?: boolean;
   includeArchived?: boolean;
@@ -108,6 +117,7 @@ export type ReviewAffinityToolResult = ToolResult<ReviewAffinityToolData>;
 
 function buildReadOptions(input: ReviewAffinityToolInput) {
   return {
+    ...(input.now === undefined ? {} : { now: input.now }),
     ...(input.limit === undefined ? {} : { limit: input.limit }),
     ...(input.offset === undefined ? {} : { offset: input.offset }),
     ...(input.includeArchived === undefined
@@ -283,6 +293,7 @@ function duplicateCandidateItem(candidate: {
   matchScore: number;
 }): ToolListItem {
   return {
+    ...candidate,
     kind: "contact",
     id: candidate.leftContactId,
     title: `Possible duplicate: #${candidate.leftContactId} and #${candidate.rightContactId}`,
@@ -299,11 +310,13 @@ function momentItem(moment: {
   occurredAt: number;
 }): ToolListItem {
   return {
+    ...moment,
+    occurredAtIso: new Date(moment.occurredAt).toISOString(),
     kind: "event",
     id: moment.eventId,
     title: moment.summary,
     subtitle: moment.momentKind,
-    snippet: `link #${moment.linkId} at ${moment.occurredAt}`,
+    snippet: new Date(moment.occurredAt).toISOString().slice(0, 10),
   };
 }
 
@@ -316,11 +329,12 @@ function commitmentItem(commitment: {
   participants: readonly unknown[];
 }): ToolListItem {
   return {
+    ...commitment,
     kind: "event",
     id: commitment.eventId,
     title: commitment.summary,
     subtitle: commitment.type,
-    snippet: `state ${commitment.resolutionState}; participants ${commitment.participants.length}; due ${commitment.dueAt ?? "none"}`,
+    snippet: `state ${commitment.resolutionState}; participants ${commitment.participants.length}; due ${commitment.dueAt == null ? "none" : new Date(commitment.dueAt).toISOString().slice(0, 10)}`,
   };
 }
 
@@ -331,6 +345,7 @@ function radarItem(radar: {
   driftPriority: number;
 }): ToolListItem {
   return {
+    ...radar,
     kind: "link",
     id: radar.linkId,
     title: `Link #${radar.linkId}`,
@@ -346,11 +361,14 @@ function upcomingDateItem(date: {
   occursOn: number;
 }): ToolListItem {
   return {
+    ...date,
+    occursAt: date.occursOn,
+    occursAtIso: new Date(date.occursOn).toISOString(),
     kind: date.targetRef.kind,
     id: date.targetRef.id,
     title: date.summary,
     subtitle: date.recurrenceKind,
-    snippet: `occurs ${date.occursOn}`,
+    snippet: `occurs ${new Date(date.occursOn).toISOString().slice(0, 10)}`,
   };
 }
 
@@ -361,21 +379,23 @@ function mergeHistoryItem(record: {
   reasonSummary?: string | null;
 }): ToolListItem {
   return {
+    ...record,
     kind: "contact",
     id: record.winnerContactId,
     title: `Merged #${record.loserContactId} into #${record.winnerContactId}`,
-    subtitle: `at ${record.mergedAt}`,
+    subtitle: new Date(record.mergedAt).toISOString().slice(0, 10),
     snippet: record.reasonSummary ?? undefined,
   };
 }
 
 function dismissedPairItem(record: DismissedDuplicateRecord): ToolListItem {
   return {
+    ...record,
     kind: "contact",
     id: record.leftContactId,
     title: `Dismissed pair: #${record.leftContactId} and #${record.rightContactId}`,
     subtitle: record.reason ?? "no reason given",
-    snippet: `dismissed at ${record.dismissedAt}`,
+    snippet: `dismissed at ${new Date(record.dismissedAt).toISOString().slice(0, 10)}`,
   };
 }
 
@@ -391,8 +411,17 @@ function compactFilters(
 
 export function reviewAffinityToolHandler(
   db: AffinityDb,
-  input: ReviewAffinityToolInput,
+  rawInput: TimeInputs<ReviewAffinityToolInput>,
 ): ReviewAffinityToolResult {
+  const input = structuredClone(rawInput) as ReviewAffinityToolInput;
+  const inputError = validateToolInput(reviewAffinityTool.inputSchema, input);
+  if (inputError)
+    return invalidToolInput(
+      "protocol",
+      "invalid_input",
+      "Invalid input.",
+      inputError,
+    );
   return withToolHandling<ReviewAffinityToolData>(() => {
     const invalid = validateReviewInput(input);
     if (invalid) {
@@ -408,6 +437,13 @@ export function reviewAffinityToolHandler(
         items = listContacts(
           db,
           {
+            ...(input.attribute === undefined
+              ? {}
+              : { attribute: input.attribute }),
+            ...(input.tag === undefined ? {} : { tag: input.tag }),
+            ...(input.includeLost === undefined
+              ? {}
+              : { includeLost: input.includeLost }),
             ...(input.kind === undefined
               ? {}
               : { kind: input.kind as ContactKind }),
@@ -454,7 +490,7 @@ export function reviewAffinityToolHandler(
             "Provide `contact` when `view` is `events.contact_journal`.",
           );
         }
-        const contact = resolveContactLocator(db, locator, "contact");
+        const contact = resolveContactLocator(db, locator, "contact", true);
         if (!contact.ok) {
           return contact.result;
         }
@@ -493,7 +529,12 @@ export function reviewAffinityToolHandler(
           let contactId: number | undefined;
           let linkId: number | undefined;
           if (input.contact !== undefined) {
-            const contact = resolveContactLocator(db, input.contact, "contact");
+            const contact = resolveContactLocator(
+              db,
+              input.contact,
+              "contact",
+              true,
+            );
             if (!contact.ok) {
               return contact.result;
             }
@@ -524,7 +565,12 @@ export function reviewAffinityToolHandler(
           let contactId: number | undefined;
           let linkId: number | undefined;
           if (input.contact !== undefined) {
-            const contact = resolveContactLocator(db, input.contact, "contact");
+            const contact = resolveContactLocator(
+              db,
+              input.contact,
+              "contact",
+              true,
+            );
             if (!contact.ok) {
               return contact.result;
             }
@@ -639,7 +685,7 @@ export function reviewAffinityToolHandler(
             "Provide `contact` when `view` is `merges.history`.",
           );
         }
-        const contact = resolveContactLocator(db, locator, "contact");
+        const contact = resolveContactLocator(db, locator, "contact", true);
         if (!contact.ok) {
           return contact.result;
         }
@@ -653,6 +699,7 @@ export function reviewAffinityToolHandler(
         break;
     }
 
+    items = items.map((item) => enrichReviewItem(db, item));
     return toolSuccess(
       summarizeCount(items.length, "item"),
       {
@@ -679,7 +726,7 @@ export function reviewAffinityToolHandler(
 }
 
 export const reviewAffinityTool = defineAffinityTool<
-  ReviewAffinityToolInput,
+  TimeInputs<ReviewAffinityToolInput>,
   ReviewAffinityToolResult
 >({
   name: reviewAffinityToolName,
@@ -695,6 +742,7 @@ export const reviewAffinityTool = defineAffinityTool<
   targetKinds: ["contact", "link", "event"],
   inputDescriptions: {
     view: "Which review surface to return.",
+    now: "Optional current timestamp for overdue calculations.",
     contact: "Target contact locator for views that require one.",
     link: "Target link locator for views that require one.",
     contactIds:
@@ -703,6 +751,9 @@ export const reviewAffinityTool = defineAffinityTool<
     lifecycleState:
       "Optional contact lifecycle filter for the contact list view.",
     linkState: "Optional link state filter for link review views.",
+    attribute: "Attribute name or name=value; arrays require all filters.",
+    tag: "Tag name; arrays require all tags.",
+    includeLost: "Whether lost contacts are included.",
     includeOwner:
       "Whether owner contacts should be included in contact review.",
     includeDormant:
@@ -746,6 +797,9 @@ export const reviewAffinityTool = defineAffinityTool<
         "merges.history",
         "merges.dismissed",
       ]),
+      now: integerSchema(
+        "Optional current timestamp for overdue calculations.",
+      ),
       contact: contactLocatorSchema("Optional target contact locator."),
       link: linkLocatorSchema("Optional target link locator."),
       contactIds: arraySchema(
@@ -768,6 +822,17 @@ export const reviewAffinityTool = defineAffinityTool<
         "broken",
         "archived",
       ]),
+      attribute: oneOfSchema([
+        stringSchema("Attribute filter."),
+        arraySchema(stringSchema("Attribute filter."), "AND filters."),
+      ]),
+      tag: oneOfSchema([
+        stringSchema("Tag filter."),
+        arraySchema(stringSchema("Tag filter."), "AND tags."),
+      ]),
+      includeLost: booleanSchema(
+        "Include lost contacts (search excludes them by default).",
+      ),
       includeOwner: booleanSchema("Whether owner contacts are included."),
       includeDormant: booleanSchema("Whether dormant rows are included."),
       includeArchived: booleanSchema("Whether archived links are included."),

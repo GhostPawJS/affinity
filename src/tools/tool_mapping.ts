@@ -22,6 +22,9 @@ export interface AffinityToolMapping {
 }
 
 export const affinityToolMappings: AffinityToolMapping[] = [
+  { source: "exportContact", tool: manageContactToolName, action: "export" },
+  { source: "exportAffinity", tool: manageContactToolName, action: "export" },
+  { source: "deleteContact", tool: manageContactToolName, action: "delete" },
   { source: "searchContacts", tool: searchAffinityToolName },
   {
     source: "getOwnerProfile",

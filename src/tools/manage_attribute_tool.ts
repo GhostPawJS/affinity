@@ -5,6 +5,7 @@ import type { AffinityDb } from "../database.ts";
 import type { AttributeEntry } from "../lib/types/attribute_entry.ts";
 import type { AttributeRecord } from "../lib/types/attribute_record.ts";
 import type { AttributeTarget } from "../lib/types/attribute_target.ts";
+import type { TimeInputs } from "./parse_time_input.ts";
 import {
   arraySchema,
   defineAffinityTool,
@@ -23,11 +24,13 @@ import {
   resolveLinkLocator,
   withToolHandling,
 } from "./tool_resolvers.ts";
+import { toolFailure as invalidToolInput } from "./tool_types.ts";
 import type {
   ToolFailure,
   ToolNeedsClarification,
   ToolResult,
 } from "./tool_types.ts";
+import { validateToolInput } from "./validate_tool_input.ts";
 
 type AttributeTargetInput =
   | { kind: "contact"; contact: ContactLocator }
@@ -117,8 +120,24 @@ function resolveAttributeTarget(
 
 export function manageAttributeToolHandler(
   db: AffinityDb,
-  input: ManageAttributeToolInput,
+  rawInput: TimeInputs<ManageAttributeToolInput>,
 ): ManageAttributeToolResult {
+  const input = structuredClone(rawInput) as ManageAttributeToolInput;
+  const inputError = validateToolInput(manageAttributeTool.inputSchema, input);
+  if (inputError)
+    return invalidToolInput(
+      "protocol",
+      "invalid_input",
+      "Invalid input.",
+      inputError,
+    );
+  if (!input.target)
+    return invalidToolInput(
+      "protocol",
+      "invalid_input",
+      "Missing target.",
+      "target is required.",
+    );
   return withToolHandling<MutationToolData<AttributeRecord>>(() => {
     const resolved = resolveAttributeTarget(db, input.target);
     if (resolved.kind === "error") {
@@ -148,7 +167,7 @@ export function manageAttributeToolHandler(
 }
 
 export const manageAttributeTool = defineAffinityTool<
-  ManageAttributeToolInput,
+  TimeInputs<ManageAttributeToolInput>,
   ManageAttributeToolResult
 >({
   name: manageAttributeToolName,

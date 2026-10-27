@@ -140,7 +140,7 @@ export function refreshLinkRollup(
     .prepare(
       `SELECT event_id, occurred_at
        FROM link_event_effects
-       WHERE link_id = ?
+       WHERE link_id = ? AND counts_for_recency = 1
        ORDER BY occurred_at DESC, event_id DESC
        LIMIT 1`,
     )
@@ -150,7 +150,7 @@ export function refreshLinkRollup(
     .prepare(
       `SELECT
          COUNT(*) AS total_meaningful_events,
-         SUM(CASE WHEN affinity_delta > 0 OR trust_delta > 0 THEN 1 ELSE 0 END) AS positive_meaningful_events
+         SUM(CASE WHEN counts_for_recency = 1 AND (affinity_delta > 0 OR trust_delta > 0) THEN 1 ELSE 0 END) AS positive_meaningful_events
        FROM link_event_effects
        WHERE link_id = ? AND occurred_at >= ?`,
     )
@@ -163,7 +163,7 @@ export function refreshLinkRollup(
       `SELECT ep.directionality
        FROM link_event_effects le
        INNER JOIN event_participants ep ON ep.event_id = le.event_id
-       WHERE le.link_id = ? AND ep.contact_id = ?
+       WHERE le.link_id = ? AND le.counts_for_recency = 1 AND ep.contact_id = ?
          AND ep.directionality IS NOT NULL
          AND le.occurred_at >= ?`,
     )

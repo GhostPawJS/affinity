@@ -9,6 +9,7 @@ import { reviseBond } from "../links/revise_bond.ts";
 import { seedSocialLink } from "../links/seed_social_link.ts";
 import { setStructuralTie } from "../links/set_structural_tie.ts";
 import type { LinkState } from "../links/types.ts";
+import type { TimeInputs } from "./parse_time_input.ts";
 import {
   booleanSchema,
   defineAffinityTool,
@@ -27,7 +28,9 @@ import {
   resolveLinkLocator,
   withToolHandling,
 } from "./tool_resolvers.ts";
+import { toolFailure as invalidToolInput } from "./tool_types.ts";
 import type { ToolResult } from "./tool_types.ts";
+import { validateToolInput } from "./validate_tool_input.ts";
 
 export type ManageRelationshipToolInput =
   | {
@@ -109,8 +112,20 @@ function linkLocatorSchema(description: string) {
 
 export function manageRelationshipToolHandler(
   db: AffinityDb,
-  input: ManageRelationshipToolInput,
+  rawInput: TimeInputs<ManageRelationshipToolInput>,
 ): ManageRelationshipToolResult {
+  const input = structuredClone(rawInput) as ManageRelationshipToolInput;
+  const inputError = validateToolInput(
+    manageRelationshipTool.inputSchema,
+    input,
+  );
+  if (inputError)
+    return invalidToolInput(
+      "protocol",
+      "invalid_input",
+      "Invalid input.",
+      inputError,
+    );
   return withToolHandling<MutationToolData<LinkListItem>>(() => {
     switch (input.action) {
       case "seed_social_link": {
@@ -207,7 +222,7 @@ export function manageRelationshipToolHandler(
 }
 
 export const manageRelationshipTool = defineAffinityTool<
-  ManageRelationshipToolInput,
+  TimeInputs<ManageRelationshipToolInput>,
   ManageRelationshipToolResult
 >({
   name: manageRelationshipToolName,

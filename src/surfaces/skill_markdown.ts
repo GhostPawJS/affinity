@@ -1,6 +1,8 @@
-import type { SurfaceTool } from "./surface_types.ts";
+import type { JsonSchema, SurfaceTool } from "./surface_types.ts";
 
 export interface SkillMarkdownSpec<TCtx> {
+  cheatSheet?: string;
+  examples?: Record<string, string>;
   name: string;
   description: string;
   license?: string;
@@ -79,6 +81,25 @@ export function renderSkillMarkdown<TCtx>(
       lines.push(
         `| ${name} | ${property.type ?? property.oneOf?.map((branch) => branch.type).join(" / ") ?? "any"} | ${tool.inputSchema.required?.includes(name) ? "yes" : "no"} | ${(property.enum ? `${property.enum.join(", ")}. ` : "") + (property.description ?? "").replaceAll("|", "\\|").replaceAll("\n", " ")} |`,
       );
+    if (spec.cheatSheet) {
+      for (const [parent, property] of Object.entries(
+        tool.inputSchema.properties ?? {},
+      )) {
+        const nested = property.items ?? property;
+        const branches: JsonSchema[] = [nested, ...(nested.oneOf ?? [])];
+        const seen = new Set<string>();
+        for (const branch of branches)
+          for (const [key, child] of Object.entries(branch.properties ?? {})) {
+            if (seen.has(key)) continue;
+            seen.add(key);
+            lines.push(
+              `| ${parent}.${key} | ${child.type ?? "oneOf"} | ${branch.required?.includes(key) ? "yes" : "no"} | ${(child.description ?? "").replaceAll("|", "\\|").replaceAll("\n", " ")} |`,
+            );
+          }
+      }
+      if (spec.examples?.[tool.name])
+        lines.push("", "```sh", spec.examples[tool.name] ?? "", "```");
+    }
     lines.push("");
   }
   lines.push(
@@ -94,5 +115,13 @@ export function renderSkillMarkdown<TCtx>(
     ...spec.principles.map((principle) => `- ${principle}`),
     "",
   );
-  return lines.join("\n");
+  const output = lines.join("\n");
+  if (!spec.cheatSheet) return output;
+  const title = `# ${spec.name}\n\n`;
+  const start = output.indexOf(title) + title.length;
+  const appendix = output
+    .slice(start)
+    .replace(/ \(without a global install:.*?\)/g, "")
+    .replace(/^## /gm, "### ");
+  return `${output.slice(0, start)}${spec.cheatSheet}\n\n## Appendix: MCP and tool calls\n\n${appendix}\nFrom the binary: \`${spec.bin} skill <guide>\`.\n${spec.packageName ? `\n## Without the binary\n\nUse \`npx -y ${spec.packageName} ...\` (Node.js 24 or newer), or import \`${spec.packageName}\` as a library.\n` : ""}`;
 }

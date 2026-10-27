@@ -39,7 +39,17 @@ export function resolveContactLocator(
   db: AffinityDb,
   locator: ContactLocator,
   field = "contact",
+  allowMerged = false,
 ): ResolvedTarget<ContactRow> {
+  if (!locator || typeof locator !== "object")
+    return {
+      ok: false,
+      result: toolNeedsClarification(
+        "missing_required_choice",
+        `Provide ${field} locator.`,
+        [field],
+      ),
+    };
   if ("contactId" in locator) {
     const row = getContactRowById(db, locator.contactId);
     if (!row) {
@@ -53,9 +63,26 @@ export function resolveContactLocator(
         ),
       };
     }
+    if (!allowMerged && row.merged_into_contact_id !== null) {
+      const winner = getContactRowById(db, row.merged_into_contact_id);
+      const message = `Contact #${row.id} was merged into #${row.merged_into_contact_id} ${winner?.name ?? ""}; use contactId ${row.merged_into_contact_id}`;
+      return {
+        ok: false,
+        result: toolFailure("domain", "invalid_state", message, message),
+      };
+    }
     return { ok: true, value: row };
   }
 
+  if (!("identity" in locator) || !locator.identity)
+    return {
+      ok: false,
+      result: toolNeedsClarification(
+        "missing_required_choice",
+        `Provide ${field}.contactId or identity.`,
+        [field],
+      ),
+    };
   const normalizedKey = normalizeIdentityKey(
     locator.identity.type,
     locator.identity.value,
@@ -120,6 +147,15 @@ export function resolveLinkLocator(
   locator: LinkLocator,
   field = "link",
 ): ResolvedTarget<LinkRow> {
+  if (!locator || typeof locator !== "object")
+    return {
+      ok: false,
+      result: toolNeedsClarification(
+        "missing_required_choice",
+        `Provide ${field} locator.`,
+        [field],
+      ),
+    };
   if ("linkId" in locator) {
     const row = getLinkRowById(db, locator.linkId);
     if (!row) {
@@ -136,6 +172,15 @@ export function resolveLinkLocator(
     return { ok: true, value: row };
   }
 
+  if (!("endpoints" in locator) || !locator.endpoints)
+    return {
+      ok: false,
+      result: toolNeedsClarification(
+        "missing_required_choice",
+        `Provide ${field}.linkId or endpoints.`,
+        [field],
+      ),
+    };
   const { endpoints } = locator;
   const clauses = [
     "removed_at IS NULL",

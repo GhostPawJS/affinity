@@ -1,23 +1,33 @@
+import { existsSync } from "node:fs";
 import type { AffinityDb } from "../database.ts";
 import type { ToolCliOptions } from "../surfaces/cli.ts";
 import { affinityVersion } from "../version.ts";
+import { affinityCliError } from "./affinity_cli_errors.ts";
 import { affinitySurfaceTools } from "./affinity_surface_tools.ts";
+import { cliVersion } from "./cli_version.ts";
+import { normalizeTimeInputs } from "./plain_dates.ts";
+import { resolveAffinityDbPath } from "./resolve_affinity_db_path.ts";
 
 export const affinityCliOptions: ToolCliOptions<AffinityDb> = {
+  reportCreation: true,
+  transformInput: normalizeTimeInputs,
+  versionLine: () => cliVersion(affinityVersion),
+  describeDb: (db) =>
+    resolveAffinityDbPath(db === undefined ? {} : { flag: db }),
+  formatError: affinityCliError,
   bin: "ghostpaw-affinity",
   version: affinityVersion,
   description: "Local relationship model and social CRM",
   tools: affinitySurfaceTools,
   openContext: async (options) => {
     const { openAffinityDb } = await import("./open_affinity_db.ts");
-    const { resolveAffinityDbPath } = await import(
-      "./resolve_affinity_db_path.ts"
+    const path = resolveAffinityDbPath(
+      options.db === undefined ? {} : { flag: options.db },
     );
-    return openAffinityDb(
-      resolveAffinityDbPath(
-        options.db === undefined ? {} : { flag: options.db },
-      ),
-    );
+    const created = path !== ":memory:" && !existsSync(path);
+    const db = await openAffinityDb(path);
+    if (created) (options.stderr ?? process.stderr).write(`created ${path}\n`);
+    return db;
   },
   closeContext: (db) => db.close(),
   commands: {
@@ -27,12 +37,11 @@ export const affinityCliOptions: ToolCliOptions<AffinityDb> = {
         options.db === undefined ? {} : { dbPath: options.db },
       );
     },
-    skill: async () => {
-      const { renderSkillMarkdown } = await import(
-        "../surfaces/skill_markdown.ts"
+    skill: async (args = []) => {
+      const { affinitySkillCommand } = await import(
+        "./affinity_skill_command.ts"
       );
-      const { affinitySkillSpec } = await import("./affinity_skill_spec.ts");
-      return renderSkillMarkdown(affinitySkillSpec);
+      return affinitySkillCommand(args);
     },
   },
 };

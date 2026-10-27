@@ -116,10 +116,27 @@ jobs:
           path: upload
           merge-multiple: true
 
+      # publish.yml creates the release (with server.mcpb) after npm publish;
+      # wait for it so SHA256SUMS can cover the MCP Bundle too.
+      - name: Wait for the GitHub Release and fetch server.mcpb
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          for _ in $(seq 1 40); do
+            if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+              gh release download "$GITHUB_REF_NAME" -p server.mcpb -D upload --clobber || echo "::warning::server.mcpb not attached; SHA256SUMS covers the archives only"
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::error::Release $GITHUB_REF_NAME did not appear within 10 minutes"
+          exit 1
+
       - name: SHA256SUMS
         working-directory: upload
         run: |
-          sha256sum ghostpaw-affinity-* > SHA256SUMS
+          sha256sum ghostpaw-affinity-* $(ls server.mcpb 2>/dev/null) > SHA256SUMS
           cat SHA256SUMS
 
       # SLSA build provenance, signed through Sigstore, verifiable with
@@ -130,18 +147,10 @@ jobs:
             upload/ghostpaw-affinity-*
             upload/SHA256SUMS
 
-      # publish.yml creates the release after npm publish; wait for it.
       - name: Upload to the GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          for _ in $(seq 1 40); do
-            if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-              gh release upload "$GITHUB_REF_NAME" upload/* --clobber
-              exit 0
-            fi
-            sleep 15
-          done
-          echo "::error::Release $GITHUB_REF_NAME did not appear within 10 minutes"
-          exit 1
+          rm -f upload/server.mcpb
+          gh release upload "$GITHUB_REF_NAME" upload/* --clobber

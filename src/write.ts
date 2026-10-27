@@ -39,3 +39,4 @@ export {
   setAttribute,
   unsetAttribute,
 } from "./attributes/index.ts";
+export { deleteContact } from "./contacts/delete_contact.ts";

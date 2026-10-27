@@ -6,6 +6,12 @@ import {
   parseCliArgs,
   renderCliHelp,
 } from "./cli_args.ts";
+import {
+  cliExitCode,
+  humanResult,
+  plainJson,
+  suggestCommand,
+} from "./cli_output.ts";
 import type { JsonSchema, SurfaceTool } from "./surface_types.ts";
 import { validateInput } from "./validate_input.ts";
 
@@ -94,13 +100,15 @@ export async function runCliCommand<T>(
       else if (flag === "--compact") compact = true;
       else if (flag === "--help" || flag === "-h") help = true;
       else if (["--version", "-V", "-v"].includes(flag ?? "")) {
-        if (!quiet) stdout.write(`${options.version}\n`);
+        if (!quiet)
+          stdout.write(`${options.versionLine?.() ?? options.version}\n`);
         return 0;
       } else if (flag !== "--no-color") continue;
       args.splice(i--, 1);
     }
     if (args[0] === "version") {
-      if (!quiet) stdout.write(`${options.version}\n`);
+      if (!quiet)
+        stdout.write(`${options.versionLine?.() ?? options.version}\n`);
       return 0;
     }
     if (args[0] === "help") {
@@ -115,13 +123,22 @@ export async function runCliCommand<T>(
       const argument = (name: string, schema: JsonSchema): CliArgument => ({
         name,
         type:
-          schema.type === "object" || !schema.type
-            ? "json"
-            : (schema.type as CliArgument["type"]),
+          options.transformInput && /(?:At|-at)$|^(asOf|as-of|now)$/.test(name)
+            ? "string"
+            : schema.type === "object" ||
+                (!schema.type &&
+                  !schema.oneOf?.some((branch) => branch.type === "string"))
+              ? "json"
+              : ((schema.type ?? "string") as CliArgument["type"]),
         description: schema.description,
         enum: schema.enum,
         ...(schema.items?.type
-          ? { itemType: schema.items.type as CliArgument["type"] }
+          ? {
+              itemType: (schema.items.type === "object" ||
+              schema.items.type === "array"
+                ? "json"
+                : schema.items.type) as CliArgument["type"],
+            }
           : {}),
       });
       const properties = command.tool.inputSchema.properties ?? {};
@@ -161,8 +178,10 @@ export async function runCliCommand<T>(
         stdout.write(
           entry
             ? renderCliHelp(specFor(entry))
-            : `${options.bin} ${options.version}\n${options.description}\n\nCommands:\n${matches.map((command) => `  ${command.path}`).join("\n")}\n  mcp, skill, tools [--json], describe <tool>, call <tool> [JSON|-], completions <bash|zsh|fish>, version\nGlobal flags: --db <path>, --json, --quiet, --compact, --help/-h, --version/-V/-v, --no-color\n`,
+            : `${options.versionLine?.() ?? `${options.bin} ${options.version}`}\n${options.description}\n\nCommands:\n${matches.map((command) => `  ${command.path}`).join("\n")}\n  mcp, skill, tools [--json], describe <tool>, call <tool> [JSON|-], completions <bash|zsh|fish>, version\nGlobal flags: --db <path>, --json, --quiet, --compact, --help/-h, --version/-V/-v, --no-color\n`,
         );
+      if (options.describeDb && !quiet)
+        stdout.write(`Database: ${options.describeDb(db)}\n`);
       return 0;
     }
     if (args[0] === "completions") {
@@ -193,7 +212,19 @@ export async function runCliCommand<T>(
         throw new CliUsageError("Expected completion shell: bash, zsh or fish");
       return 0;
     }
-    if (!entry) throw new CliUsageError(`Unknown command: ${args.join(" ")}`);
+    if (!entry) {
+      const path = args
+        .filter((x) => !x.startsWith("--"))
+        .slice(0, 2)
+        .join(" ");
+      const suggestion = suggestCommand(
+        path,
+        tree.map((c) => c.path),
+      );
+      throw new CliUsageError(
+        `Unknown command: ${path}.${suggestion ? ` Did you mean ${suggestion}?` : ""}`,
+      );
+    }
     const rest = args.slice(entry.path.split(" ").length);
     let base: unknown = {};
     const spec = specFor(entry);
@@ -215,6 +246,8 @@ export async function runCliCommand<T>(
       rest[positionalIndexes[0] as number] === "-"
         ? positionalIndexes[0]
         : undefined;
+    // Only read stdin implicitly when no command arguments were given:
+    // harnesses often spawn with an open, never-closed stdin pipe.
     if (stdinIndex !== undefined || (!rest.length && !stdin.isTTY)) {
       if (stdinIndex !== undefined) rest.splice(stdinIndex, 1);
       let raw = "";
@@ -227,14 +260,39 @@ export async function runCliCommand<T>(
       if (!base || typeof base !== "object" || Array.isArray(base))
         throw new CliUsageError("Expected stdin JSON object");
     }
-    const input = {
+    const objectPositions = entry.positionals.filter(
+      (name) => entry.tool.inputSchema.properties?.[name]?.type === "object",
+    );
+    if (
+      objectPositions.length === 1 &&
+      base &&
+      typeof base === "object" &&
+      Object.keys(base).length &&
+      !((objectPositions[0] as string) in base)
+    )
+      base = { [objectPositions[0] as string]: base };
+    let input = {
       ...(base as object),
       ...parseCliArgs(rest, spec),
       ...entry.fixed,
     };
+    for (const [key, schema] of Object.entries(
+      entry.tool.inputSchema.properties ?? {},
+    )) {
+      if (
+        schema.type === "array" &&
+        schema.items?.type === "object" &&
+        Array.isArray(input[key])
+      )
+        input[key] = input[key].flat();
+    }
+    input = (options.transformInput?.(input) ?? input) as typeof input;
     const errors = validateInput(entry.tool.inputSchema, input);
     if (errors.length) throw new CliUsageError(errors.join("\n"));
-    const context = await options.openContext(db === undefined ? {} : { db });
+    const context = await options.openContext({
+      ...(db === undefined ? {} : { db }),
+      ...(options.reportCreation ? { stderr } : {}),
+    });
     try {
       const result = await entry.tool.handler(context, input);
       const record = result as {
@@ -244,24 +302,16 @@ export async function runCliCommand<T>(
         summary?: string;
         data?: unknown;
       };
-      const code =
-        record.outcome === "needs_clarification" ||
-        record.error?.code === "not_found"
-          ? 3
-          : ["conflict", "version_mismatch"].includes(record.error?.code ?? "")
-            ? 4
-            : record.ok === false
-              ? 1
-              : 0;
+      const code = cliExitCode(result);
       if (code)
         stderr.write(
-          `${record.error?.message ?? record.summary ?? "Tool failed"}\n`,
+          `${code === 70 ? "internal error: " : ""}${options.formatError?.(record.error?.message ?? record.summary ?? "Tool failed") ?? record.error?.message ?? record.summary ?? "Tool failed"}\n`,
         );
       if (!quiet)
         stdout.write(
           json || !(stdout as { isTTY?: boolean }).isTTY
-            ? `${JSON.stringify(result, null, compact ? undefined : 2)}\n`
-            : `${record.summary ?? ""}\n${JSON.stringify(record.data ?? {}, null, 2)}\n`,
+            ? `${JSON.stringify(plainJson(result, compact, options.formatError), null, compact ? undefined : 2)}\n`
+            : humanResult(result),
         );
       return code;
     } finally {
@@ -269,7 +319,7 @@ export async function runCliCommand<T>(
     }
   } catch (error) {
     return fail(
-      error instanceof Error ? error.message : String(error),
+      `${error instanceof CliUsageError ? "" : "internal error: "}${error instanceof Error ? error.message : String(error)}`,
       error instanceof CliUsageError ? 2 : 70,
     );
   }

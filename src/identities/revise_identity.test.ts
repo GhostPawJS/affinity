@@ -12,7 +12,7 @@ describe("reviseIdentity", () => {
     const { primary: c } = createContact(db, { name: "A", kind: "human" });
     const { primary: id } = addIdentity(db, c.id, {
       type: "email",
-      value: "a@b",
+      value: "a@b.com",
     });
     const r = reviseIdentity(db, id.id, { label: "work" });
     strictEqual(r.primary.label, "work");
@@ -25,11 +25,11 @@ describe("reviseIdentity", () => {
     const { primary: c2 } = createContact(db, { name: "B", kind: "human" });
     const { primary: i1 } = addIdentity(db, c1.id, {
       type: "email",
-      value: "a@b",
+      value: "a@b.com",
     });
-    addIdentity(db, c2.id, { type: "email", value: "c@d" });
+    addIdentity(db, c2.id, { type: "email", value: "c@d.com" });
     throws(
-      () => reviseIdentity(db, i1.id, { value: "c@d" }),
+      () => reviseIdentity(db, i1.id, { value: "c@d.com" }),
       (e: unknown) => e instanceof AffinityConflictError,
     );
     db.close();

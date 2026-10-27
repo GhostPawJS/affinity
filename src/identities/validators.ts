@@ -20,8 +20,13 @@ export function assertNoIdentityCollision(
           )
           .get(normalizedKey, excludeIdentityId);
   if (row !== undefined) {
+    const owner = db
+      .prepare(
+        "SELECT c.id, c.name FROM contacts c JOIN identities i ON i.contact_id = c.id WHERE i.normalized_key = ? AND i.removed_at IS NULL",
+      )
+      .get(normalizedKey) as { id: number; name: string } | undefined;
     throw new AffinityConflictError(
-      "another contact already owns this normalized identity",
+      `${normalizedKey.replace(":", " ")} already belongs to #${owner?.id} ${owner?.name}`,
     );
   }
 }

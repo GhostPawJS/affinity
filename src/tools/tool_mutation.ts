@@ -3,6 +3,7 @@ import { toReceiptEntityRefs } from "./tool_ref.ts";
 import { type ToolResult, toolNoOp, toolSuccess } from "./tool_types.ts";
 
 export interface MutationToolData<TPrimary> {
+  changes: { entity: string; id: number; action: string; fields?: string[] }[];
   action: string;
   primary: TPrimary;
   created: MutationReceipt<TPrimary>["created"];
@@ -17,6 +18,7 @@ export function mutationToolResult<TPrimary>(
   action: string,
   receipt: MutationReceipt<TPrimary>,
   entitySummary: string,
+  fields?: string[],
 ): ToolResult<MutationToolData<TPrimary>> {
   const changedCount =
     receipt.created.length +
@@ -24,6 +26,15 @@ export function mutationToolResult<TPrimary>(
     receipt.archived.length +
     receipt.removed.length;
   const data: MutationToolData<TPrimary> = {
+    changes: (["created", "updated", "archived", "removed"] as const).flatMap(
+      (verb) =>
+        receipt[verb].map((ref) => ({
+          entity: ref.kind,
+          id: ref.id,
+          action: verb,
+          ...(verb === "updated" && fields ? { fields } : {}),
+        })),
+    ),
     action,
     primary: receipt.primary,
     created: receipt.created,
