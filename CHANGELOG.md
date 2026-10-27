@@ -6,6 +6,14 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-10-27
+
+### Fixed
+
+- Write tools summarize what changed by verb and kind (`Created 1 contact.`, `Created 1 event, 1 link.`) instead of `Found 1 contact change.`.
+- `contact create` rejects `isOwner` with a pointer to `bootstrapOwner: true` instead of silently creating a non-owner contact, and a second `bootstrapOwner` names the existing owner contact.
+- Flag values that start with dashes are accepted; only a following `--name` token counts as the next flag.
+
 ## [0.4.0] - 2026-10-27
 
 ### Added
@@ -128,7 +136,8 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 - Public read and write namespaces, tool facade, skills, and relationship guidance.
 - Validation, tests, API documentation, lifecycle examples, and release workflows.
 
-[Unreleased]: https://github.com/GhostPawJS/affinity/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/GhostPawJS/affinity/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/GhostPawJS/affinity/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/GhostPawJS/affinity/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/GhostPawJS/affinity/compare/v0.2.4...v0.3.0
 [0.2.4]: https://github.com/GhostPawJS/affinity/compare/v0.2.3...v0.2.4
