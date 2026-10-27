@@ -138,6 +138,16 @@ const profile = read.getContactProfile(db, ada.id);
 const radar = read.listRadar(db);
 ```
 
+## Docs
+
+The live demo runs the library in your browser against an in-memory SQLite database. Each view below opens a different part of it:
+
+- [Dashboard](https://affinity.ghostpaw.dev/docs/): overview and session
+- [Contacts](https://affinity.ghostpaw.dev/docs/#/contacts): people, companies, groups and pets you track
+- [Relationships](https://affinity.ghostpaw.dev/docs/#/relationships): links, rank and bonds
+- [Timeline](https://affinity.ghostpaw.dev/docs/#/timeline): events, commitments and date anchors
+- [Insights](https://affinity.ghostpaw.dev/docs/#/insights): radar and analytics
+
 ## The Model
 
 Eight concepts, strict separation of concerns:

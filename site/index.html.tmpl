@@ -234,6 +234,12 @@ write.recordInteraction(db, {
 const radar = read.listRadar(db);</code></pre>
     <p>To run it as an MCP server instead, add <code>npx -y @ghostpaw/affinity mcp</code> to your client. <code>npx -y @ghostpaw/affinity skill</code> prints the Agent Skill that ships in the package.</p>
     <p class="links"><a class="more" href="{{.urls.readme}}">Read the README</a><a href="{{.urls.demo}}">Open the live demo</a><a href="{{.urls.npm}}">affinity on npm</a></p>
+    <nav class="docs-map" aria-labelledby="docs-map-title">
+      <h3 id="docs-map-title">{{.data.docs.heading}}</h3>
+      <ul>
+        {{range .data.docs.pages}}<li><a href="{{index $.urls .key}}">{{.label}}</a><span>{{.note}}</span></li>{{end}}
+      </ul>
+    </nav>
   </section>
 </main>
 <footer class="foot">

@@ -217,3 +217,11 @@ h2 code { font-size: 0.8em; }
 .foot-libs { display: flex; flex-wrap: wrap; gap: 0.4rem 1.25rem; margin-bottom: 1rem; font: 600 1rem var(--display); }
 .foot-libs a { color: var(--ghost); text-decoration: none; display: inline-block; padding: 0.2rem 0; }
 .foot-libs a:hover, .foot-libs a[aria-current] { color: var(--spectral); }
+
+.docs-map { margin-top: 2rem; }
+.docs-map ul { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.75rem 2rem; padding: 0; margin: 1rem 0 0; list-style: none; }
+.docs-map li { border-top: var(--edge); padding-top: 0.5rem; }
+.docs-map a { display: inline-flex; align-items: center; min-height: 24px; color: var(--spectral); }
+.docs-map a:focus-visible { outline: 2px solid var(--spectral); outline-offset: 3px; }
+.docs-map span { display: block; color: var(--haze); font-size: 0.95rem; }
+@media (min-width: 52rem) { .docs-map ul { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

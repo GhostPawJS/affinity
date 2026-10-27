@@ -1,0 +1,30 @@
+{
+  "heading": "Explore the demo",
+  "pages": [
+    {
+      "key": "demo",
+      "label": "Dashboard",
+      "note": "overview and session"
+    },
+    {
+      "key": "docsContacts",
+      "label": "Contacts",
+      "note": "people, companies, groups and pets you track"
+    },
+    {
+      "key": "docsRelationships",
+      "label": "Relationships",
+      "note": "links, rank and bonds"
+    },
+    {
+      "key": "docsTimeline",
+      "label": "Timeline",
+      "note": "events, commitments and date anchors"
+    },
+    {
+      "key": "docsInsights",
+      "label": "Insights",
+      "note": "radar and analytics"
+    }
+  ]
+}
