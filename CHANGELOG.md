@@ -6,6 +6,35 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ## [Unreleased]
 
+### Added
+
+- 27 schema-derived domain CLI commands: `search`, `review`, `show`,
+  `contact create|revise|lifecycle|merge`, `identity add|revise|verify|remove`,
+  `relationship add|bond|state|tie|untie`, `commitment record|resolve`,
+  `attribute set|unset|replace`, `date add|revise|remove`, `event record`,
+  `duplicate dismiss|undismiss`. Each has `--help`.
+  `completions bash|zsh|fish` prints completion scripts. Nested payloads
+  accept JSON or `@path`; all commands work offline.
+- Standalone binaries (Node 26.12.1 single executable) for 5 targets:
+  linux-x64, linux-arm64, darwin-arm64, darwin-x64 and windows-x64. Each
+  release carries SHA256SUMS and a GitHub build provenance attestation per
+  archive. Binaries are unsigned; macOS builds carry an ad-hoc signature.
+- `install.sh` and `install.ps1` install the binary from the release and
+  refuse an archive whose SHA-256 does not match SHA256SUMS.
+- An install check workflow installs each published release on
+  ubuntu-24.04, macos-15 and windows-2025 and runs `--version`, a write and
+  an MCP `initialize` + `tools/list` exchange.
+
+### Changed
+
+- Noun-verb commands exit with 0 (success or no_op), 1 (tool error),
+  2 (usage error), 3 (needs clarification or not found), 4 (conflict) or
+  70 (internal error). The existing tool-name forms (`manage_contact --action`,
+  `call`, `describe`, `tools`) keep their output and exit codes.
+- `SurfaceTool` has an optional `cli` field for the command mapping. No other
+  public type changed.
+
+
 ## [0.3.0] - 2026-10-24
 
 ### Added
