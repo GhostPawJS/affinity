@@ -6,6 +6,8 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-27
+
 ### Added
 
 - 27 schema-derived domain CLI commands: `search`, `review`, `show`,
@@ -126,7 +128,8 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 - Public read and write namespaces, tool facade, skills, and relationship guidance.
 - Validation, tests, API documentation, lifecycle examples, and release workflows.
 
-[Unreleased]: https://github.com/GhostPawJS/affinity/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/GhostPawJS/affinity/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/GhostPawJS/affinity/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/GhostPawJS/affinity/compare/v0.2.4...v0.3.0
 [0.2.4]: https://github.com/GhostPawJS/affinity/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/GhostPawJS/affinity/compare/v0.2.2...v0.2.3
