@@ -1,6 +1,5 @@
 import type { MutationReceipt } from "../lib/types/mutation_receipt.ts";
 import { toReceiptEntityRefs } from "./tool_ref.ts";
-import { summarizeCount } from "./tool_summary.ts";
 import { type ToolResult, toolNoOp, toolSuccess } from "./tool_types.ts";
 
 export interface MutationToolData<TPrimary> {
@@ -37,7 +36,7 @@ export function mutationToolResult<TPrimary>(
   const summary =
     changedCount === 0
       ? `No ${entitySummary} changes were needed.`
-      : summarizeCount(changedCount, `${entitySummary} change`);
+      : describeChanges(receipt);
   if (changedCount === 0) {
     return toolNoOp(summary, data, {
       entities: toReceiptEntityRefs(receipt),
@@ -46,4 +45,23 @@ export function mutationToolResult<TPrimary>(
   return toolSuccess(summary, data, {
     entities: toReceiptEntityRefs(receipt),
   });
+}
+
+const PLURALS: Record<string, string> = { identity: "identities" };
+
+function describeChanges(receipt: MutationReceipt<unknown>): string {
+  const parts: string[] = [];
+  for (const verb of ["created", "updated", "archived", "removed"] as const) {
+    const counts = new Map<string, number>();
+    for (const ref of receipt[verb]) {
+      counts.set(ref.kind, (counts.get(ref.kind) ?? 0) + 1);
+    }
+    if (counts.size === 0) continue;
+    const items = [...counts].map(
+      ([kind, n]) => `${n} ${n === 1 ? kind : (PLURALS[kind] ?? `${kind}s`)}`,
+    );
+    parts.push(`${verb} ${items.join(", ")}`);
+  }
+  const text = parts.join("; ");
+  return `${text.charAt(0).toUpperCase()}${text.slice(1)}.`;
 }

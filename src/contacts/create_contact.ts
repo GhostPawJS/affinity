@@ -33,15 +33,22 @@ export function createContact(
     if (!KINDS.has(input.kind)) {
       throw new AffinityValidationError("invalid contact kind");
     }
+    if ((input as { isOwner?: unknown }).isOwner !== undefined) {
+      throw new AffinityValidationError(
+        "isOwner is read-only; pass bootstrapOwner: true to create the owner contact",
+      );
+    }
     const now = resolveNow(input.now);
     if (input.bootstrapOwner) {
       const existing = db
         .prepare(
-          "SELECT id FROM contacts WHERE is_owner = 1 AND deleted_at IS NULL",
+          "SELECT id, name FROM contacts WHERE is_owner = 1 AND deleted_at IS NULL",
         )
-        .get();
+        .get() as { id: number; name: string } | undefined;
       if (existing !== undefined) {
-        throw new AffinityConflictError("owner already exists");
+        throw new AffinityConflictError(
+          `owner already exists: contact ${existing.id} (${existing.name}); bootstrapOwner can only be used once`,
+        );
       }
     }
     const isOwner = input.bootstrapOwner ? 1 : 0;
