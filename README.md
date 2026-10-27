@@ -163,7 +163,19 @@ download on macOS, remove quarantine with
 Linux binaries require glibc 2.28+; use npx on Alpine.
 See the [binary build workflow](.github/workflows/release-binaries.yml).
 
-<!-- sizes -->
+Sizes for 0.4.0 (Node 26.12.1 inside each binary):
+
+| Target | Archive | Binary |
+|---|---|---|
+| linux-x64 | 41.7 MB tar.gz | 117.6 MB |
+| linux-arm64 | 41.2 MB tar.gz | 115.3 MB |
+| darwin-arm64 | 44.9 MB tar.gz | 146.8 MB |
+| darwin-x64 | 46.4 MB tar.gz | 149.7 MB |
+| windows-x64 | 38.4 MB zip | 105.7 MB |
+
+The npm package is 2003 KB unpacked and needs Node 24+. Every release is
+installed and run on ubuntu-24.04, macos-15 and windows-2025 by the
+[install check](.github/workflows/install-check.yml).
 
 The install check runs on ubuntu-24.04, macos-15 and windows-2025.
 
