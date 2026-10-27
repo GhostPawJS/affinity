@@ -3,7 +3,7 @@
   "url": "https://affinity.ghostpaw.dev/",
   "language": "en",
   "title": "affinity: a relationship store for agents that works out who is drifting",
-  "description": "@ghostpaw/affinity keeps contacts, promises and yearly dates in your own SQLite file and derives rank, trust and drift from what happened. Local MCP server, 12 tools, Node.js 24, zero dependencies, MIT.",
+  "description": "@ghostpaw/affinity keeps contacts, promises and yearly dates in your own SQLite file and derives rank, trust and drift from what happened. One binary per platform, local MCP server and CLI, zero-dependency npm library, MIT.",
   "socialImage": {
     "src": "assets/images/share.png",
     "alt": "A radar scope in cyan light with a ghost paw at its centre and one violet point drifting outward, beside the line: Who have you been meaning to call?"
@@ -29,7 +29,7 @@
     "docsRelationships": "https://affinity.ghostpaw.dev/docs/#/relationships",
     "docsTimeline": "https://affinity.ghostpaw.dev/docs/#/timeline",
     "docsInsights": "https://affinity.ghostpaw.dev/docs/#/insights",
-    "release": "https://github.com/GhostPawJS/affinity/releases/tag/v0.4.0",
+    "release": "https://github.com/GhostPawJS/affinity/releases/latest",
     "readmeInstall": "https://github.com/GhostPawJS/affinity#install",
     "attest": "https://cli.github.com/manual/gh_attestation_verify",
     "cliShot": "https://raw.githubusercontent.com/GhostPawJS/affinity/main/docs/assets/cli.png"
@@ -44,7 +44,7 @@
         "codeRepository": "{{.urls.github}}",
         "programmingLanguage": "TypeScript",
         "runtimePlatform": "Node.js 24",
-        "version": "0.4.1",
+        "version": "0.5.0",
         "license": "{{.urls.mit}}",
         "author": {
           "@type": "Organization",

@@ -31,17 +31,23 @@
 <main>
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero-copy">
-      <p class="kicker"><code>@ghostpaw/affinity</code> <span class="ver">0.4.1</span></p>
+      <p class="kicker"><code>@ghostpaw/affinity</code> <span class="ver">0.5.0</span></p>
       <h1 id="hero-title">Who have you been meaning to call?</h1>
       <p class="lede">affinity keeps the people your agent deals with, the promises made to them and the dates that matter in your SQLite file. It works out who is drifting from what happened, so nobody has to keep a list of who to call.</p>
       <div class="install">
-        <p class="cmd-label" id="lib-label">As a library</p>
-        <div class="cmd"><input id="cmd-lib" readonly value="npm install @ghostpaw/affinity" aria-labelledby="lib-label" spellcheck="false"><button type="button" class="copy" data-copy="cmd-lib">Copy</button></div>
-        <p class="cmd-label" id="mcp-label">As a local MCP server</p>
+        <p class="cmd-label" id="bin-label">Install the binary, no runtime needed</p>
+        <div class="os-pick" role="radiogroup" aria-labelledby="bin-label">
+          {{range $i, $t := .data.install.targets}}<input type="radio" name="os" id="os-{{$t.id}}" value="{{$t.id}}"{{if eq $i 0}} checked{{end}}><label for="os-{{$t.id}}">{{$t.label}}</label>{{end}}
+          {{range .data.install.targets}}<div class="cmd os-cmd" data-os="{{.id}}" data-shell="{{.shell}}"><input id="hero-{{.id}}" readonly value="{{.cmd}}" aria-label="Install command for {{.label}}" spellcheck="false"><button type="button" class="copy" data-copy="hero-{{.id}}">Copy</button></div>{{end}}
+        </div>
+        <p class="cmd-note">Downloads the latest release, checks it against SHA256SUMS and puts <code>ghostpaw-affinity</code> on your PATH. Then: <code>ghostpaw-affinity mcp</code> for MCP, <code>ghostpaw-affinity skill</code> for the cheat sheet.</p>
+        <p class="cmd-label" id="mcp-label">npx / npm, for npm-based environments</p>
         <div class="cmd"><input id="cmd-mcp" readonly value="npx -y @ghostpaw/affinity mcp" aria-labelledby="mcp-label" spellcheck="false"><button type="button" class="copy" data-copy="cmd-mcp">Copy</button></div>
+        <p class="cmd-label" id="lib-label">Library, for harnesses</p>
+        <div class="cmd"><input id="cmd-lib" readonly value="npm install @ghostpaw/affinity" aria-labelledby="lib-label" spellcheck="false"><button type="button" class="copy" data-copy="cmd-lib">Copy</button></div>
       </div>
       <p class="actions"><a class="button" href="#run">Replay the run</a> <a href="{{.urls.github}}">Read the source on GitHub</a></p>
-      <p class="terms">Free and MIT licensed for Node.js 24 or newer, with zero runtime dependencies. The MCP server keeps everything in <code>~/.ghostpaw/affinity.db</code> on your machine.</p>
+      <p class="terms">Free and MIT licensed. The binary needs no runtime; the npm package needs Node.js 24 or newer and has zero runtime dependencies. Everything stays in <code>~/.ghostpaw/affinity.db</code> on your machine.</p>
     </div>
     <figure class="hero-art frame">
       <div class="scope"><picture><source media="(min-width: 52rem)" srcset="assets/images/hero-720.webp" width="720" height="540"><img src="assets/images/hero-480.webp" width="480" height="360" alt="A radar scope drawn in thin cyan light with a sweeping wedge, a ghost paw print at its centre and three points, the farthest one violet and drifting outward." fetchpriority="high"></picture><span class="scan" aria-hidden="true"></span></div>
@@ -169,11 +175,11 @@ read.listOpenCommitments(db).length
     <div class="worry-grid">
       <p>The usual cost is the client or friend you forgot to follow up with. The usual fear is the opposite: an assistant that keeps a page on everyone you mention, which sounds like a dossier, and recent coverage of exactly that is fair warning.</p>
       <ul>
-        <li>It is a library and a local MCP server. There is no hosted service and nothing leaves the SQLite file unless your code sends it.</li>
+        <li>It is a single binary, a library and a local MCP server. There is no hosted service and nothing leaves the SQLite file unless your code sends it.</li>
         <li>It stores what you or your agent record. It does not read your mail, messages or contacts on its own.</li>
         <li>The MCP server's file is <code>~/.ghostpaw/affinity.db</code>, or wherever <code>GHOSTPAW_AFFINITY_DB</code> or <code>--db</code> points.</li>
         <li>Twelve tools with JSON Schemas, among them <code>record_event</code>, <code>manage_commitment</code> and <code>review_affinity</code>. Each returns success, no_op, needs_clarification or error.</li>
-        <li>Node.js 24 or newer, because it uses the built-in <code>node:sqlite</code>.</li>
+        <li>The release binary needs no runtime. The npm package needs Node.js 24 or newer, because it uses the built-in <code>node:sqlite</code>.</li>
       </ul>
     </div>
   </section>
@@ -204,12 +210,30 @@ read.listOpenCommitments(db).length
   </section>
 
   <section id="binaries" class="sec binaries" aria-labelledby="binaries-title">
-    <h2 id="binaries-title">Run it without Node.js</h2>
-    <p class="intro">Since 0.4.0 every release also ships <code>ghostpaw-affinity</code> as one executable with Node.js 26.12.1 inside. It has the same commands and the same MCP server as the npm package.</p>
+    <h2 id="binaries-title">One binary per platform</h2>
+    <p class="intro">Every release ships <code>ghostpaw-affinity</code> as one executable with the Node.js runtime inside. It has the same commands and the same MCP server as the npm package. Each line below downloads the latest release, checks it against SHA256SUMS, puts it on your PATH and prints the version.</p>
     <div class="bin-cmds">
-        <div><p class="cmd-label" id="bin-sh-label">macOS and Linux</p>
+        {{range .data.install.targets}}<div><p class="cmd-label" id="bin-{{.id}}-label">{{.label}}</p>
+        <div class="cmd" data-shell="{{.shell}}"><input id="bin-{{.id}}" readonly value="{{.cmd}}" aria-labelledby="bin-{{.id}}-label" spellcheck="false"><button type="button" class="copy" data-copy="bin-{{.id}}">Copy</button></div></div>
+        {{end}}
+    </div>
+    <h3 class="bin-sub">npx / npm, for npm-based environments</h3>
+    <div class="bin-cmds">
+        <div><p class="cmd-label" id="bin-npx-label">npx, with Node.js 24 or newer</p>
+        <div class="cmd"><input id="bin-npx" readonly value="npx -y @ghostpaw/affinity --help" aria-labelledby="bin-npx-label" spellcheck="false"><button type="button" class="copy" data-copy="bin-npx">Copy</button></div></div>
+        <div><p class="cmd-label" id="bin-npmg-label">Global install</p>
+        <div class="cmd"><input id="bin-npmg" readonly value="npm install -g @ghostpaw/affinity" aria-labelledby="bin-npmg-label" spellcheck="false"><button type="button" class="copy" data-copy="bin-npmg">Copy</button></div></div>
+    </div>
+    <h3 class="bin-sub">Library, for harnesses</h3>
+    <div class="bin-cmds">
+        <div><p class="cmd-label" id="bin-lib-label">Add it to a Node.js 24 project</p>
+        <div class="cmd"><input id="bin-lib" readonly value="npm install @ghostpaw/affinity" aria-labelledby="bin-lib-label" spellcheck="false"><button type="button" class="copy" data-copy="bin-lib">Copy</button></div></div>
+    </div>
+    <h3 class="bin-sub">Other installers</h3>
+    <div class="bin-cmds">
+        <div><p class="cmd-label" id="bin-sh-label">install.sh, macOS and Linux</p>
         <div class="cmd"><input id="bin-sh" readonly value="curl -fsSL https://raw.githubusercontent.com/GhostPawJS/affinity/main/install.sh | sh" aria-labelledby="bin-sh-label" spellcheck="false"><button type="button" class="copy" data-copy="bin-sh">Copy</button></div></div>
-        <div><p class="cmd-label" id="bin-ps-label">Windows PowerShell</p>
+        <div><p class="cmd-label" id="bin-ps-label">install.ps1, Windows PowerShell</p>
         <div class="cmd"><input id="bin-ps" readonly value="irm https://raw.githubusercontent.com/GhostPawJS/affinity/main/install.ps1 | iex" aria-labelledby="bin-ps-label" spellcheck="false"><button type="button" class="copy" data-copy="bin-ps">Copy</button></div></div>
         <div><p class="cmd-label" id="bin-mise-label">mise</p>
         <div class="cmd"><input id="bin-mise" readonly value="mise use -g github:GhostPawJS/affinity" aria-labelledby="bin-mise-label" spellcheck="false"><button type="button" class="copy" data-copy="bin-mise">Copy</button></div></div>
@@ -217,27 +241,18 @@ read.listOpenCommitments(db).length
         <div class="cmd"><input id="bin-ubi" readonly value="ubi --project GhostPawJS/affinity --exe ghostpaw-affinity --in ~/.local/bin" aria-labelledby="bin-ubi-label" spellcheck="false"><button type="button" class="copy" data-copy="bin-ubi">Copy</button></div></div>
         <div><p class="cmd-label" id="bin-eget-label">eget</p>
         <div class="cmd"><input id="bin-eget" readonly value="eget GhostPawJS/affinity" aria-labelledby="bin-eget-label" spellcheck="false"><button type="button" class="copy" data-copy="bin-eget">Copy</button></div></div>
-        <div><p class="cmd-label" id="bin-npx-label">npx, with Node.js 24 or newer</p>
-        <div class="cmd"><input id="bin-npx" readonly value="npx -y @ghostpaw/affinity --help" aria-labelledby="bin-npx-label" spellcheck="false"><button type="button" class="copy" data-copy="bin-npx">Copy</button></div></div>
     </div>
-    <dl class="ledger wide">
-      <div><dt>linux-x64</dt><dd>41.7 MB tar.gz</dd></div>
-      <div><dt>linux-arm64</dt><dd>41.2 MB tar.gz</dd></div>
-      <div><dt>darwin-arm64</dt><dd>44.9 MB tar.gz</dd></div>
-      <div><dt>darwin-x64</dt><dd>46.4 MB tar.gz</dd></div>
-      <div><dt>windows-x64</dt><dd>38.4 MB zip</dd></div>
-    </dl>
-    <p class="note">Archive sizes of the v0.4.0 release assets. Linux builds need glibc 2.28 or newer; on Alpine, use npx.</p>
+    <p class="note">Archives are 38 to 47 MB; the unpacked binary is 105 to 150 MB because the runtime is inside. Linux builds need glibc 2.28 or newer; on Alpine, use npx.</p>
     <ul class="bin-trust">
-      <li>install.sh and install.ps1 check each archive against SHA256SUMS and stop on a mismatch.</li>
+      <li>Every one-liner and installer checks the archive against SHA256SUMS and stops on a mismatch. SHA256SUMS also covers server.mcpb.</li>
       <li>Each archive and SHA256SUMS carry a GitHub build attestation. Check one with <code>gh attestation verify &lt;archive&gt; -R GhostPawJS/affinity</code>.</li>
       <li>The binaries are not code signed. macOS builds carry an ad-hoc signature, so a browser download needs <code>xattr -d com.apple.quarantine ghostpaw-affinity</code>. Windows may show a SmartScreen warning for a browser download.</li>
     </ul>
     <figure class="shot">
       <a href="{{.urls.cliShot}}"><img src="assets/images/cli-1600.webp" srcset="assets/images/cli-800.webp 800w, assets/images/cli-1600.webp 1600w" sizes="(min-width: 76rem) 72rem, 100vw" width="1600" height="700" decoding="async" alt="Terminal session with ghostpaw-affinity 0.4.1: --version prints 0.4.1, contact create makes the owner Max and Sam Rivera, identity add attaches sam@example.com, event record and commitment record log a coffee and a promise, search by email finds Sam, review commitments.open lists the open promise, and show contact_profile prints the derived personal link with affinity 0.63, trust 0.48 and a 48 day cadence." loading="lazy"></a>
-      <figcaption>A session with the 0.4.1 linux-x64 binary against a fresh database, output piped through jq. Open the image for full size.</figcaption>
+      <figcaption>A session with the linux-x64 binary against a fresh database. Open the image for full size.</figcaption>
     </figure>
-    <p class="links"><a class="more" href="{{.urls.release}}">Release v0.4.0</a><a href="{{.urls.readmeInstall}}">Install notes in the README</a><a href="{{.urls.attest}}">gh attestation verify</a></p>
+    <p class="links"><a class="more" href="{{.urls.release}}">Latest release</a><a href="{{.urls.readmeInstall}}">Install notes in the README</a><a href="{{.urls.attest}}">gh attestation verify</a></p>
   </section>
 
   <section class="sec start" aria-labelledby="start-title">
@@ -269,7 +284,7 @@ write.recordInteraction(db, {
 });
 
 const radar = read.listRadar(db);</code></pre>
-    <p>To run it as an MCP server instead, add <code>npx -y @ghostpaw/affinity mcp</code> to your client. <code>npx -y @ghostpaw/affinity skill</code> prints the Agent Skill that ships in the package.</p>
+    <p>To run it as an MCP server instead, add <code>ghostpaw-affinity mcp</code> to your client, or <code>npx -y @ghostpaw/affinity mcp</code> without the binary. <code>ghostpaw-affinity skill</code> prints the cheat sheet and the Agent Skill; <code>ghostpaw-affinity skill --list</code> lists the workflow guides.</p>
     <p class="links"><a class="more" href="{{.urls.readme}}">Read the README</a><a href="{{.urls.demo}}">Open the live demo</a><a href="{{.urls.npm}}">affinity on npm</a></p>
     <nav class="docs-map" aria-labelledby="docs-map-title">
       <h3 id="docs-map-title">{{.data.docs.heading}}</h3>

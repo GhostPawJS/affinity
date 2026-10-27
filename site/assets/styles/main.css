@@ -237,3 +237,20 @@ h2 code { font-size: 0.8em; }
 .shot img { display: block; width: 100%; max-width: 72rem; height: auto; border: var(--edge); }
 .shot a { display: block; }
 .shot figcaption { color: var(--haze); font-size: 0.9rem; margin-top: 0.6rem; }
+
+.os-pick { display: flex; flex-wrap: wrap; gap: 0.4rem; max-width: 30rem; }
+.os-pick input[type="radio"] { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+.install .os-pick label { display: inline-block; margin: 0; padding: 0.35rem 0.7rem; border: var(--edge); background: var(--panel); color: var(--haze); font: 600 0.85rem var(--display); cursor: pointer; }
+.os-pick input:checked + label { color: var(--void); background: var(--spectral); border-color: var(--spectral); }
+.os-pick input:focus-visible + label { outline: 2px solid var(--spectral); outline-offset: 3px; }
+.os-cmd { display: none; flex-basis: 100%; margin-top: 0.2rem; }
+#os-linux-x64:checked ~ .os-cmd[data-os="linux-x64"],
+#os-linux-arm64:checked ~ .os-cmd[data-os="linux-arm64"],
+#os-darwin-arm64:checked ~ .os-cmd[data-os="darwin-arm64"],
+#os-darwin-x64:checked ~ .os-cmd[data-os="darwin-x64"],
+#os-windows-x64:checked ~ .os-cmd[data-os="windows-x64"] { display: flex; }
+.cmd-note { font-size: 0.9rem; color: var(--haze); max-width: 30rem; margin: 0.6rem 0 1.1rem; }
+.install .cmd + .cmd-label { margin-top: 1rem; }
+.bin-sub { margin: 2rem 0 0; font: 600 1.1rem var(--display); color: var(--ghost); }
+.bin-sub + .bin-cmds { margin-top: 1rem; }
+.cmd[data-shell="powershell"]::before { content: "PS>"; }

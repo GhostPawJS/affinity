@@ -65,6 +65,10 @@ const STATES = [{"rows": [{"k": "Jun", "v": "0.347 · drifting", "w": 0.86749999
   paint(0);
   mark();
 
+  const ua = navigator.userAgent;
+  const os = /Windows/.test(ua) ? "windows-x64" : /Mac/.test(ua) ? "darwin-arm64" : /aarch64|arm64/i.test(ua) ? "linux-arm64" : null;
+  const pick = os && document.getElementById(`os-${os}`);
+  if (pick) pick.checked = true;
   document.querySelectorAll(".copy").forEach((b) => {
     b.addEventListener("click", async () => {
       const input = document.getElementById(b.dataset.copy);
