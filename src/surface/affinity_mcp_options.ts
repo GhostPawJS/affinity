@@ -2,7 +2,7 @@ import type { AffinityDb } from "../database.ts";
 import type { McpServerOptions } from "../surfaces/mcp_server.ts";
 import { affinityVersion } from "../version.ts";
 import { affinityMcpInstructions } from "./affinity_mcp_instructions.ts";
-import { affinitySurfaceTools } from "./affinity_surface_tools.ts";
+import { affinityMcpSurfaceTools as affinitySurfaceTools } from "./affinity_surface_tools.ts";
 
 export function affinityMcpOptions(
   context: () => AffinityDb | Promise<AffinityDb>,
@@ -19,7 +19,7 @@ export function affinityMcpOptions(
       destructiveHint:
         tool.name === "merge_contacts" ||
         /remove|unset|undismiss/.test(
-          JSON.stringify(tool.inputSchema.properties?.action?.enum ?? []),
+          String(tool.inputSchema.properties?.action?.enum ?? []),
         ),
       idempotentHint: tool.readOnly ?? false,
       openWorldHint: false,

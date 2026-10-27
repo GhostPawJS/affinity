@@ -1,0 +1,87 @@
+name: Install check
+on:
+  workflow_run:
+    workflows: ["Release binaries"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (empty uses latest release)"
+        default: ""
+permissions:
+  contents: read
+  attestations: read
+jobs:
+  install:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v'))
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15, windows-2025]
+    runs-on: ${{ matrix.os }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: GhostPawJS/affinity
+      REQUESTED_VERSION: ${{ inputs.version || github.event.workflow_run.head_branch }}
+    steps:
+      - name: Install and verify (POSIX)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$REQUESTED_VERSION"
+          if [ -z "$version" ]; then version=$(gh release view --json tagName --jq .tagName); fi
+          version="${version#v}"
+          export GHOSTPAW_INSTALL_DIR="$RUNNER_TEMP/affinity-bin"
+          export PATH="$GHOSTPAW_INSTALL_DIR:$PATH"
+          if [ "$RUNNER_OS" = Linux ]; then export GHOSTPAW_VERIFY=attestation; fi
+          curl -fsSL https://raw.githubusercontent.com/GhostPawJS/affinity/main/install.sh | sh -s -- --version "$version"
+          test "$(ghostpaw-affinity --version)" = "$version"
+          echo "Version: $version verified on $RUNNER_OS" >> "$GITHUB_STEP_SUMMARY"
+          ghostpaw-affinity contact create '{"name":"Install check marker","kind":"human"}'  --db "$RUNNER_TEMP/affinity.db" --json | jq -e '.ok == true'
+          echo 'Contact create: passed' >> "$GITHUB_STEP_SUMMARY"
+          cat > "$RUNNER_TEMP/requests.jsonl" <<'JSON'
+          {"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"install-check","version":"1"}}}
+          {"jsonrpc":"2.0","method":"notifications/initialized"}
+          {"jsonrpc":"2.0","id":2,"method":"tools/list"}
+          JSON
+          ghostpaw-affinity mcp --db "$RUNNER_TEMP/affinity.db" < "$RUNNER_TEMP/requests.jsonl" > "$RUNNER_TEMP/mcp.jsonl" &
+          child=$!
+          (sleep 20; kill "$child" 2>/dev/null || true) &
+          watchdog=$!
+          wait "$child"
+          kill "$watchdog" 2>/dev/null || true
+          jq -se 'any(.[]; .id == 1 and .result.serverInfo != null) and any(.[]; .id == 2 and any(.result.tools[]; .name == "search_affinity"))' "$RUNNER_TEMP/mcp.jsonl"
+          echo 'MCP initialize and tools/list: passed' >> "$GITHUB_STEP_SUMMARY"
+      - name: Install and verify (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $version = $env:REQUESTED_VERSION
+          if (-not $version) { $version = gh release view --json tagName --jq .tagName }
+          $version = $version.TrimStart('v')
+          $env:GHOSTPAW_VERSION = $version
+          $env:GHOSTPAW_INSTALL_DIR = Join-Path $env:RUNNER_TEMP 'affinity-bin'
+          irm https://raw.githubusercontent.com/GhostPawJS/affinity/main/install.ps1 | iex
+          if ((ghostpaw-affinity --version) -ne $version) { throw 'Version mismatch' }
+          "Version: $version verified on Windows" >> $env:GITHUB_STEP_SUMMARY
+          $db = Join-Path $env:RUNNER_TEMP 'affinity.db'
+          $added = ghostpaw-affinity contact create '{"name":"Install check marker","kind":"human"}'  --db $db --json | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0 -or -not $added.ok) { throw 'Contact create failed' }
+          'Contact create: passed' >> $env:GITHUB_STEP_SUMMARY
+          $start = [Diagnostics.ProcessStartInfo]::new((Join-Path $env:GHOSTPAW_INSTALL_DIR 'ghostpaw-affinity.exe'), "mcp --db `"$db`"")
+          $start.UseShellExecute = $false
+          $start.RedirectStandardInput = $true
+          $start.RedirectStandardOutput = $true
+          $process = [Diagnostics.Process]::Start($start)
+          $process.StandardInput.WriteLine('{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"install-check","version":"1"}}}')
+          $process.StandardInput.WriteLine('{"jsonrpc":"2.0","method":"notifications/initialized"}')
+          $process.StandardInput.WriteLine('{"jsonrpc":"2.0","id":2,"method":"tools/list"}')
+          $process.StandardInput.Close()
+          $output = $process.StandardOutput.ReadToEndAsync()
+          if (-not $process.WaitForExit(20000)) { $process.Kill(); throw 'MCP timeout' }
+          $messages = $output.Result.Trim() -split "`n" | ForEach-Object { $_ | ConvertFrom-Json }
+          if (-not ($messages | Where-Object { $_.id -eq 1 -and $_.result.serverInfo })) { throw 'Missing serverInfo' }
+          if (-not ($messages | Where-Object { $_.id -eq 2 -and 'search_affinity' -in $_.result.tools.name })) { throw 'Missing search_affinity' }
+          'MCP initialize and tools/list: passed' >> $env:GITHUB_STEP_SUMMARY

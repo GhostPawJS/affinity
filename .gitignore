@@ -9,3 +9,6 @@ dist/
 .mcpb-build/
 server.mcpb
 bench-results.json
+
+dist-sea/
+.sea-build/

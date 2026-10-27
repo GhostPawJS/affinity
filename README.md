@@ -91,11 +91,139 @@ npx -y @ghostpaw/affinity skill > SKILL.md
 
 ## Install
 
-```bash
-npm install @ghostpaw/affinity
+
+The [npm package](https://www.npmjs.com/package/@ghostpaw/affinity) requires Node 24+:
+
+```sh
+npm install -g @ghostpaw/affinity
+npx -y @ghostpaw/affinity --help
 ```
 
-Requires **Node.js 24+** (uses the built-in `node:sqlite` module).
+Standalone binaries are available from [GitHub Releases](https://github.com/GhostPawJS/affinity/releases)
+for linux-x64, linux-arm64, darwin-arm64, darwin-x64 and windows-x64.
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/GhostPawJS/affinity/main/install.sh | sh
+```
+
+```powershell
+irm https://raw.githubusercontent.com/GhostPawJS/affinity/main/install.ps1 | iex
+```
+
+Other release installers:
+
+```sh
+mise use -g github:GhostPawJS/affinity
+ubi --project GhostPawJS/affinity --exe ghostpaw-affinity --in ~/.local/bin
+eget GhostPawJS/affinity
+```
+
+For [aqua](https://aquaproj.github.io/docs/reference/registry-config/), define a
+`github_release` package in `aqua.yaml`:
+
+```yaml
+registries:
+  - name: affinity
+    type: local
+    path: affinity-registry.yaml
+packages:
+  - name: GhostPawJS/affinity@v<VERSION>
+    registry: affinity
+```
+
+`affinity-registry.yaml`:
+
+```yaml
+packages:
+  - type: github_release
+    repo_owner: GhostPawJS
+    repo_name: affinity
+    asset: ghostpaw-affinity-{{trimV .Version}}-{{.OS}}-{{.Arch}}.tar.gz
+    format: tar.gz
+    replacements: { amd64: x64 }
+    overrides:
+      - goos: windows
+        asset: ghostpaw-affinity-{{trimV .Version}}-windows-{{.Arch}}.zip
+        format: zip
+    files:
+      - name: ghostpaw-affinity
+```
+
+Install scripts verify SHA256SUMS. To verify a downloaded archive's
+[build attestation](https://cli.github.com/manual/gh_attestation_verify):
+
+```sh
+gh attestation verify <archive> -R GhostPawJS/affinity
+```
+
+Set `GHOSTPAW_VERIFY=attestation` for attestation verification in `install.sh`.
+Binaries are unsigned; macOS binaries carry an ad-hoc signature. For a browser
+download on macOS, remove quarantine with
+`xattr -d com.apple.quarantine /path/to/ghostpaw-affinity`.
+Linux binaries require glibc 2.28+; use npx on Alpine.
+See the [binary build workflow](.github/workflows/release-binaries.yml).
+
+<!-- sizes -->
+
+The install check runs on ubuntu-24.04, macos-15 and windows-2025.
+
+## CLI
+
+```text
+ghostpaw-affinity search <query>
+ghostpaw-affinity review <view>
+ghostpaw-affinity show <owner_profile|contact_profile|link> [--contact JSON --link JSON]
+ghostpaw-affinity contact create <input-json>
+ghostpaw-affinity contact revise <contact-json> --patch JSON
+ghostpaw-affinity contact lifecycle <contact-json> <lifecycleState>
+ghostpaw-affinity contact merge [flags]
+ghostpaw-affinity identity add|revise|verify|remove [flags]
+ghostpaw-affinity relationship add|bond|state|tie|untie [flags]
+ghostpaw-affinity commitment record|resolve [flags]
+ghostpaw-affinity attribute set|unset|replace [flags]
+ghostpaw-affinity date add|revise|remove [flags]
+ghostpaw-affinity event record [flags]
+ghostpaw-affinity duplicate dismiss|undismiss [flags]
+ghostpaw-affinity mcp|skill|tools|describe|call|completions|version|help
+```
+
+There are 27 domain commands. `review` accepts the existing view names,
+including `contacts.list`, `contacts.duplicates` and `dates.upcoming`.
+`show` selects an inspection kind; contact and link locators are JSON objects.
+Use `help contact` or `contact create --help` for schema-derived help.
+Nested payloads use JSON or `@path` to read a file.
+
+Global flags: `--db <path>`, `--json`, `--quiet`, `--compact`,
+`--help`/`-h`, `--version`/`-V`/`-v`, `--no-color`.
+`NO_COLOR` is accepted; output uses no terminal colors.
+Noun-verb commands print the full tool result as JSON with `--json` or piped
+stdout. Terminal output shows the summary and payload. `--quiet` suppresses
+stdout. `--compact` removes JSON indentation.
+Array flags repeat; kebab-case flags map to schema properties.
+`--` ends flags. A positional `-`, or piped stdin with no input flags, reads a
+JSON object. Explicit flags override stdin fields.
+Database selection uses `--db`, `GHOSTPAW_AFFINITY_DB`, then
+`~/.ghostpaw/affinity.db`. These commands work offline.
+
+| Exit | Noun-verb result |
+|---|---|
+| 0 | Success, including no_op |
+| 1 | Tool error |
+| 2 | Usage or schema error |
+| 3 | Clarification needed or not found |
+| 4 | Conflict or version mismatch |
+| 70 | Internal error |
+
+Errors go to stderr. With `--json`, errors also print to stdout.
+Legacy `tools [--json]`, `describe <tool>`, `call <tool> [JSON|-]` and
+`<tool_name> --parameter value` retain their output and exit codes.
+`completions bash|zsh|fish` prints shell scripts.
+
+```sh
+ghostpaw-affinity contact create '{"name":"Sam","kind":"human"}' --db /tmp/affinity-example.db --json
+ghostpaw-affinity search Sam --db /tmp/affinity-example.db --json
+ghostpaw-affinity review contacts.list --db /tmp/affinity-example.db --json
+```
 
 ## Quick Start
 
