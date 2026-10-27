@@ -31,7 +31,7 @@
 <main>
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero-copy">
-      <p class="kicker"><code>@ghostpaw/affinity</code> <span class="ver">0.4.0</span></p>
+      <p class="kicker"><code>@ghostpaw/affinity</code> <span class="ver">0.4.1</span></p>
       <h1 id="hero-title">Who have you been meaning to call?</h1>
       <p class="lede">affinity keeps the people your agent deals with, the promises made to them and the dates that matter in your SQLite file. It works out who is drifting from what happened, so nobody has to keep a list of who to call.</p>
       <div class="install">
@@ -234,8 +234,8 @@ read.listOpenCommitments(db).length
       <li>The binaries are not code signed. macOS builds carry an ad-hoc signature, so a browser download needs <code>xattr -d com.apple.quarantine ghostpaw-affinity</code>. Windows may show a SmartScreen warning for a browser download.</li>
     </ul>
     <figure class="shot">
-      <a href="{{.urls.cliShot}}"><img src="assets/images/cli-1600.webp" srcset="assets/images/cli-800.webp 800w, assets/images/cli-1600.webp 1600w" sizes="(min-width: 76rem) 72rem, 100vw" width="1600" height="700" decoding="async" alt="Terminal session with ghostpaw-affinity 0.4.0: --version prints 0.4.0, contact create makes the owner Max and Sam Rivera, identity add attaches sam@example.com, event record and commitment record log a coffee and a promise, search by email finds Sam, review commitments.open lists the open promise, and show contact_profile prints the derived personal link with affinity 0.63, trust 0.48 and a 48 day cadence." loading="lazy"></a>
-      <figcaption>A session with the 0.4.0 linux-x64 binary against a fresh database, output piped through jq. Open the image for full size.</figcaption>
+      <a href="{{.urls.cliShot}}"><img src="assets/images/cli-1600.webp" srcset="assets/images/cli-800.webp 800w, assets/images/cli-1600.webp 1600w" sizes="(min-width: 76rem) 72rem, 100vw" width="1600" height="700" decoding="async" alt="Terminal session with ghostpaw-affinity 0.4.1: --version prints 0.4.1, contact create makes the owner Max and Sam Rivera, identity add attaches sam@example.com, event record and commitment record log a coffee and a promise, search by email finds Sam, review commitments.open lists the open promise, and show contact_profile prints the derived personal link with affinity 0.63, trust 0.48 and a 48 day cadence." loading="lazy"></a>
+      <figcaption>A session with the 0.4.1 linux-x64 binary against a fresh database, output piped through jq. Open the image for full size.</figcaption>
     </figure>
     <p class="links"><a class="more" href="{{.urls.release}}">Release v0.4.0</a><a href="{{.urls.readmeInstall}}">Install notes in the README</a><a href="{{.urls.attest}}">gh attestation verify</a></p>
   </section>

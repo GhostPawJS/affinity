@@ -128,7 +128,7 @@ Panes on the void: panel ground, 1px rule border, a 14px chamfer top right, a 3p
 | --- | --- | --- | --- |
 | hero radar | protagonist | a circular radar scope in thin cyan light with a sweep wedge, a ghost paw print at its centre, three nodes, the farthest violet and drifting outward; no text, no faces V026 V036 | generated |
 | ties graph | explanation | hexagon nodes joined by cyan threads of different weight, one thin violet thread fading; ties and their strength V002 | generated |
-| terminal session | evidence | real output of the 0.4.0 linux-x64 binary against a fresh database, recorded with vhs in the void/spectral palette; never retouched | recorded |
+| terminal session | evidence | real output of the 0.4.1 linux-x64 binary against a fresh database, recorded with vhs in the void/spectral palette; never retouched | recorded |
 | share card | share preview | the hero art with the headline at 1200×630 | generated art, rendered from HTML |
 
 ## Motion
@@ -149,3 +149,4 @@ Reduced motion: no sweep; bars and results change in place.
 - 2026-10-24: first concept from the 2026-10-24 research batch (60 voices, 12 peers); drift radar chosen; replay of a real affinity 0.3.0 run.
 - 2026-10-24: depth pass (10 more voices, now 70); replay re-run against the current release; import time re-measured; comparison section added; page moved to https://affinity.ghostpaw.dev/.
 - 2026-10-24: portal chrome pass. Shared top bar (GhostPaw/<lib>, Live demo or Docs, GitHub, npm), version badge, footer row of all seven libraries; sibling links row dropped from the start section; the ruled grid on the page ground was replaced by one radial glow (lfm 0.1.9 rejects ruled ground textures); share card relabelled GhostPaw/<lib> with the install line.
+- 2026-10-27: affinity 0.4.1. Terminal session re-recorded with the 0.4.1 binary, whose mutation summaries now say what changed (for example "Created 1 contact."). Kicker and JSON-LD version 0.4.1. Install lines, sizes and the release link still point at v0.4.0 assets, which are unchanged in shape. Other sections unchanged.
