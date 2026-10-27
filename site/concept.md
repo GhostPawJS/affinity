@@ -96,8 +96,9 @@ Who is drifting, on a dark scope. The page centres on a radar with three people 
 3. What it keeps: contacts, identities, links, ties, events, dates, attributes; derived state. V002 V021
 4. Worry: where the data lives and what affinity does not do. V034 V039 V015
 5. Numbers: 0 deps, Node 24+, 459 tests, 95.4% lines, 56.1 KB gzip, about 4.8 ms import, 12 tools.
-6. Start: install, quick start, GitHub, README, live demo, back to GhostPaw home and sibling pages.
-7. Footer: Impressum, Datenschutz.
+6. Binaries: since 0.4.0 the CLI ships as one executable per platform with Node.js inside; install lines (install.sh, install.ps1, mise, ubi, eget, npx), targets and archive sizes from the v0.4.0 release assets, SHA256SUMS and attestation check, unsigned note, and a real terminal session (contact create, identity add, event and commitment record, search, review, show).
+7. Start: install, quick start, GitHub, README, live demo, back to GhostPaw home and sibling pages.
+8. Footer: Impressum, Datenschutz.
 
 ## Palette
 | Role | Color | Source |
@@ -127,6 +128,7 @@ Panes on the void: panel ground, 1px rule border, a 14px chamfer top right, a 3p
 | --- | --- | --- | --- |
 | hero radar | protagonist | a circular radar scope in thin cyan light with a sweep wedge, a ghost paw print at its centre, three nodes, the farthest violet and drifting outward; no text, no faces V026 V036 | generated |
 | ties graph | explanation | hexagon nodes joined by cyan threads of different weight, one thin violet thread fading; ties and their strength V002 | generated |
+| terminal session | evidence | real output of the 0.4.0 linux-x64 binary against a fresh database, recorded with vhs in the void/spectral palette; never retouched | recorded |
 | share card | share preview | the hero art with the headline at 1200×630 | generated art, rendered from HTML |
 
 ## Motion
@@ -143,6 +145,7 @@ Reduced motion: no sweep; bars and results change in place.
 - Never present voices as customers. V044
 
 ## Changelog
+- 2026-10-27: affinity 0.4.0 ships standalone binaries. New spine item 6, Binaries: install lines, targets and archive sizes from the v0.4.0 release assets, SHA256SUMS and attestation check, unsigned note, and the terminal session screenshot (new Imagery row). Kicker and JSON-LD version 0.4.0. Other sections unchanged.
 - 2026-10-24: first concept from the 2026-10-24 research batch (60 voices, 12 peers); drift radar chosen; replay of a real affinity 0.3.0 run.
 - 2026-10-24: depth pass (10 more voices, now 70); replay re-run against the current release; import time re-measured; comparison section added; page moved to https://affinity.ghostpaw.dev/.
 - 2026-10-24: portal chrome pass. Shared top bar (GhostPaw/<lib>, Live demo or Docs, GitHub, npm), version badge, footer row of all seven libraries; sibling links row dropped from the start section; the ruled grid on the page ground was replaced by one radial glow (lfm 0.1.9 rejects ruled ground textures); share card relabelled GhostPaw/<lib> with the install line.
