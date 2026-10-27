@@ -4,6 +4,7 @@ import type { SocialEventParticipantInput } from "./social_event_input.ts";
 export interface ResolveCommitmentEventInput {
   type?: Exclude<EventType, "date_anchor">;
   occurredAt?: number;
+  occurredOn?: string;
   summary?: string;
   significance?: number;
   participants?: readonly SocialEventParticipantInput[];

@@ -10,6 +10,7 @@ export function insertJournalEvent(
   params: {
     type: EventType;
     occurredAt: number;
+    occurredOn?: string | undefined;
     summary: string;
     significance: number;
     momentKind: EventMomentKind | null;
@@ -37,6 +38,10 @@ export function insertJournalEvent(
       now,
     );
   const eventId = Number(result.lastInsertRowid);
+  db.prepare("UPDATE events SET occurred_on = ? WHERE id = ?").run(
+    params.occurredOn ?? new Date(params.occurredAt).toISOString().slice(0, 10),
+    eventId,
+  );
   const insertParticipant = db.prepare(
     `INSERT INTO event_participants (
        event_id, contact_id, role, directionality
@@ -61,6 +66,7 @@ export function insertDateAnchorEvent(
   db: AffinityDb,
   params: {
     occurredAt: number;
+    occurredOn?: string | undefined;
     summary: string;
     significance: number;
     recurrenceKind: string;
@@ -96,6 +102,10 @@ export function insertDateAnchorEvent(
       now,
     );
   const eventId = Number(result.lastInsertRowid);
+  db.prepare("UPDATE events SET occurred_on = ? WHERE id = ?").run(
+    params.occurredOn ?? new Date(params.occurredAt).toISOString().slice(0, 10),
+    eventId,
+  );
   const insertParticipant = db.prepare(
     `INSERT INTO event_participants (
        event_id, contact_id, role, directionality

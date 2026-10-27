@@ -3,6 +3,9 @@ export interface EventRow {
   id: number;
   type: string;
   occurred_at: number;
+  occurred_on?: string | null;
+  due_at?: number | null;
+  due_on?: string | null;
   summary: string;
   significance: number;
   moment_kind: string | null;

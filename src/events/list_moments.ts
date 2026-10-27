@@ -48,6 +48,7 @@ export function listMoments(
          le.link_id,
          le.moment_kind,
          le.occurred_at,
+         e.occurred_on,
          e.summary,
          le.impact_score
        FROM link_event_effects le
@@ -62,6 +63,11 @@ export function listMoments(
       linkId: (row as { link_id: number }).link_id,
       momentKind: (row as { moment_kind: EventMomentKind }).moment_kind,
       occurredAt: (row as { occurred_at: number }).occurred_at,
+      occurredOn:
+        (row as { occurred_on: string | null }).occurred_on ??
+        new Date((row as { occurred_at: number }).occurred_at)
+          .toISOString()
+          .slice(0, 10),
       summary: (row as { summary: string }).summary,
       impactScore: (row as { impact_score: number }).impact_score,
     })) as MomentRecord[];

@@ -11,5 +11,6 @@ export interface CommitmentRecord {
   summary: string;
   participants: readonly EventParticipantView[];
   dueAt?: number | null;
+  dueOn?: string | null;
   resolutionState: CommitmentResolutionState;
 }

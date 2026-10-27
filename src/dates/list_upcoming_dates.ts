@@ -3,12 +3,12 @@ import type { AffinityDb } from "../database.ts";
 import { mapUpcomingRowToUpcomingDateRecord } from "../events/mappers.ts";
 import { assertValidRecurrenceKind } from "../events/validators.ts";
 import { AffinityValidationError } from "../lib/errors/affinity_validation_error.ts";
+import { localCalendarDate } from "../lib/parse_calendar_time.ts";
 import { assertDefaultOrdering } from "../lib/read/assert_default_ordering.ts";
 import { resolveListLimitOffset } from "../lib/read/resolve_list_limit_offset.ts";
 import type { ListUpcomingDatesFilters } from "../lib/types/list_upcoming_dates_filters.ts";
 import type { AffinityListReadOptions } from "../lib/types/read_list_options.ts";
 import type { UpcomingDateRecord } from "../lib/types/upcoming_date_record.ts";
-import { utcStartOfDayMs } from "./calendar.ts";
 
 const CONTACT_KINDS = new Set<string>([
   "human",
@@ -50,13 +50,15 @@ export function listUpcomingDates(
   const clauses: string[] = ["e.deleted_at IS NULL", "e.type = 'date_anchor'"];
   const params: (string | number)[] = [];
 
-  const since = options?.since ?? utcStartOfDayMs(Date.now());
+  const since =
+    options?.since ??
+    Date.parse(`${localCalendarDate(options?.now ?? Date.now())}T00:00:00Z`);
   clauses.push("uo.occurs_on >= ?");
   params.push(since);
 
   let maxOccurs: number | undefined = options?.until;
   if (filters?.horizonDays !== undefined) {
-    const anchor = options?.since ?? Date.now();
+    const anchor = since;
     const horizonEnd = anchor + filters.horizonDays * 86400000;
     maxOccurs =
       maxOccurs === undefined ? horizonEnd : Math.min(maxOccurs, horizonEnd);

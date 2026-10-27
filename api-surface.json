@@ -232,7 +232,7 @@
   },
   ".:exports.skills.managePromisesAndAgreementsSkill.content": {
     "kind": "string",
-    "value": "# Manage Promises And Agreements\n\nPrimary tools:\n- `manage_commitment`\n- `review_affinity`\n- `inspect_affinity_item`\n\nGoal:\n- Keep promises and agreements visible, resolvable, and mechanically meaningful instead of letting them disappear into narrative history.\n\nWhen to use:\n- Someone committed to doing something later.\n- A promise, agreement, or operational obligation needs follow-through.\n\nWhen not to use:\n- The event is complete already and no unresolved obligation exists.\n- A date is recurring and belongs in the date-anchor surface instead.\n\nStep-by-step sequence:\n1. When the commitment is made, use `manage_commitment` with `action: \"record\"`.\n2. Choose `promise` vs `agreement` honestly rather than treating them as stylistic synonyms.\n3. Include a due time when the obligation has a meaningful time boundary.\n4. Use `review_affinity` with the open-commitment view during regular review cycles.\n5. When the outcome is known, resolve it with `manage_commitment` as `kept`, `cancelled`, or `broken`.\n6. Inspect the relevant profile or review the relevant queue again if you need to confirm closure.\n\nValidation checks:\n- Open commitments appear when they should and disappear when resolved.\n- Resolution state matches real-world truth.\n- Trust effects feel consistent with whether the promise was kept or broken.\n\nPitfalls:\n- Do not hide real obligations inside ordinary event summaries.\n- Do not resolve a commitment optimistically before the outcome is actually known.\n- Do not misuse `cancelled` when the truth is actually `broken`.\n\nTips and tricks:\n- If an obligation matters enough to disappoint someone when missed, record it.\n- Review open commitments regularly; the value of the system drops fast if this queue goes stale.\n- When a commitment resolution also deserves narrative context, pair the resolution with an appropriate event in the surrounding workflow.\n\nTool calls to prefer:\n- `manage_commitment` for record and resolve\n- `review_affinity` for the open-commitment queue\n- `inspect_affinity_item` when you need exact context on the affected relationship\n\nRelated skills:\n- `capture-transactions-and-commercial-events`\n- `manage-recurring-dates-and-reminders`"
+    "value": "# Manage Promises And Agreements\n\nCLI and MCP share epoch ms, ISO with Z/offset, YYYY-MM-DD, DD.MM.YYYY,\ntoday/yesterday/tomorrow and signed day offsets (+3d/-2d).\nDate-only values keep their day with UTC boundaries; keywords use the process\nlocal date. Read occurredOn/dueOn and review occursOn for calendar dates;\n*Iso fields stay UTC. Future events warn and count as contact only when their\ntime and day arrive. Commitments and resolutions never reset recency/cadence.\nRadar explains overdue promises and drift (gap > 1.5 times cadence).\n\nPrimary tools:\n- `manage_commitment`\n- `review_affinity`\n- `inspect_affinity_item`\n\nGoal:\n- Keep promises and agreements visible, resolvable, and mechanically meaningful instead of letting them disappear into narrative history.\n\nWhen to use:\n- Someone committed to doing something later.\n- A promise, agreement, or operational obligation needs follow-through.\n\nWhen not to use:\n- The event is complete already and no unresolved obligation exists.\n- A date is recurring and belongs in the date-anchor surface instead.\n\nStep-by-step sequence:\n1. When the commitment is made, use `manage_commitment` with `action: \"record\"`.\n2. Choose `promise` vs `agreement` honestly rather than treating them as stylistic synonyms.\n3. Include a due time when the obligation has a meaningful time boundary.\n4. Use `review_affinity` with the open-commitment view during regular review cycles.\n5. When the outcome is known, resolve it with `manage_commitment` as `kept`, `cancelled`, or `broken`.\n6. Inspect the relevant profile or review the relevant queue again if you need to confirm closure.\n\nValidation checks:\n- Open commitments appear when they should and disappear when resolved.\n- Resolution state matches real-world truth.\n- Trust effects feel consistent with whether the promise was kept or broken.\n\nPitfalls:\n- Do not hide real obligations inside ordinary event summaries.\n- Do not resolve a commitment optimistically before the outcome is actually known.\n- Do not misuse `cancelled` when the truth is actually `broken`.\n\nTips and tricks:\n- If an obligation matters enough to disappoint someone when missed, record it.\n- Review open commitments regularly; the value of the system drops fast if this queue goes stale.\n- When a commitment resolution also deserves narrative context, pair the resolution with an appropriate event in the surrounding workflow.\n\nTool calls to prefer:\n- `manage_commitment` for record and resolve\n- `review_affinity` for the open-commitment queue\n- `inspect_affinity_item` when you need exact context on the affected relationship\n\nRelated skills:\n- `capture-transactions-and-commercial-events`\n- `manage-recurring-dates-and-reminders`"
   },
   ".:exports.skills.managePromisesAndAgreementsSkill.description": {
     "kind": "string",
@@ -247,7 +247,7 @@
   },
   ".:exports.skills.manageRecurringDatesAndRemindersSkill.content": {
     "kind": "string",
-    "value": "# Manage Recurring Dates And Reminders\n\nPrimary tools:\n- `manage_date_anchor`\n- `review_affinity`\n- `inspect_affinity_item`\n\nGoal:\n- Materialize recurring important dates into a durable reminder surface that later review and relationship maintenance can trust.\n\nWhen to use:\n- A date recurs yearly and matters to a contact or link.\n- You want reminders for birthdays, anniversaries, renewals, memorials, or other yearly anchors.\n\nWhen not to use:\n- The date is a one-off event.\n- The fact is a preference or metadata note rather than a recurring anchor.\n\nStep-by-step sequence:\n1. Confirm the target contact or link first.\n2. Use `manage_date_anchor` with `action: \"add\"` and the right recurrence kind.\n3. Keep the summary operator-friendly so future reminders are immediately understandable.\n4. Use `review_affinity` with the upcoming-dates view and an explicit horizon during regular review work.\n5. Revise anchors when recurrence details change.\n6. Remove anchors when the reminder surface should no longer treat the date as active.\n\nValidation checks:\n- The anchor appears in upcoming-date review when it falls within the chosen horizon.\n- Duplicate anchors are not silently piling up.\n- The summary and significance are still meaningful for later action.\n\nPitfalls:\n- Do not store important recurring dates only as loose attributes.\n- Do not create duplicate yearly anchors for the same target and meaning.\n- Do not use recurring anchors for commitments; those belong in the commitment flow.\n\nTips and tricks:\n- Tune horizons by workflow: short for weekly review, longer for quarterly planning.\n- Use significance to help order upcoming-date review meaningfully.\n- Link-level anchors are valuable when the date belongs to a relationship rather than one person.\n\nTool calls to prefer:\n- `manage_date_anchor` for add, revise, and remove\n- `review_affinity` with the upcoming-dates view\n- `inspect_affinity_item` when you need exact context on the target\n\nRelated skills:\n- `manage-promises-and-agreements`\n- `review-radar-progression-and-graph`"
+    "value": "# Manage Recurring Dates And Reminders\n\nCLI and MCP share epoch ms, ISO with Z/offset, YYYY-MM-DD, DD.MM.YYYY,\ntoday/yesterday/tomorrow and signed day offsets (+3d/-2d).\nDate-only values keep their day with UTC boundaries; keywords use the process\nlocal date. Read occurredOn/dueOn and review occursOn for calendar dates;\n*Iso fields stay UTC. Future events warn and count as contact only when their\ntime and day arrive. Commitments and resolutions never reset recency/cadence.\nRadar explains overdue promises and drift (gap > 1.5 times cadence).\n\nPrimary tools:\n- `manage_date_anchor`\n- `review_affinity`\n- `inspect_affinity_item`\n\nGoal:\n- Materialize recurring important dates into a durable reminder surface that later review and relationship maintenance can trust.\n\nWhen to use:\n- A date recurs yearly and matters to a contact or link.\n- You want reminders for birthdays, anniversaries, renewals, memorials, or other yearly anchors.\n\nWhen not to use:\n- The date is a one-off event.\n- The fact is a preference or metadata note rather than a recurring anchor.\n\nStep-by-step sequence:\n1. Confirm the target contact or link first.\n2. Use `manage_date_anchor` with `action: \"add\"` and the right recurrence kind.\n3. Keep the summary operator-friendly so future reminders are immediately understandable.\n4. Use `review_affinity` with the upcoming-dates view and an explicit horizon during regular review work.\n5. Revise anchors when recurrence details change.\n6. Remove anchors when the reminder surface should no longer treat the date as active.\n\nValidation checks:\n- The anchor appears in upcoming-date review when it falls within the chosen horizon.\n- Duplicate anchors are not silently piling up.\n- The summary and significance are still meaningful for later action.\n\nPitfalls:\n- Do not store important recurring dates only as loose attributes.\n- Do not create duplicate yearly anchors for the same target and meaning.\n- Do not use recurring anchors for commitments; those belong in the commitment flow.\n\nTips and tricks:\n- Tune horizons by workflow: short for weekly review, longer for quarterly planning.\n- Use significance to help order upcoming-date review meaningfully.\n- Link-level anchors are valuable when the date belongs to a relationship rather than one person.\n\nTool calls to prefer:\n- `manage_date_anchor` for add, revise, and remove\n- `review_affinity` with the upcoming-dates view\n- `inspect_affinity_item` when you need exact context on the target\n\nRelated skills:\n- `manage-promises-and-agreements`\n- `review-radar-progression-and-graph`"
   },
   ".:exports.skills.manageRecurringDatesAndRemindersSkill.description": {
     "kind": "string",
@@ -292,7 +292,7 @@
   },
   ".:exports.skills.recordDirectEvidenceWellSkill.content": {
     "kind": "string",
-    "value": "# Record Direct Evidence Well\n\nPrimary tools:\n- `record_event`\n- `inspect_affinity_item`\n- `review_affinity`\n- `manage_relationship`\n\nGoal:\n- Capture what really happened between the owner and other contacts so Affinity can derive progression, trust, cadence, and moments cleanly.\n\nWhen to use:\n- A conversation, activity, support exchange, conflict, correction, milestone, or direct operational interaction just happened.\n- You want future radar, progression, journal, and chart views to reflect the event truthfully.\n\nWhen not to use:\n- You are importing pre-system history.\n- You only observed third parties and were not directly part of the relationship evidence.\n\nStep-by-step sequence:\n1. Confirm the participants first. Use exact contacts whenever possible.\n2. Use `record_event` with the smallest honest event family: `interaction` for ordinary direct evidence, `milestone` when the event is truly milestone-shaped, or another event family only when it better matches reality.\n3. Set significance conservatively. Use high significance only when the event genuinely changed the relationship.\n4. Let the system auto-create owner-facing links when appropriate instead of manually seeding a link just because a direct event happened.\n5. Review the receipt or inspect the resulting profile when you need to understand the effect.\n6. Use `review_affinity` on journal, timeline, moments, or readiness views when you need context after a sequence of events.\n\nValidation checks:\n- The right contacts were involved.\n- The event family matches what really happened.\n- The resulting mechanics feel plausible when reviewed.\n\nPitfalls:\n- Do not inflate significance to force a rank-up.\n- Do not turn ordinary direct evidence into a milestone just to get a dramatic moment.\n- Do not use bond text as evidence. If the bond changed but no event happened, revise the bond separately.\n- Do not guess through ambiguity; clarify the target first.\n\nTips and tricks:\n- Conflict and correction are both first-class direct evidence. Use them honestly rather than hiding them inside generic summaries.\n- Multi-participant owner events can refresh multiple links at once. That is a feature, not a bug.\n- If you need to label the current narrative reading without changing mechanics, use `manage_relationship` with `revise_bond` after the evidence is recorded.\n\nTool calls to prefer:\n- `record_event` for the evidence itself\n- `inspect_affinity_item` for exact read-back\n- `review_affinity` for journals, timelines, moments, and readiness\n- `manage_relationship` only for bond interpretation after the fact\n\nRelated skills:\n- `record-observations-and-referrals`\n- `review-radar-progression-and-graph`"
+    "value": "# Record Direct Evidence Well\n\nCLI and MCP share epoch ms, ISO with Z/offset, YYYY-MM-DD, DD.MM.YYYY,\ntoday/yesterday/tomorrow and signed day offsets (+3d/-2d). Date-only inputs\npreserve the calendar day at UTC midnight (UTC end of day for dueAt).\nKeywords use the process local date. Read occurredOn/dueOn and review occursOn\nfor calendar dates; *Iso fields remain UTC. Future events carry future_event\nwarnings and do not count for recency, cadence or drift until their time and day\narrive. Commitments and resolutions never reset contact recency or cadence.\n\nPrimary tools:\n- `record_event`\n- `inspect_affinity_item`\n- `review_affinity`\n- `manage_relationship`\n\nGoal:\n- Capture what really happened between the owner and other contacts so Affinity can derive progression, trust, cadence, and moments cleanly.\n\nWhen to use:\n- A conversation, activity, support exchange, conflict, correction, milestone, or direct operational interaction just happened.\n- You want future radar, progression, journal, and chart views to reflect the event truthfully.\n\nWhen not to use:\n- You are importing pre-system history.\n- You only observed third parties and were not directly part of the relationship evidence.\n\nStep-by-step sequence:\n1. Confirm the participants first. Use exact contacts whenever possible.\n2. Use `record_event` with the smallest honest event family: `interaction` for ordinary direct evidence, `milestone` when the event is truly milestone-shaped, or another event family only when it better matches reality.\n3. Set significance conservatively. Use high significance only when the event genuinely changed the relationship.\n4. Let the system auto-create owner-facing links when appropriate instead of manually seeding a link just because a direct event happened.\n5. Review the receipt or inspect the resulting profile when you need to understand the effect.\n6. Use `review_affinity` on journal, timeline, moments, or readiness views when you need context after a sequence of events.\n\nValidation checks:\n- The right contacts were involved.\n- The event family matches what really happened.\n- The resulting mechanics feel plausible when reviewed.\n\nPitfalls:\n- Do not inflate significance to force a rank-up.\n- Do not turn ordinary direct evidence into a milestone just to get a dramatic moment.\n- Do not use bond text as evidence. If the bond changed but no event happened, revise the bond separately.\n- Do not guess through ambiguity; clarify the target first.\n\nTips and tricks:\n- Conflict and correction are both first-class direct evidence. Use them honestly rather than hiding them inside generic summaries.\n- Multi-participant owner events can refresh multiple links at once. That is a feature, not a bug.\n- If you need to label the current narrative reading without changing mechanics, use `manage_relationship` with `revise_bond` after the evidence is recorded.\n\nTool calls to prefer:\n- `record_event` for the evidence itself\n- `inspect_affinity_item` for exact read-back\n- `review_affinity` for journals, timelines, moments, and readiness\n- `manage_relationship` only for bond interpretation after the fact\n\nRelated skills:\n- `record-observations-and-referrals`\n- `review-radar-progression-and-graph`"
   },
   ".:exports.skills.recordDirectEvidenceWellSkill.description": {
     "kind": "string",
@@ -322,7 +322,7 @@
   },
   ".:exports.skills.reviewRadarProgressionAndGraphSkill.content": {
     "kind": "string",
-    "value": "# Review Radar, Progression, And Graph\n\nPrimary tools:\n- `review_affinity`\n- `inspect_affinity_item`\n\nGoal:\n- Turn review surfaces into a disciplined operating loop for outreach, prioritization, and graph understanding.\n\nWhen to use:\n- You need a daily or weekly maintenance pass.\n- You want to know who is drifting, who is ready for deeper investment, or how the network is structured.\n\nWhen not to use:\n- You already know the one exact item you need to inspect in depth.\n- You are mutating state and only need confirmation of a single write result.\n\nStep-by-step sequence:\n1. Start with `review_affinity` on the highest-level view that matches the question: radar, owner links, progression readiness, graph, moments, or a timeline view.\n2. Use radar when the question is who needs attention now.\n3. Use progression readiness when the question is where additional positive investment is most likely to deepen a relationship.\n4. Use graph review when the question is network shape, bridges, clusters, or hidden centrality.\n5. Use journal or timeline views when a score needs narrative context before action.\n6. Escalate to `inspect_affinity_item` only after the review surface identifies the exact target worth opening deeply.\n\nValidation checks:\n- The chosen review surface actually matches the decision you are trying to make.\n- You inspected context before acting on a surprising score.\n- Follow-up work targets the right contact or link rather than the loudest metric.\n\nPitfalls:\n- Do not treat radar as a command to act blindly without context.\n- Do not confuse progression readiness with relationship importance; they answer different questions.\n- Do not rely on one score when a timeline or graph view would explain the situation better.\n\nTips and tricks:\n- Review flows are strongest when used rhythmically rather than sporadically.\n- Use graph review to understand bridges and clusters, then use timeline or profile inspection for the exact story behind them.\n- Empty results can still be informative: they may confirm that maintenance debt is currently low.\n\nTool calls to prefer:\n- `review_affinity` for all dashboard-style surfaces\n- `inspect_affinity_item` for exact deep follow-up\n\nRelated skills:\n- `record-direct-evidence-well`\n- `manage-recurring-dates-and-reminders`\n- `reconcile-duplicates-and-merge-safely`"
+    "value": "# Review Radar, Progression, And Graph\n\nCLI and MCP share epoch ms, ISO with Z/offset, YYYY-MM-DD, DD.MM.YYYY,\ntoday/yesterday/tomorrow and signed day offsets (+3d/-2d).\nDate-only values keep their day with UTC boundaries; keywords use the process\nlocal date. Read occurredOn/dueOn and review occursOn for calendar dates;\n*Iso fields stay UTC. Future events warn and count as contact only when their\ntime and day arrive. Commitments and resolutions never reset recency/cadence.\nRadar explains overdue promises and drift (gap > 1.5 times cadence).\n\nPrimary tools:\n- `review_affinity`\n- `inspect_affinity_item`\n\nGoal:\n- Turn review surfaces into a disciplined operating loop for outreach, prioritization, and graph understanding.\n\nWhen to use:\n- You need a daily or weekly maintenance pass.\n- You want to know who is drifting, who is ready for deeper investment, or how the network is structured.\n\nWhen not to use:\n- You already know the one exact item you need to inspect in depth.\n- You are mutating state and only need confirmation of a single write result.\n\nStep-by-step sequence:\n1. Start with `review_affinity` on the highest-level view that matches the question: radar, owner links, progression readiness, graph, moments, or a timeline view.\n2. Use radar when the question is who needs attention now.\n3. Use progression readiness when the question is where additional positive investment is most likely to deepen a relationship.\n4. Use graph review when the question is network shape, bridges, clusters, or hidden centrality.\n5. Use journal or timeline views when a score needs narrative context before action.\n6. Escalate to `inspect_affinity_item` only after the review surface identifies the exact target worth opening deeply.\n\nValidation checks:\n- The chosen review surface actually matches the decision you are trying to make.\n- You inspected context before acting on a surprising score.\n- Follow-up work targets the right contact or link rather than the loudest metric.\n\nPitfalls:\n- Do not treat radar as a command to act blindly without context.\n- Do not confuse progression readiness with relationship importance; they answer different questions.\n- Do not rely on one score when a timeline or graph view would explain the situation better.\n\nTips and tricks:\n- Review flows are strongest when used rhythmically rather than sporadically.\n- Use graph review to understand bridges and clusters, then use timeline or profile inspection for the exact story behind them.\n- Empty results can still be informative: they may confirm that maintenance debt is currently low.\n\nTool calls to prefer:\n- `review_affinity` for all dashboard-style surfaces\n- `inspect_affinity_item` for exact deep follow-up\n\nRelated skills:\n- `record-direct-evidence-well`\n- `manage-recurring-dates-and-reminders`\n- `reconcile-duplicates-and-merge-safely`"
   },
   ".:exports.skills.reviewRadarProgressionAndGraphSkill.description": {
     "kind": "string",
@@ -6217,7 +6217,7 @@
         "optional": false
       }
     },
-    "definition": "type ToolWarningCode = \"already_in_state\" | \"derived_value_used\" | \"empty_result\" | \"possible_duplicate\" | \"partial_match\" | \"unchanged\";"
+    "definition": "type ToolWarningCode = \"already_in_state\" | \"derived_value_used\" | \"empty_result\" | \"future_event\" | \"possible_duplicate\" | \"partial_match\" | \"unchanged\";"
   },
   ".:public.tools.AffinityToolDefinition.types.AffinityToolDefinition.types.ToolResult.types.ToolFailure.types.ToolErrorCode": {
     "kind": "type",
@@ -7242,7 +7242,7 @@
   },
   ".:public.tools.affinityTools": {
     "kind": "value",
-    "type": "(AffinityToolDefinition<{ kind: \"owner_profile\"; topLinksLimit?: number | undefined; } | { kind: \"contact_profile\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; recentEventsLimit?: number | undefined; topLinksLimit?: number | undefined; } | { kind: \"link\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; recentEventsLimit?: number | undefined; }, InspectAffinityItemToolResult> | AffinityToolDefinition<{ action: \"set\"; target: { kind: \"contact\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; } | { kind: \"link\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; }; name: string; value: string | null; } | { action: \"unset\"; target: { kind: \"contact\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; } | { kind: \"link\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; }; name: string; removedAt?: string | number | undefined; } | { action: \"replace\"; target: { kind: \"contact\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; } | { kind: \"link\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; }; entries: readonly { name: string; value: string | null; }[]; }, ManageAttributeToolResult> | AffinityToolDefinition<{ action: \"record\"; input: { commitmentType: \"promise\" | \"agreement\"; dueAt?: string | number | null | undefined; now?: string | number | undefined; occurredAt: string | number; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { action: \"resolve\"; commitmentEventId: number; resolution: CommitmentResolutionKind; options?: { now?: string | number | undefined; resolvingEvent?: { type?: Exclude<EventType, \"date_anchor\"> | undefined; occurredAt?: string | number | undefined; summary?: string | undefined; significance?: number | undefined; participants?: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[] | undefined; provenance?: unknown; } | undefined; } | undefined; }, ManageCommitmentToolResult> | AffinityToolDefinition<{ action: \"export\"; contact?: { contactId: number; } | { identity: { type: string; value: string; }; } | undefined; } | { action: \"delete\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; confirm?: boolean | undefined; } | { action: \"create\"; input: { name: string; kind: ContactKind; now?: string | number | undefined; bootstrapOwner?: boolean | undefined; identities?: readonly { type: string; value: string; label?: string | null | undefined; verified?: boolean | undefined; now?: string | number | undefined; }[] | undefined; }; } | { action: \"revise\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; patch: { name?: string | undefined; }; } | { action: \"set_lifecycle\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; lifecycleState: ContactLifecycleState; options?: { now?: string | number | undefined; provenance?: unknown; } | undefined; }, ManageContactToolResult> | AffinityToolDefinition<{ action: \"dismiss\" | \"undismiss\"; left: { contactId: number; } | { identity: { type: string; value: string; }; }; right: { contactId: number; } | { identity: { type: string; value: string; }; }; reason?: string | null; }, ManageDuplicateDismissalToolResult> | AffinityToolDefinition<{ action: \"add\"; input: { now?: string | number | undefined; summary: string; significance: number; recurrenceKind: EventRecurrenceKind; anchorMonth: number; anchorDay: number; force?: boolean | undefined; target: { kind: \"contact\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; } | { kind: \"link\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; }; }; } | { action: \"revise\"; anchorEventId: number; patch: { recurrenceKind?: EventRecurrenceKind | undefined; anchorMonth?: number | undefined; anchorDay?: number | undefined; summary?: string | undefined; significance?: number | undefined; }; options?: { now?: string | number | undefined; force?: boolean | undefined; } | undefined; } | { action: \"remove\"; anchorEventId: number; removedAt?: string | number | undefined; }, ManageDateAnchorToolResult> | AffinityToolDefinition<{ action: \"add\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; input: { type: string; value: string; label?: string | null | undefined; verified?: boolean | undefined; now?: string | number | undefined; }; } | { action: \"revise\"; identityId: number; patch: { type?: string | undefined; value?: string | undefined; label?: string | null | undefined; }; } | { action: \"verify\"; identityId: number; verifiedAt?: string | number | undefined; } | { action: \"remove\"; identityId: number; removedAt?: string | number | undefined; }, ManageIdentityToolResult> | AffinityToolDefinition<{ action: \"seed_social_link\"; from: { contactId: number; } | { identity: { type: string; value: string; }; }; to: { contactId: number; } | { identity: { type: string; value: string; }; }; input?: { kind: RelationalLinkKind; now?: string | number | undefined; role?: string | null | undefined; rank?: number | undefined; affinity?: number | undefined; trust?: number | undefined; state?: LinkState | undefined; cadenceDays?: number | null | undefined; bond?: string | null | undefined; } | undefined; kind?: string | undefined; role?: string | undefined; } | { action: \"revise_bond\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; bond: string | null; options?: { now?: string | number | undefined; provenance?: unknown; } | undefined; } | { action: \"override_state\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; state: LinkState; options?: { now?: string | number | undefined; provenance?: unknown; } | undefined; } | { action: \"set_structural_tie\"; from: { contactId: number; } | { identity: { type: string; value: string; }; }; to: { contactId: number; } | { identity: { type: string; value: string; }; }; input?: { kind: StructuralLinkKind; now?: string | number | undefined; role?: string | null | undefined; } | undefined; kind?: string | undefined; role?: string | undefined; } | { action: \"remove_structural_tie\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; removedAt?: string | number | undefined; }, ManageRelationshipToolResult> | AffinityToolDefinition<{ winner: { contactId: number; } | { identity: { type: string; value: string; }; }; loser: { contactId: number; } | { identity: { type: string; value: string; }; }; reasonSummary?: string | null; now?: string | number; }, MergeContactsToolResult> | AffinityToolDefinition<{ kind: \"interaction\"; input: { type: InteractionEventType; now?: string | number | undefined; occurredAt: string | number; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { kind: \"observation\"; input: { now?: string | number | undefined; occurredAt: string | number; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { kind: \"milestone\"; input: { now?: string | number | undefined; occurredAt: string | number; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { kind: \"transaction\"; input: { now?: string | number | undefined; occurredAt: string | number; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; }, RecordEventToolResult> | AffinityToolDefinition<{ view: ReviewAffinityToolView; now?: string | number; contact?: { contactId: number; } | { identity: { type: string; value: string; }; }; link?: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; contactIds?: readonly number[]; kind?: ContactKind | LinkKind; lifecycleState?: ContactLifecycleState; linkState?: LinkState; attribute?: string | readonly string[]; tag?: string | readonly string[]; includeLost?: boolean; includeOwner?: boolean; includeDormant?: boolean; includeArchived?: boolean; includeObserved?: boolean; eventTypes?: readonly EventType[]; momentKind?: EventMomentKind; commitmentType?: \"promise\" | \"agreement\"; recurrenceKind?: EventRecurrenceKind; horizonDays?: number; exactOnly?: boolean; minScore?: number; includeDismissed?: boolean; since?: string | number; until?: string | number; limit?: number; offset?: number; }, ReviewAffinityToolResult> | AffinityToolDefinition<{ query: string; kind?: ContactKind; lifecycleState?: ContactLifecycleState; attribute?: string | readonly string[]; tag?: string | readonly string[]; includeLost?: boolean; includeOwner?: boolean; includeDormant?: boolean; limit?: number; offset?: number; }, SearchAffinityToolResult>)[]"
+    "type": "(AffinityToolDefinition<{ kind: \"owner_profile\"; topLinksLimit?: number | undefined; } | { kind: \"contact_profile\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; recentEventsLimit?: number | undefined; topLinksLimit?: number | undefined; } | { kind: \"link\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; recentEventsLimit?: number | undefined; }, InspectAffinityItemToolResult> | AffinityToolDefinition<{ action: \"set\"; target: { kind: \"contact\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; } | { kind: \"link\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; }; name: string; value: string | null; } | { action: \"unset\"; target: { kind: \"contact\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; } | { kind: \"link\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; }; name: string; removedAt?: string | number | undefined; } | { action: \"replace\"; target: { kind: \"contact\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; } | { kind: \"link\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; }; entries: readonly { name: string; value: string | null; }[]; }, ManageAttributeToolResult> | AffinityToolDefinition<{ action: \"record\"; input: { commitmentType: \"promise\" | \"agreement\"; dueAt?: string | number | null | undefined; dueOn?: string | null | undefined; now?: string | number | undefined; occurredAt: string | number; occurredOn?: string | undefined; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { action: \"resolve\"; commitmentEventId: number; resolution: CommitmentResolutionKind; options?: { now?: string | number | undefined; resolvingEvent?: { type?: Exclude<EventType, \"date_anchor\"> | undefined; occurredAt?: string | number | undefined; occurredOn?: string | undefined; summary?: string | undefined; significance?: number | undefined; participants?: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[] | undefined; provenance?: unknown; } | undefined; } | undefined; }, ManageCommitmentToolResult> | AffinityToolDefinition<{ action: \"export\"; contact?: { contactId: number; } | { identity: { type: string; value: string; }; } | undefined; } | { action: \"delete\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; confirm?: boolean | undefined; } | { action: \"create\"; input: { name: string; kind: ContactKind; now?: string | number | undefined; bootstrapOwner?: boolean | undefined; identities?: readonly { type: string; value: string; label?: string | null | undefined; verified?: boolean | undefined; now?: string | number | undefined; }[] | undefined; }; } | { action: \"revise\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; patch: { name?: string | undefined; }; } | { action: \"set_lifecycle\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; lifecycleState: ContactLifecycleState; options?: { now?: string | number | undefined; provenance?: unknown; } | undefined; }, ManageContactToolResult> | AffinityToolDefinition<{ action: \"dismiss\" | \"undismiss\"; left: { contactId: number; } | { identity: { type: string; value: string; }; }; right: { contactId: number; } | { identity: { type: string; value: string; }; }; reason?: string | null; }, ManageDuplicateDismissalToolResult> | AffinityToolDefinition<{ action: \"add\"; input: { now?: string | number | undefined; summary: string; significance: number; recurrenceKind: EventRecurrenceKind; anchorMonth: number; anchorDay: number; force?: boolean | undefined; target: { kind: \"contact\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; } | { kind: \"link\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; }; }; } | { action: \"revise\"; anchorEventId: number; patch: { recurrenceKind?: EventRecurrenceKind | undefined; anchorMonth?: number | undefined; anchorDay?: number | undefined; summary?: string | undefined; significance?: number | undefined; }; options?: { now?: string | number | undefined; force?: boolean | undefined; } | undefined; } | { action: \"remove\"; anchorEventId: number; removedAt?: string | number | undefined; }, ManageDateAnchorToolResult> | AffinityToolDefinition<{ action: \"add\"; contact: { contactId: number; } | { identity: { type: string; value: string; }; }; input: { type: string; value: string; label?: string | null | undefined; verified?: boolean | undefined; now?: string | number | undefined; }; } | { action: \"revise\"; identityId: number; patch: { type?: string | undefined; value?: string | undefined; label?: string | null | undefined; }; } | { action: \"verify\"; identityId: number; verifiedAt?: string | number | undefined; } | { action: \"remove\"; identityId: number; removedAt?: string | number | undefined; }, ManageIdentityToolResult> | AffinityToolDefinition<{ action: \"seed_social_link\"; from: { contactId: number; } | { identity: { type: string; value: string; }; }; to: { contactId: number; } | { identity: { type: string; value: string; }; }; input?: { kind: RelationalLinkKind; now?: string | number | undefined; role?: string | null | undefined; rank?: number | undefined; affinity?: number | undefined; trust?: number | undefined; state?: LinkState | undefined; cadenceDays?: number | null | undefined; bond?: string | null | undefined; } | undefined; kind?: string | undefined; role?: string | undefined; } | { action: \"revise_bond\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; bond: string | null; options?: { now?: string | number | undefined; provenance?: unknown; } | undefined; } | { action: \"override_state\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; state: LinkState; options?: { now?: string | number | undefined; provenance?: unknown; } | undefined; } | { action: \"set_structural_tie\"; from: { contactId: number; } | { identity: { type: string; value: string; }; }; to: { contactId: number; } | { identity: { type: string; value: string; }; }; input?: { kind: StructuralLinkKind; now?: string | number | undefined; role?: string | null | undefined; } | undefined; kind?: string | undefined; role?: string | undefined; } | { action: \"remove_structural_tie\"; link: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; removedAt?: string | number | undefined; }, ManageRelationshipToolResult> | AffinityToolDefinition<{ winner: { contactId: number; } | { identity: { type: string; value: string; }; }; loser: { contactId: number; } | { identity: { type: string; value: string; }; }; reasonSummary?: string | null; now?: string | number; }, MergeContactsToolResult> | AffinityToolDefinition<{ kind: \"interaction\"; input: { type: InteractionEventType; now?: string | number | undefined; occurredAt: string | number; occurredOn?: string | undefined; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { kind: \"observation\"; input: { now?: string | number | undefined; occurredAt: string | number; occurredOn?: string | undefined; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { kind: \"milestone\"; input: { now?: string | number | undefined; occurredAt: string | number; occurredOn?: string | undefined; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { kind: \"transaction\"; input: { now?: string | number | undefined; occurredAt: string | number; occurredOn?: string | undefined; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; }, RecordEventToolResult> | AffinityToolDefinition<{ view: ReviewAffinityToolView; now?: string | number; contact?: { contactId: number; } | { identity: { type: string; value: string; }; }; link?: { linkId: number; } | { endpoints: { fromContactId: number; toContactId: number; kind?: string | undefined | undefined; role?: string | null | undefined | undefined; isStructural?: boolean | undefined | undefined; }; }; contactIds?: readonly number[]; kind?: ContactKind | LinkKind; lifecycleState?: ContactLifecycleState; linkState?: LinkState; attribute?: string | readonly string[]; tag?: string | readonly string[]; includeLost?: boolean; includeOwner?: boolean; includeDormant?: boolean; includeArchived?: boolean; includeObserved?: boolean; eventTypes?: readonly EventType[]; momentKind?: EventMomentKind; commitmentType?: \"promise\" | \"agreement\"; recurrenceKind?: EventRecurrenceKind; horizonDays?: number; exactOnly?: boolean; minScore?: number; includeDismissed?: boolean; since?: string | number; until?: string | number; limit?: number; offset?: number; }, ReviewAffinityToolResult> | AffinityToolDefinition<{ query: string; kind?: ContactKind; lifecycleState?: ContactLifecycleState; attribute?: string | readonly string[]; tag?: string | readonly string[]; includeLost?: boolean; includeOwner?: boolean; includeDormant?: boolean; limit?: number; offset?: number; }, SearchAffinityToolResult>)[]"
   },
   ".:public.tools.arraySchema": {
     "kind": "value",
@@ -7600,7 +7600,7 @@
   },
   ".:public.tools.manageCommitmentTool": {
     "kind": "value",
-    "type": "AffinityToolDefinition<{ action: \"record\"; input: { commitmentType: \"promise\" | \"agreement\"; dueAt?: string | number | null | undefined; now?: string | number | undefined; occurredAt: string | number; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { action: \"resolve\"; commitmentEventId: number; resolution: CommitmentResolutionKind; options?: { now?: string | number | undefined; resolvingEvent?: { type?: Exclude<EventType, \"date_anchor\"> | undefined; occurredAt?: string | number | undefined; summary?: string | undefined; significance?: number | undefined; participants?: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[] | undefined; provenance?: unknown; } | undefined; } | undefined; }, ManageCommitmentToolResult>"
+    "type": "AffinityToolDefinition<{ action: \"record\"; input: { commitmentType: \"promise\" | \"agreement\"; dueAt?: string | number | null | undefined; dueOn?: string | null | undefined; now?: string | number | undefined; occurredAt: string | number; occurredOn?: string | undefined; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { action: \"resolve\"; commitmentEventId: number; resolution: CommitmentResolutionKind; options?: { now?: string | number | undefined; resolvingEvent?: { type?: Exclude<EventType, \"date_anchor\"> | undefined; occurredAt?: string | number | undefined; occurredOn?: string | undefined; summary?: string | undefined; significance?: number | undefined; participants?: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[] | undefined; provenance?: unknown; } | undefined; } | undefined; }, ManageCommitmentToolResult>"
   },
   ".:public.tools.manageCommitmentToolHandler": {
     "kind": "value",
@@ -7811,9 +7811,13 @@
       "updated": {
         "type": "EntityRef[]",
         "optional": false
+      },
+      "warnings": {
+        "type": "{ code: \"future_event\"; message: string; }[] | undefined",
+        "optional": true
       }
     },
-    "definition": "interface MutationReceipt<TPrimary> { primary: TPrimary; created: EntityRef[]; updated: EntityRef[]; archived: EntityRef[]; removed: EntityRef[]; affectedLinks: number[]; derivedEffects: DerivedLinkEffect[]; }",
+    "definition": "interface MutationReceipt<TPrimary> { primary: TPrimary; warnings?: { code: \"future_event\"; message: string; }[]; created: EntityRef[]; updated: EntityRef[]; archived: EntityRef[]; removed: EntityRef[]; affectedLinks: number[]; derivedEffects: DerivedLinkEffect[]; }",
     "references": {
       "DerivedLinkEffect": ".:public.tools.MutationToolData.types.MutationToolData.types.MutationReceipt.types.DerivedLinkEffect",
       "EntityRef": ".:public.tools.MutationToolData.types.MutationToolData.types.MutationReceipt.types.EntityRef",
@@ -8175,7 +8179,7 @@
   },
   ".:public.tools.recordEventTool": {
     "kind": "value",
-    "type": "AffinityToolDefinition<{ kind: \"interaction\"; input: { type: InteractionEventType; now?: string | number | undefined; occurredAt: string | number; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { kind: \"observation\"; input: { now?: string | number | undefined; occurredAt: string | number; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { kind: \"milestone\"; input: { now?: string | number | undefined; occurredAt: string | number; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { kind: \"transaction\"; input: { now?: string | number | undefined; occurredAt: string | number; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; }, RecordEventToolResult>"
+    "type": "AffinityToolDefinition<{ kind: \"interaction\"; input: { type: InteractionEventType; now?: string | number | undefined; occurredAt: string | number; occurredOn?: string | undefined; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { kind: \"observation\"; input: { now?: string | number | undefined; occurredAt: string | number; occurredOn?: string | undefined; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { kind: \"milestone\"; input: { now?: string | number | undefined; occurredAt: string | number; occurredOn?: string | undefined; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; } | { kind: \"transaction\"; input: { now?: string | number | undefined; occurredAt: string | number; occurredOn?: string | undefined; summary: string; significance: number; participants: readonly { contactId: number; role: EventParticipantRole; directionality?: \"owner_initiated\" | \"other_initiated\" | \"mutual\" | \"observed\" | undefined; }[]; provenance?: unknown; }; }, RecordEventToolResult>"
   },
   ".:public.tools.recordEventToolHandler": {
     "kind": "value",
@@ -10555,6 +10559,10 @@
       "updated": {
         "type": "EntityRef[]",
         "optional": false
+      },
+      "warnings": {
+        "type": "{ code: \"future_event\"; message: string; }[] | undefined",
+        "optional": true
       }
     },
     "definition": "type types_AttributeMutationReceipt = AttributeMutationReceipt;",
@@ -10593,6 +10601,10 @@
       "updated": {
         "type": "EntityRef[]",
         "optional": false
+      },
+      "warnings": {
+        "type": "{ code: \"future_event\"; message: string; }[] | undefined",
+        "optional": true
       }
     },
     "definition": "type AttributeMutationReceipt = MutationReceipt<AttributeRecord>;",
@@ -11136,6 +11148,10 @@
         "type": "string | null | undefined",
         "optional": true
       },
+      "dueOn": {
+        "type": "string | null | undefined",
+        "optional": true
+      },
       "eventId": {
         "type": "number",
         "optional": false
@@ -11178,6 +11194,10 @@
         "type": "string | null | undefined",
         "optional": true
       },
+      "dueOn": {
+        "type": "string | null | undefined",
+        "optional": true
+      },
       "eventId": {
         "type": "number",
         "optional": false
@@ -11203,7 +11223,7 @@
         "optional": false
       }
     },
-    "definition": "interface CommitmentRecord { dueAtIso?: string | null; overdue?: boolean; eventId: number; type: EventType; summary: string; participants: readonly EventParticipantView[]; dueAt?: number | null; resolutionState: CommitmentResolutionState; }",
+    "definition": "interface CommitmentRecord { dueAtIso?: string | null; overdue?: boolean; eventId: number; type: EventType; summary: string; participants: readonly EventParticipantView[]; dueAt?: number | null; dueOn?: string | null; resolutionState: CommitmentResolutionState; }",
     "references": {
       "CommitmentResolutionState": ".:public.types.CommitmentRecord.types.CommitmentRecord.types.CommitmentResolutionState",
       "EventParticipantView": ".:public.types.CommitmentRecord.types.CommitmentRecord.types.EventParticipantView",
@@ -13035,6 +13055,10 @@
       "updated": {
         "type": "EntityRef[]",
         "optional": false
+      },
+      "warnings": {
+        "type": "{ code: \"future_event\"; message: string; }[] | undefined",
+        "optional": true
       }
     },
     "definition": "type types_ContactMutationReceipt = ContactMutationReceipt;",
@@ -13073,6 +13097,10 @@
       "updated": {
         "type": "EntityRef[]",
         "optional": false
+      },
+      "warnings": {
+        "type": "{ code: \"future_event\"; message: string; }[] | undefined",
+        "optional": true
       }
     },
     "definition": "type ContactMutationReceipt = MutationReceipt<ContactListItem>;",
@@ -13257,6 +13285,14 @@
         "type": "number | null | undefined",
         "optional": true
       },
+      "dueAt": {
+        "type": "number | null | undefined",
+        "optional": true
+      },
+      "dueOn": {
+        "type": "string | null | undefined",
+        "optional": true
+      },
       "id": {
         "type": "number",
         "optional": false
@@ -13268,6 +13304,10 @@
       "occurredAt": {
         "type": "number",
         "optional": false
+      },
+      "occurredOn": {
+        "type": "string | undefined",
+        "optional": true
       },
       "participants": {
         "type": "readonly EventParticipantView[]",
@@ -13290,7 +13330,7 @@
         "optional": false
       }
     },
-    "definition": "interface EventRecord { id: number; type: EventType; occurredAt: number; summary: string; significance: number; momentKind: EventMomentKind | null; participants: readonly EventParticipantView[]; recurrenceKind?: EventRecurrenceKind | null; anchorMonth?: number | null; anchorDay?: number | null; anchorContactId?: number | null; anchorLinkId?: number | null; }",
+    "definition": "interface EventRecord { id: number; type: EventType; occurredAt: number; occurredOn?: string; dueAt?: number | null; dueOn?: string | null; summary: string; significance: number; momentKind: EventMomentKind | null; participants: readonly EventParticipantView[]; recurrenceKind?: EventRecurrenceKind | null; anchorMonth?: number | null; anchorDay?: number | null; anchorContactId?: number | null; anchorLinkId?: number | null; }",
     "references": {
       "EventMomentKind": ".:public.tools.MutationToolData.types.MutationToolData.types.MutationReceipt.types.DerivedLinkEffect.types.EventMomentKind",
       "EventParticipantView": ".:public.types.CommitmentRecord.types.CommitmentRecord.types.EventParticipantView",
@@ -13624,6 +13664,10 @@
         "type": "number",
         "optional": false
       },
+      "occursOnDate": {
+        "type": "string | undefined",
+        "optional": true
+      },
       "recurrenceKind": {
         "type": "EventRecurrenceKind",
         "optional": false
@@ -13641,7 +13685,7 @@
         "optional": false
       }
     },
-    "definition": "interface UpcomingDateRecord { anchorEventId: number; targetRef: UpcomingDateTargetRef; recurrenceKind: EventRecurrenceKind; occursOn: number; summary: string; significance: number; }",
+    "definition": "interface UpcomingDateRecord { anchorEventId: number; targetRef: UpcomingDateTargetRef; recurrenceKind: EventRecurrenceKind; occursOn: number; occursOnDate?: string; summary: string; significance: number; }",
     "references": {
       "EventRecurrenceKind": ".:public.types.AddDateAnchorInput.types.AddDateAnchorInput.types.EventRecurrenceKind",
       "UpcomingDateTargetRef": ".:public.types.ContactProfileRecord.types.ContactProfileRecord.types.UpcomingDateRecord.types.UpcomingDateTargetRef"
@@ -13937,6 +13981,10 @@
       "updated": {
         "type": "EntityRef[]",
         "optional": false
+      },
+      "warnings": {
+        "type": "{ code: \"future_event\"; message: string; }[] | undefined",
+        "optional": true
       }
     },
     "definition": "type types_DismissalMutationReceipt = DismissalMutationReceipt;",
@@ -13975,6 +14023,10 @@
       "updated": {
         "type": "EntityRef[]",
         "optional": false
+      },
+      "warnings": {
+        "type": "{ code: \"future_event\"; message: string; }[] | undefined",
+        "optional": true
       }
     },
     "definition": "type DismissalMutationReceipt = MutationReceipt<DismissedPairRef>;",
@@ -14389,6 +14441,10 @@
       "updated": {
         "type": "EntityRef[]",
         "optional": false
+      },
+      "warnings": {
+        "type": "{ code: \"future_event\"; message: string; }[] | undefined",
+        "optional": true
       }
     },
     "definition": "type types_EventMutationReceipt = EventMutationReceipt;",
@@ -14427,6 +14483,10 @@
       "updated": {
         "type": "EntityRef[]",
         "optional": false
+      },
+      "warnings": {
+        "type": "{ code: \"future_event\"; message: string; }[] | undefined",
+        "optional": true
       }
     },
     "definition": "type EventMutationReceipt = MutationReceipt<EventRecord>;",
@@ -14695,6 +14755,14 @@
         "type": "number | null | undefined",
         "optional": true
       },
+      "dueAt": {
+        "type": "number | null | undefined",
+        "optional": true
+      },
+      "dueOn": {
+        "type": "string | null | undefined",
+        "optional": true
+      },
       "id": {
         "type": "number",
         "optional": false
@@ -14706,6 +14774,10 @@
       "occurredAt": {
         "type": "number",
         "optional": false
+      },
+      "occurredOn": {
+        "type": "string | undefined",
+        "optional": true
       },
       "participants": {
         "type": "readonly EventParticipantView[]",
@@ -14979,6 +15051,14 @@
         "type": "number | null",
         "optional": false
       },
+      "due_at": {
+        "type": "number | null | undefined",
+        "optional": true
+      },
+      "due_on": {
+        "type": "string | null | undefined",
+        "optional": true
+      },
       "id": {
         "type": "number",
         "optional": false
@@ -14990,6 +15070,10 @@
       "occurred_at": {
         "type": "number",
         "optional": false
+      },
+      "occurred_on": {
+        "type": "string | null | undefined",
+        "optional": true
       },
       "recurrence_kind": {
         "type": "string | null",
@@ -15045,6 +15129,14 @@
         "type": "number | null",
         "optional": false
       },
+      "due_at": {
+        "type": "number | null | undefined",
+        "optional": true
+      },
+      "due_on": {
+        "type": "string | null | undefined",
+        "optional": true
+      },
       "id": {
         "type": "number",
         "optional": false
@@ -15056,6 +15148,10 @@
       "occurred_at": {
         "type": "number",
         "optional": false
+      },
+      "occurred_on": {
+        "type": "string | null | undefined",
+        "optional": true
       },
       "recurrence_kind": {
         "type": "string | null",
@@ -15078,7 +15174,7 @@
         "optional": false
       }
     },
-    "definition": "interface EventRow { id: number; type: string; occurred_at: number; summary: string; significance: number; moment_kind: string | null; recurrence_kind: string | null; anchor_month: number | null; anchor_day: number | null; anchor_contact_id: number | null; anchor_link_id: number | null; created_at: number; updated_at: number; deleted_at: number | null; }"
+    "definition": "interface EventRow { id: number; type: string; occurred_at: number; occurred_on?: string | null; due_at?: number | null; due_on?: string | null; summary: string; significance: number; moment_kind: string | null; recurrence_kind: string | null; anchor_month: number | null; anchor_day: number | null; anchor_contact_id: number | null; anchor_link_id: number | null; created_at: number; updated_at: number; deleted_at: number | null; }"
   },
   ".:public.types.EventType": {
     "kind": "type",
@@ -15329,6 +15425,10 @@
       "updated": {
         "type": "EntityRef[]",
         "optional": false
+      },
+      "warnings": {
+        "type": "{ code: \"future_event\"; message: string; }[] | undefined",
+        "optional": true
       }
     },
     "definition": "type types_IdentityMutationReceipt = IdentityMutationReceipt;",
@@ -15367,6 +15467,10 @@
       "updated": {
         "type": "EntityRef[]",
         "optional": false
+      },
+      "warnings": {
+        "type": "{ code: \"future_event\"; message: string; }[] | undefined",
+        "optional": true
       }
     },
     "definition": "type IdentityMutationReceipt = MutationReceipt<IdentityRecord>;",
@@ -16291,12 +16395,16 @@
         "type": "number",
         "optional": false
       },
+      "occurredOn": {
+        "type": "string | undefined",
+        "optional": true
+      },
       "summary": {
         "type": "string",
         "optional": false
       }
     },
-    "definition": "interface MomentRecord { eventId: number; linkId: number; momentKind: EventMomentKind; occurredAt: number; summary: string; impactScore: number; }",
+    "definition": "interface MomentRecord { eventId: number; linkId: number; momentKind: EventMomentKind; occurredAt: number; occurredOn?: string; summary: string; impactScore: number; }",
     "references": {
       "EventMomentKind": ".:public.tools.MutationToolData.types.MutationToolData.types.MutationReceipt.types.DerivedLinkEffect.types.EventMomentKind"
     }
@@ -16680,6 +16788,10 @@
       "updated": {
         "type": "EntityRef[]",
         "optional": false
+      },
+      "warnings": {
+        "type": "{ code: \"future_event\"; message: string; }[] | undefined",
+        "optional": true
       }
     },
     "definition": "type types_LinkMutationReceipt = LinkMutationReceipt;",
@@ -16718,6 +16830,10 @@
       "updated": {
         "type": "EntityRef[]",
         "optional": false
+      },
+      "warnings": {
+        "type": "{ code: \"future_event\"; message: string; }[] | undefined",
+        "optional": true
       }
     },
     "definition": "type LinkMutationReceipt = MutationReceipt<LinkListItem>;",
@@ -17515,6 +17631,10 @@
       "updated": {
         "type": "EntityRef[]",
         "optional": false
+      },
+      "warnings": {
+        "type": "{ code: \"future_event\"; message: string; }[] | undefined",
+        "optional": true
       }
     },
     "definition": "type types_MergeReceipt = MergeReceipt;",
@@ -17553,6 +17673,10 @@
       "updated": {
         "type": "EntityRef[]",
         "optional": false
+      },
+      "warnings": {
+        "type": "{ code: \"future_event\"; message: string; }[] | undefined",
+        "optional": true
       }
     },
     "definition": "type MergeReceipt = MutationReceipt<MergePrimary>;",
@@ -17584,6 +17708,10 @@
       "occurredAt": {
         "type": "number",
         "optional": false
+      },
+      "occurredOn": {
+        "type": "string | undefined",
+        "optional": true
       },
       "summary": {
         "type": "string",
@@ -17626,6 +17754,10 @@
       "updated": {
         "type": "EntityRef[]",
         "optional": false
+      },
+      "warnings": {
+        "type": "{ code: \"future_event\"; message: string; }[] | undefined",
+        "optional": true
       }
     },
     "definition": "type types_MutationReceipt<TPrimary> = MutationReceipt<TPrimary>;",
@@ -17749,6 +17881,10 @@
         "type": "number | null | undefined",
         "optional": true
       },
+      "dueOn": {
+        "type": "string | null | undefined",
+        "optional": true
+      },
       "now": {
         "type": "number | undefined",
         "optional": true
@@ -17756,6 +17892,10 @@
       "occurredAt": {
         "type": "number",
         "optional": false
+      },
+      "occurredOn": {
+        "type": "string | undefined",
+        "optional": true
       },
       "participants": {
         "type": "readonly SocialEventParticipantInput[]",
@@ -17791,6 +17931,10 @@
         "type": "number | null | undefined",
         "optional": true
       },
+      "dueOn": {
+        "type": "string | null | undefined",
+        "optional": true
+      },
       "now": {
         "type": "number | undefined",
         "optional": true
@@ -17798,6 +17942,10 @@
       "occurredAt": {
         "type": "number",
         "optional": false
+      },
+      "occurredOn": {
+        "type": "string | undefined",
+        "optional": true
       },
       "participants": {
         "type": "readonly SocialEventParticipantInput[]",
@@ -17816,7 +17964,7 @@
         "optional": false
       }
     },
-    "definition": "interface RecordCommitmentInput extends SocialEventInput { commitmentType: \"promise\" | \"agreement\"; dueAt?: number | null; now?: number; }",
+    "definition": "interface RecordCommitmentInput extends SocialEventInput { commitmentType: \"promise\" | \"agreement\"; dueAt?: number | null; dueOn?: string | null; now?: number; }",
     "references": {
       "SocialEventInput": ".:public.types.RecordCommitmentInput.types.RecordCommitmentInput.types.SocialEventInput"
     }
@@ -17829,6 +17977,10 @@
         "type": "number",
         "optional": false
       },
+      "occurredOn": {
+        "type": "string | undefined",
+        "optional": true
+      },
       "participants": {
         "type": "readonly SocialEventParticipantInput[]",
         "optional": false
@@ -17846,7 +17998,7 @@
         "optional": false
       }
     },
-    "definition": "interface SocialEventInput { occurredAt: number; summary: string; significance: number; participants: readonly SocialEventParticipantInput[]; provenance?: unknown; }",
+    "definition": "interface SocialEventInput { occurredAt: number; occurredOn?: string; summary: string; significance: number; participants: readonly SocialEventParticipantInput[]; provenance?: unknown; }",
     "references": {
       "SocialEventParticipantInput": ".:public.types.RecordCommitmentInput.types.RecordCommitmentInput.types.SocialEventInput.types.SocialEventParticipantInput"
     }
@@ -17885,6 +18037,10 @@
         "type": "number",
         "optional": false
       },
+      "occurredOn": {
+        "type": "string | undefined",
+        "optional": true
+      },
       "participants": {
         "type": "readonly SocialEventParticipantInput[]",
         "optional": false
@@ -17922,6 +18078,10 @@
       "occurredAt": {
         "type": "number",
         "optional": false
+      },
+      "occurredOn": {
+        "type": "string | undefined",
+        "optional": true
       },
       "participants": {
         "type": "readonly SocialEventParticipantInput[]",
@@ -17962,6 +18122,10 @@
         "type": "number",
         "optional": false
       },
+      "occurredOn": {
+        "type": "string | undefined",
+        "optional": true
+      },
       "participants": {
         "type": "readonly SocialEventParticipantInput[]",
         "optional": false
@@ -17995,6 +18159,10 @@
       "occurredAt": {
         "type": "number",
         "optional": false
+      },
+      "occurredOn": {
+        "type": "string | undefined",
+        "optional": true
       },
       "participants": {
         "type": "readonly SocialEventParticipantInput[]",
@@ -18030,6 +18198,10 @@
         "type": "number",
         "optional": false
       },
+      "occurredOn": {
+        "type": "string | undefined",
+        "optional": true
+      },
       "participants": {
         "type": "readonly SocialEventParticipantInput[]",
         "optional": false
@@ -18063,6 +18235,10 @@
       "occurredAt": {
         "type": "number",
         "optional": false
+      },
+      "occurredOn": {
+        "type": "string | undefined",
+        "optional": true
       },
       "participants": {
         "type": "readonly SocialEventParticipantInput[]",
@@ -18098,6 +18274,10 @@
         "type": "number",
         "optional": false
       },
+      "occurredOn": {
+        "type": "string | undefined",
+        "optional": true
+      },
       "participants": {
         "type": "readonly SocialEventParticipantInput[]",
         "optional": false
@@ -18131,6 +18311,10 @@
       "occurredAt": {
         "type": "number",
         "optional": false
+      },
+      "occurredOn": {
+        "type": "string | undefined",
+        "optional": true
       },
       "participants": {
         "type": "readonly SocialEventParticipantInput[]",
@@ -18420,6 +18604,10 @@
         "type": "number | undefined",
         "optional": true
       },
+      "occurredOn": {
+        "type": "string | undefined",
+        "optional": true
+      },
       "participants": {
         "type": "readonly SocialEventParticipantInput[] | undefined",
         "optional": true
@@ -18441,7 +18629,7 @@
         "optional": true
       }
     },
-    "definition": "interface ResolveCommitmentEventInput { type?: Exclude<EventType, \"date_anchor\">; occurredAt?: number; summary?: string; significance?: number; participants?: readonly SocialEventParticipantInput[]; provenance?: unknown; }",
+    "definition": "interface ResolveCommitmentEventInput { type?: Exclude<EventType, \"date_anchor\">; occurredAt?: number; occurredOn?: string; summary?: string; significance?: number; participants?: readonly SocialEventParticipantInput[]; provenance?: unknown; }",
     "references": {
       "EventType": ".:public.tools.AffinityToolDefinition.types.AffinityToolDefinition.types.ToolResult.types.ToolFailure.types.ToolBaseResult.types.ToolEntityRef.types.EventType",
       "SocialEventParticipantInput": ".:public.types.RecordCommitmentInput.types.RecordCommitmentInput.types.SocialEventInput.types.SocialEventParticipantInput"
@@ -18816,6 +19004,10 @@
         "type": "number",
         "optional": false
       },
+      "occurredOn": {
+        "type": "string | undefined",
+        "optional": true
+      },
       "participants": {
         "type": "readonly SocialEventParticipantInput[]",
         "optional": false
@@ -19089,6 +19281,10 @@
       "occursOn": {
         "type": "number",
         "optional": false
+      },
+      "occursOnDate": {
+        "type": "string | undefined",
+        "optional": true
       },
       "recurrenceKind": {
         "type": "EventRecurrenceKind",

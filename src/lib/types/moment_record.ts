@@ -6,6 +6,7 @@ export interface MomentRecord {
   linkId: number;
   momentKind: EventMomentKind;
   occurredAt: number;
+  occurredOn?: string;
   summary: string;
   impactScore: number;
 }

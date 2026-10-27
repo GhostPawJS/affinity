@@ -50,4 +50,9 @@ export function initEventsTables(db: AffinityDb): void {
   db.exec(
     "CREATE INDEX IF NOT EXISTS idx_events_type ON events(type) WHERE deleted_at IS NULL",
   );
+  const columns = db.prepare("PRAGMA table_info(events)").all() as {
+    name: string;
+  }[];
+  if (!columns.some((column) => column.name === "occurred_on"))
+    db.exec("ALTER TABLE events ADD COLUMN occurred_on TEXT");
 }

@@ -13,6 +13,8 @@ export interface UpcomingDateRecord {
   recurrenceKind: EventRecurrenceKind;
   /** Epoch milliseconds for the materialized next occurrence (sorting key). */
   occursOn: number;
+  /** Calendar date; occursOn retains its existing numeric sorting key. */
+  occursOnDate?: string;
   summary: string;
   significance: number;
 }

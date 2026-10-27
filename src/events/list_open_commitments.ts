@@ -1,5 +1,6 @@
 import type { AffinityDb } from "../database.ts";
 import { AffinityValidationError } from "../lib/errors/affinity_validation_error.ts";
+import { localCalendarDate } from "../lib/parse_calendar_time.ts";
 import { assertDefaultOrdering } from "../lib/read/assert_default_ordering.ts";
 import { resolveListLimitOffset } from "../lib/read/resolve_list_limit_offset.ts";
 import type { CommitmentRecord } from "../lib/types/commitment_record.ts";
@@ -79,7 +80,7 @@ export function listOpenCommitments(
   const where = clauses.join(" AND ");
   const rows = db
     .prepare(
-      `SELECT oc.event_id, oc.commitment_type, oc.due_at, oc.resolved_at, oc.resolution,
+      `SELECT oc.event_id, oc.commitment_type, oc.due_at, oc.due_on, oc.resolved_at, oc.resolution,
               e.type, e.summary
        FROM open_commitments oc
        INNER JOIN events e ON e.id = oc.event_id
@@ -91,6 +92,7 @@ export function listOpenCommitments(
     event_id: number;
     commitment_type: string;
     due_at: number | null;
+    due_on: string | null;
     resolved_at: number | null;
     resolution: string | null;
     type: string;
@@ -105,7 +107,14 @@ export function listOpenCommitments(
     participants: partsByEvent.get(r.event_id) ?? [],
     dueAt: r.due_at,
     dueAtIso: r.due_at === null ? null : new Date(r.due_at).toISOString(),
-    overdue: r.due_at !== null && r.due_at < now,
+    dueOn:
+      r.due_on ??
+      (r.due_at === null
+        ? null
+        : new Date(r.due_at).toISOString().slice(0, 10)),
+    overdue: r.due_on
+      ? localCalendarDate(now) > r.due_on
+      : r.due_at !== null && r.due_at < now,
     resolutionState: mapResolution(r.resolved_at, r.resolution),
   }));
 }

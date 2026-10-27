@@ -44,7 +44,7 @@ it("handles absent owners, counterparties, rollups and missing links", async () 
   }
 });
 
-it("filters owner links and derives each radar reason from stored scores", async () => {
+it("filters owner links and uses a generic snippet only when there are no reasons", async () => {
   const db = await createInitializedAffinityDb();
   try {
     const owner = createContact(db, {
@@ -59,17 +59,21 @@ it("filters owner links and derives each radar reason from stored scores", async
       kind: "personal",
     }).primary;
     refreshLinkRollup(db, link.id, 100);
-    for (const [drift, recency, rank, reason] of [
-      [0.6, 1, 0, "Significantly overdue for contact"],
-      [0.3, 1, 0, "Drifting — approaching overdue"],
-      [0, 0.2, 0.4, "Important link losing recency"],
-      [0, 0.4, 0.6, "High-rank link needs attention"],
-      [0, 1, 0, "Routine check-in recommended"],
+    for (const [drift, recency, rank] of [
+      [0.6, 1, 0],
+      [0.3, 1, 0],
+      [0, 0.2, 0.4],
+      [0, 0.4, 0.6],
+      [0, 1, 0],
     ] as const) {
       db.prepare(
         "UPDATE link_rollups SET drift_priority=?,recency_score=?,normalized_rank=? WHERE link_id=?",
       ).run(drift, recency, rank, link.id);
-      strictEqual(listRadar(db)[0]?.recommendedReason, reason);
+      strictEqual(
+        listRadar(db)[0]?.recommendedReason,
+        "Routine check-in recommended",
+      );
+      deepStrictEqual(listRadar(db)[0]?.reasons, []);
     }
     for (const state of ["active", "dormant", "archived"]) {
       db.prepare("UPDATE links SET state=? WHERE id=?").run(state, link.id);

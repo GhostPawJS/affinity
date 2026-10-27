@@ -13,6 +13,7 @@ import type { MergePrimary } from "./merge_primary.ts";
  */
 export interface MutationReceipt<TPrimary> {
   primary: TPrimary;
+  warnings?: { code: "future_event"; message: string }[];
   created: EntityRef[];
   updated: EntityRef[];
   archived: EntityRef[];

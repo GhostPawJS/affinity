@@ -41,6 +41,7 @@ export function recordCommitment(
     const eventId = insertJournalEvent(db, {
       type: input.commitmentType,
       occurredAt: input.occurredAt,
+      occurredOn: input.occurredOn,
       summary: input.summary,
       significance: input.significance,
       momentKind: null,
@@ -52,10 +53,17 @@ export function recordCommitment(
          event_id, commitment_type, due_at, created_at, updated_at
        ) VALUES (?, ?, ?, ?, ?)`,
     ).run(eventId, input.commitmentType, input.dueAt ?? null, now, now);
+    db.prepare("UPDATE open_commitments SET due_on = ? WHERE event_id = ?").run(
+      input.dueAt == null
+        ? null
+        : (input.dueOn ?? new Date(input.dueAt).toISOString().slice(0, 10)),
+      eventId,
+    );
     const mechanics = applyJournalEventMechanics(db, {
       eventId,
       eventType: input.commitmentType,
       occurredAt: input.occurredAt,
+      occurredOn: input.occurredOn,
       significance: input.significance,
       participants: input.participants,
       provenance: input.provenance,

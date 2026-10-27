@@ -21,4 +21,9 @@ export function initOpenCommitmentsTables(db: AffinityDb): void {
       )
     )
   `);
+  const columns = db.prepare("PRAGMA table_info(open_commitments)").all() as {
+    name: string;
+  }[];
+  if (!columns.some((column) => column.name === "due_on"))
+    db.exec("ALTER TABLE open_commitments ADD COLUMN due_on TEXT");
 }

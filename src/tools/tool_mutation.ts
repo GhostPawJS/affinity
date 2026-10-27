@@ -55,6 +55,7 @@ export function mutationToolResult<TPrimary>(
   }
   return toolSuccess(summary, data, {
     entities: toReceiptEntityRefs(receipt),
+    warnings: receipt.warnings,
   });
 }
 

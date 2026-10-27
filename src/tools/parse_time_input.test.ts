@@ -36,8 +36,6 @@ test("time inputs use strict UTC calendar days and explicit offsets", () => {
     "2026-10-20T14:00:00",
     "next week",
     "",
-    "1790000000000",
-    "27.10.2026",
     "2026-13-01",
   ]) {
     assert.throws(

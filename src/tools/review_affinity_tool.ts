@@ -308,6 +308,7 @@ function momentItem(moment: {
   momentKind: string;
   summary: string;
   occurredAt: number;
+  occurredOn?: string;
 }): ToolListItem {
   return {
     ...moment,
@@ -316,7 +317,9 @@ function momentItem(moment: {
     id: moment.eventId,
     title: moment.summary,
     subtitle: moment.momentKind,
-    snippet: new Date(moment.occurredAt).toISOString().slice(0, 10),
+    snippet:
+      moment.occurredOn ??
+      new Date(moment.occurredAt).toISOString().slice(0, 10),
   };
 }
 
@@ -325,6 +328,7 @@ function commitmentItem(commitment: {
   type: string;
   summary: string;
   dueAt?: number | null;
+  dueOn?: string | null;
   resolutionState: string;
   participants: readonly unknown[];
 }): ToolListItem {
@@ -334,7 +338,7 @@ function commitmentItem(commitment: {
     id: commitment.eventId,
     title: commitment.summary,
     subtitle: commitment.type,
-    snippet: `state ${commitment.resolutionState}; participants ${commitment.participants.length}; due ${commitment.dueAt == null ? "none" : new Date(commitment.dueAt).toISOString().slice(0, 10)}`,
+    snippet: `state ${commitment.resolutionState}; participants ${commitment.participants.length}; due ${commitment.dueAt == null ? "none" : (commitment.dueOn ?? new Date(commitment.dueAt).toISOString().slice(0, 10))}`,
   };
 }
 
@@ -362,6 +366,7 @@ function upcomingDateItem(date: {
 }): ToolListItem {
   return {
     ...date,
+    occursOn: new Date(date.occursOn).toISOString().slice(0, 10),
     occursAt: date.occursOn,
     occursAtIso: new Date(date.occursOn).toISOString(),
     kind: date.targetRef.kind,

@@ -18,11 +18,21 @@ export function mapEventRowToEventRecord(
     id: row.id,
     type: row.type as EventType,
     occurredAt: row.occurred_at,
+    occurredOn:
+      row.occurred_on ?? new Date(row.occurred_at).toISOString().slice(0, 10),
     summary: row.summary,
     significance: row.significance,
     momentKind: row.moment_kind as EventMomentKind | null,
     participants,
   };
+  if (row.type === "promise" || row.type === "agreement") {
+    base.dueAt = row.due_at ?? null;
+    base.dueOn =
+      row.due_on ??
+      (row.due_at == null
+        ? null
+        : new Date(row.due_at).toISOString().slice(0, 10));
+  }
   if (row.recurrence_kind !== null) {
     base.recurrenceKind = row.recurrence_kind as EventRecurrenceKind;
     base.anchorMonth = row.anchor_month;
@@ -61,6 +71,7 @@ export function mapUpcomingRowToUpcomingDateRecord(row: {
     targetRef,
     recurrenceKind,
     occursOn: row.occurs_on,
+    occursOnDate: new Date(row.occurs_on).toISOString().slice(0, 10),
     summary: row.summary,
     significance: row.significance,
   };

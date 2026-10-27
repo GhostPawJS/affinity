@@ -4,5 +4,6 @@ import type { SocialEventInput } from "./social_event_input.ts";
 export interface RecordCommitmentInput extends SocialEventInput {
   commitmentType: "promise" | "agreement";
   dueAt?: number | null;
+  dueOn?: string | null;
   now?: number;
 }

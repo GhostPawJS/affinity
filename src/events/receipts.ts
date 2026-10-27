@@ -7,6 +7,7 @@ import type { EventMutationReceipt } from "../lib/types/mutation_receipt.ts";
 export function buildEventMutationReceipt(
   primary: EventRecord,
   partial?: {
+    warnings?: { code: "future_event"; message: string }[] | undefined;
     created?: EntityRef[];
     updated?: EntityRef[];
     archived?: EntityRef[];
@@ -18,6 +19,7 @@ export function buildEventMutationReceipt(
   const normalized = normalizeMutationReceiptPartial(partial);
   return {
     primary,
+    ...(partial?.warnings ? { warnings: partial.warnings } : {}),
     created: normalized.created,
     updated: normalized.updated,
     archived: normalized.archived,

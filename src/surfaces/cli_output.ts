@@ -144,9 +144,11 @@ export function humanResult(value: unknown): string {
             ([k, v]) =>
               `${DATE_LABELS[k]} ${
                 // Recurring dates are stored as UTC calendar days.
-                k === "occursAt"
-                  ? new Date(v as number).toISOString().slice(0, 10)
-                  : formatLocalTime(v as number)
+                typeof item[k.replace(/At$/, "On")] === "string"
+                  ? item[k.replace(/At$/, "On")]
+                  : k === "occursAt"
+                    ? new Date(v as number).toISOString().slice(0, 10)
+                    : formatLocalTime(v as number)
               }`,
           );
         if (Array.isArray(item.reasons) && item.reasons.length)

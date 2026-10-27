@@ -110,6 +110,9 @@ export function resolveCommitment(
       const occurredAt = options?.resolvingEvent?.occurredAt ?? now;
       validateSocialEventInput({
         occurredAt,
+        ...(options?.resolvingEvent?.occurredOn
+          ? { occurredOn: options.resolvingEvent.occurredOn }
+          : {}),
         summary,
         significance,
         participants,
@@ -126,6 +129,9 @@ export function resolveCommitment(
       const resolvingEventId = insertJournalEvent(db, {
         type: eventType,
         occurredAt,
+        ...(options?.resolvingEvent?.occurredOn
+          ? { occurredOn: options.resolvingEvent.occurredOn }
+          : {}),
         summary,
         significance,
         momentKind: null,

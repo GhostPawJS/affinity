@@ -110,12 +110,12 @@ test("overdue ordering uses injected now and cancelled resolutions preserve rece
       name: "Contact",
       kind: "human",
     }).primary;
-    const now = 200 * 86400000;
+    const now = new Date(1970, 6, 20, 12).getTime();
     const participants = [
       { contactId: owner.id, role: "actor" as const },
       { contactId: contact.id, role: "recipient" as const },
     ];
-    const ids = [null, now + 1, now - 1, now].map(
+    const ids = [null, now + 86400000, now - 86400000, now].map(
       (dueAt) =>
         recordCommitment(db, {
           commitmentType: "promise",
@@ -162,10 +162,9 @@ test("overdue ordering uses injected now and cancelled resolutions preserve rece
     ).run(contact.id, owner.id, before.linkId);
     // A reverse-direction owner link still carries the overdue counterparty obligation.
     assert.ok(ids[1]);
-    db.prepare("UPDATE open_commitments SET due_at = ? WHERE event_id = ?").run(
-      now - 1,
-      ids[1],
-    );
+    db.prepare(
+      "UPDATE open_commitments SET due_at = ?, due_on = NULL WHERE event_id = ?",
+    ).run(now - 1, ids[1]);
     assert.ok(
       listRadar(db, undefined, { now })[0]?.reasons?.includes(
         "overdue_commitment",

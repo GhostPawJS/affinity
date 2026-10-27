@@ -43,7 +43,21 @@ export function loadEventRecord(db: AffinityDb, eventId: number): EventRecord {
     throw new AffinityInvariantError("event not found");
   }
   const participants = loadEventParticipantViews(db, eventId);
-  return mapEventRowToEventRecord(row, participants);
+  const record = mapEventRowToEventRecord(row, participants);
+  const due = db
+    .prepare("SELECT due_at, due_on FROM open_commitments WHERE event_id = ?")
+    .get(eventId) as
+    | { due_at: number | null; due_on: string | null }
+    | undefined;
+  if (due) {
+    record.dueAt = due.due_at;
+    record.dueOn =
+      due.due_on ??
+      (due.due_at === null
+        ? null
+        : new Date(due.due_at).toISOString().slice(0, 10));
+  }
+  return record;
 }
 
 /** Batch-load EventRecords: 2 queries total (events + participants). */
@@ -57,11 +71,11 @@ export function batchLoadEventRecords(
   const ph = eventIds.map(() => "?").join(", ");
   const eventRows = db
     .prepare(
-      `SELECT id, type, occurred_at, summary, significance, moment_kind,
+      `SELECT e.id, e.type, e.occurred_at, e.occurred_on, oc.due_at, oc.due_on, summary, significance, moment_kind,
               recurrence_kind, anchor_month, anchor_day,
               anchor_contact_id, anchor_link_id,
-              created_at, updated_at, deleted_at
-       FROM events WHERE id IN (${ph}) AND deleted_at IS NULL`,
+              e.created_at, e.updated_at, e.deleted_at
+       FROM events e LEFT JOIN open_commitments oc ON oc.event_id = e.id WHERE e.id IN (${ph}) AND e.deleted_at IS NULL`,
     )
     .all(...eventIds) as unknown as EventRow[];
   const partRows = db

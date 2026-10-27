@@ -17,7 +17,10 @@ export GHOSTPAW_AFFINITY_DB=/abs/path/affinity.db
 # Or --db; default ~/.ghostpaw/affinity.db. Piped output is JSON; --compact omits empty receipt arrays.
 # Exit: 0 ok/no_op, 1 tool error, 2 usage/invalid input, 3 not found/clarification, 4 conflict, 70 internal.
 # Dates: epoch ms, ISO with offset/Z, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, +3d, -2d.
-# Date-only occurredAt uses local midnight; dueAt uses local end of day.
+# CLI and MCP use the same grammar, including yesterday. Keywords use the local date.
+# Date-only occurredAt uses UTC midnight; dueAt uses UTC end of day; calendar days are preserved.
+# Read occurredOn/dueOn/occursOn for days; *Iso stays UTC. Future events warn and do not count yet.
+# Commitments and resolutions do not reset recency; radar drift means gap > 1.5 times cadence.
 ghostpaw-affinity contact create '{"name":"Fox","kind":"human","bootstrapOwner":true}'
 ghostpaw-affinity search "Jana" # Search names, identities, tags, attributes, roles and events before creating.
 ghostpaw-affinity contact create '{"name":"Jana Petersen","kind":"human"}'
@@ -102,7 +105,7 @@ Read-only.
 | Parameter | Type | Required | Values / description |
 | --- | --- | --- | --- |
 | view | string | yes | contacts.list, contacts.duplicates, events.contact_journal, events.link_timeline, events.moments, commitments.open, links.owner, links.observed, links.progression_readiness, links.radar, dates.upcoming, graph.chart, merges.history, merges.dismissed. Which review surface to return. |
-| now | integer / string | no | Optional current timestamp for overdue calculations. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| now | integer / string | no | Optional current timestamp for overdue calculations. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | contact | object | no | Optional target contact locator. |
 | link | object | no | Optional target link locator. |
 | contactIds | array | no | Optional contact-id subset. |
@@ -124,8 +127,8 @@ Read-only.
 | exactOnly | boolean | no | Whether duplicate review is exact-only. |
 | minScore | number | no | Optional duplicate minimum score. |
 | includeDismissed | boolean | no | Whether dismissed pairs are included in duplicate review (marked with dismissed flag). |
-| since | integer / string | no | Optional lower timestamp bound. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
-| until | integer / string | no | Optional upper timestamp bound. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| since | integer / string | no | Optional lower timestamp bound. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| until | integer / string | no | Optional upper timestamp bound. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | limit | integer | no | Optional result limit. |
 | offset | integer | no | Optional result offset. |
 | contact.contactId | integer | no | Exact contact id. |
@@ -185,12 +188,12 @@ Writes: writes_state.
 | input.identities | array | no | Optional identities to attach. Identities already owned by another contact are left with that owner and reported as possible duplicates. |
 | input.name | string | yes | Contact name. |
 | input.kind | string | yes | Contact kind. |
-| input.now | oneOf | no | Optional timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| input.now | oneOf | no | Optional timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | input.bootstrapOwner | boolean | no | Whether this contact should be the owner. |
 | contact.contactId | integer | no | Exact contact id. |
 | contact.identity | object | no | Contact identity locator. |
 | patch.name | string | no | Optional replacement name. |
-| options.now | oneOf | no | Optional timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| options.now | oneOf | no | Optional timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 
 ```sh
 ghostpaw-affinity contact create '{"name":"Fox","kind":"human","bootstrapOwner":true}'
@@ -211,7 +214,7 @@ Writes: writes_state.
 | winner | object | yes | Winner contact. Provide contactId or identity. |
 | loser | object | yes | Loser contact. Provide contactId or identity. |
 | reasonSummary | string | no | Optional merge reason. |
-| now | integer / string | no | Optional merge timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| now | integer / string | no | Optional merge timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | winner.contactId | integer | no | Exact contact id. |
 | winner.identity | object | no | Contact identity locator. |
 | loser.contactId | integer | no | Exact contact id. |
@@ -263,15 +266,15 @@ Writes: writes_state.
 | input | object | no | New identity payload. Required when action=add. |
 | identityId | integer | no | Identity id. Required when action=revise, verify, or remove. |
 | patch | object | no | Identity patch. Required when action=revise. |
-| verifiedAt | integer / string | no | Verification timestamp. Optional for action=verify. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
-| removedAt | integer / string | no | Removal timestamp. Optional for action=remove. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| verifiedAt | integer / string | no | Verification timestamp. Optional for action=verify. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| removedAt | integer / string | no | Removal timestamp. Optional for action=remove. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | contact.contactId | integer | no | Exact contact id. |
 | contact.identity | object | no | Contact identity locator. |
 | input.type | string | yes | Identity type: email, phone, url, website, handle, x, twitter, linkedin, github, mastodon, bluesky, telegram, whatsapp, signal, matrix, discord, slack, instagram, facebook, youtube, tiktok, address, other, account_id, alias, or custom:<name> (lowercase a-z, 0-9, underscore or hyphen). |
 | input.value | string | yes | Identity value. |
 | input.label | string | no | Optional label. |
 | input.verified | boolean | no | Whether the identity starts verified. |
-| input.now | oneOf | no | Optional timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| input.now | oneOf | no | Optional timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | patch.type | string | no | Optional identity type: email, phone, url, website, handle, x, twitter, linkedin, github, mastodon, bluesky, telegram, whatsapp, signal, matrix, discord, slack, instagram, facebook, youtube, tiktok, address, other, account_id, alias, or custom:<name> (lowercase a-z, 0-9, underscore or hyphen). |
 | patch.value | string | no | Optional identity value. |
 | patch.label | string | no | Optional label. |
@@ -302,14 +305,14 @@ Writes: writes_state.
 | bond | any | no | Bond text. Required when action=revise_bond. Null to clear. |
 | state | string | no | active, dormant, strained, broken, archived. Link state. Required when action=override_state. |
 | options | object | no | Optional metadata. |
-| removedAt | integer / string | no | Removal timestamp. Optional for action=remove_structural_tie. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| removedAt | integer / string | no | Removal timestamp. Optional for action=remove_structural_tie. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | from.contactId | integer | no | Exact contact id. |
 | from.identity | object | no | Contact identity locator. |
 | to.contactId | integer | no | Exact contact id. |
 | to.identity | object | no | Contact identity locator. |
 | link.linkId | integer | no | Exact link id. |
 | link.endpoints | object | no | Endpoint-based link locator. |
-| options.now | oneOf | no | Optional timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| options.now | oneOf | no | Optional timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 
 ```sh
 ghostpaw-affinity relationship tie --from '{"contactId":2}' --to '{"contactId":3}' --kind works_at --role Founder
@@ -330,11 +333,11 @@ Writes: writes_state.
 | kind | string | yes | interaction, observation, milestone, transaction. Event kind. |
 | input | object | yes | Event payload. Always required. Interaction events also require `type`. |
 | input.type | string | no | Interaction subtype. Required when kind=interaction, omit otherwise. |
-| input.occurredAt | oneOf | yes | When the event occurred, Unix timestamp in milliseconds. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| input.occurredAt | oneOf | yes | When the event occurred, Unix timestamp in milliseconds. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | input.summary | string | yes | Event summary. Must be non-empty. |
 | input.significance | integer | yes | Event significance from 1 to 10. |
 | input.participants | array | yes | Participant list. Must be non-empty and include the owner contact. |
-| input.now | oneOf | no | Optional timestamp override. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| input.now | oneOf | no | Optional timestamp override. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 
 ```sh
 ghostpaw-affinity event record --kind interaction --input '{"type":"conversation","occurredAt":"today","summary":"Call re pilot","significance":6,"participants":[{"contactId":2,"role":"recipient","directionality":"mutual"}]}'
@@ -358,13 +361,13 @@ Writes: writes_state.
 | resolution | string | no | kept, cancelled, broken. How the commitment was resolved. Required when action=resolve. |
 | options | object | no | Optional metadata. |
 | input.commitmentType | string | yes | Promise or agreement. |
-| input.occurredAt | oneOf | yes | When the commitment was made, Unix timestamp in milliseconds. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| input.occurredAt | oneOf | yes | When the commitment was made, Unix timestamp in milliseconds. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | input.summary | string | yes | Commitment summary. Must be non-empty. |
 | input.significance | integer | yes | Commitment significance from 1 to 10. |
-| input.dueAt | oneOf | no | Optional due timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| input.dueAt | oneOf | no | Optional due timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | input.participants | array | yes | Participant list. Must be non-empty and include the owner contact. |
-| input.now | oneOf | no | Optional timestamp override. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
-| options.now | oneOf | no | Optional timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| input.now | oneOf | no | Optional timestamp override. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| options.now | oneOf | no | Optional timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | options.resolvingEvent | object | no |  |
 
 ```sh
@@ -388,21 +391,21 @@ Writes: writes_state.
 | anchorEventId | integer | no | Anchor event id. Required when action=revise or remove. |
 | patch | object | no | Anchor patch. Required when action=revise. |
 | options | object | no | Optional metadata. |
-| removedAt | integer / string | no | Removal timestamp. Optional for action=remove. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| removedAt | integer / string | no | Removal timestamp. Optional for action=remove. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | input.target | object | yes | Date-anchor target. |
 | input.recurrenceKind | string | yes | Recurrence kind. |
 | input.anchorMonth | integer | yes | Anchor month, 1–12. |
 | input.anchorDay | integer | yes | Anchor day, 1–31 (validated per month). |
 | input.summary | string | yes | Summary. Must be non-empty. |
 | input.significance | integer | yes | Significance from 1 to 10. |
-| input.now | oneOf | no | Optional timestamp override. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| input.now | oneOf | no | Optional timestamp override. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | input.force | boolean | no | Whether to bypass duplicate checks. |
 | patch.recurrenceKind | string | no | Optional recurrence kind. |
 | patch.anchorMonth | integer | no | Optional month, 1–12. |
 | patch.anchorDay | integer | no | Optional day, 1–31. |
 | patch.summary | string | no | Optional summary. |
 | patch.significance | integer | no | Optional significance, 1–10. |
-| options.now | oneOf | no | Optional timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| options.now | oneOf | no | Optional timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | options.force | boolean | no | Whether duplicate checks should be bypassed. |
 
 ```sh
@@ -426,7 +429,7 @@ Writes: writes_state.
 | name | string | no | Attribute name. Required when action=set or unset. |
 | value | any | no | Attribute value. Required when action=set. Null for presence/tag semantics. |
 | entries | array | no | Key-value map to replace all attributes. Required when action=replace. |
-| removedAt | integer / string | no | Removal timestamp. Optional for action=unset. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| removedAt | integer / string | no | Removal timestamp. Optional for action=unset. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | target.kind | string | yes | Target kind. |
 | target.contact | object | no | Contact locator. Required when kind=contact. Provide contactId or identity. |
 | target.link | object | no | Link locator. Required when kind=link. Provide linkId or endpoints. |

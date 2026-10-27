@@ -90,6 +90,7 @@ export function applyJournalEventMechanics(
     eventId: number;
     eventType: EventType;
     occurredAt: number;
+    occurredOn?: string | undefined;
     significance: number;
     participants: readonly SocialEventParticipantInput[];
     provenance?: unknown;

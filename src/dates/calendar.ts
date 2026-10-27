@@ -1,3 +1,5 @@
+import { localCalendarDate } from "../lib/parse_calendar_time.ts";
+
 /**
  * Next yearly anchored calendar date (UTC midnight) on or after the reference instant.
  * Feb 29 anchors materialize as Feb 28 in non-leap years — CONCEPT.md.
@@ -44,8 +46,10 @@ export function computeNextAnchorOccursOn(params: {
   anchorDay: number;
   referenceMs: number;
 }): number {
-  const refStart = utcStartOfDayMs(params.referenceMs);
-  const refYear = new Date(params.referenceMs).getUTCFullYear();
+  const refStart = Date.parse(
+    `${localCalendarDate(params.referenceMs)}T00:00:00Z`,
+  );
+  const refYear = new Date(refStart).getUTCFullYear();
   for (let year = refYear; year <= refYear + 2; year += 1) {
     const day = effectiveAnchorDay(year, params.anchorMonth, params.anchorDay);
     const candidate = utcMidnight(year, params.anchorMonth, day);

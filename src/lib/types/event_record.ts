@@ -10,6 +10,9 @@ export interface EventRecord {
   id: number;
   type: EventType;
   occurredAt: number;
+  occurredOn?: string;
+  dueAt?: number | null;
+  dueOn?: string | null;
   summary: string;
   significance: number;
   momentKind: EventMomentKind | null;

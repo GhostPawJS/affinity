@@ -341,9 +341,20 @@ to read a file; repeated array flags accept JSON objects
 (`--entries '{"name":"a","value":"x"}'`) or one JSON array.
 
 Every time field accepts epoch milliseconds, ISO 8601 with `Z` or an offset,
-`YYYY-MM-DD`, `DD.MM.YYYY` (CLI), `today`, `tomorrow`, `yesterday` and signed day offsets
-such as `+3d` or `-2d`. On the CLI, date-only values use local time (midnight,
-or end of day for `dueAt`); through MCP and the tool facade they use UTC.
+`YYYY-MM-DD`, `DD.MM.YYYY`, `today`, `tomorrow`, `yesterday` and signed day offsets
+such as `+3d` or `-2d`, with the same grammar in CLI, MCP and direct tool calls.
+Date-only values preserve their calendar day: timestamps use UTC midnight, or
+23:59:59.999Z for `dueAt`. Keywords first resolve against the process local
+calendar date; this is the only time-zone-dependent parsing step. `occurredOn`
+and `dueOn` retain the input day (the written offset day for ISO inputs; UTC day
+for epoch inputs). Existing rows derive these fields from their UTC timestamps.
+Review rows for dates include `occursOn`, the anchor occurrence day; the library
+keeps its numeric `occursOn` sorting key and adds `occursOnDate`.
+The existing `*Iso` fields remain UTC. Overdue commitments compare the local
+date to `dueOn`. Future events carry a `future_event` warning and do not count
+as contact until their timestamp and day arrive. Commitments and their
+resolutions do not reset recency or cadence. Radar marks `drift` after a gap
+exceeds 1.5 times the expected cadence and explains its reasons in the snippet.
 
 Global flags: `--db <path>`, `--json`, `--quiet`, `--compact`,
 `--help`/`-h`, `--version`/`-V`/`-v`, `--no-color`.

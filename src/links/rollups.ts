@@ -1,5 +1,6 @@
 import { refreshContactRollup } from "../contacts/rollups.ts";
 import type { AffinityDb } from "../database.ts";
+import { localCalendarDate } from "../lib/parse_calendar_time.ts";
 import type { OpaqueDerivation } from "../lib/types/derivation_opaque.ts";
 import type { OpaqueRollup } from "../lib/types/rollup_opaque.ts";
 import {
@@ -140,11 +141,14 @@ export function refreshLinkRollup(
     .prepare(
       `SELECT event_id, occurred_at
        FROM link_event_effects
-       WHERE link_id = ? AND counts_for_recency = 1
+       WHERE link_id = ? AND counts_for_recency = 1 AND occurred_at <= ?
+         AND event_id IN (SELECT id FROM events WHERE deleted_at IS NULL AND (occurred_on IS NULL OR occurred_on <= ?))
        ORDER BY occurred_at DESC, event_id DESC
        LIMIT 1`,
     )
-    .get(linkId) as { event_id: number; occurred_at: number } | undefined;
+    .get(linkId, now, localCalendarDate(now)) as
+    | { event_id: number; occurred_at: number }
+    | undefined;
   const trailingWindowStart = now - 180 * DAY_MS;
   const counts = db
     .prepare(
@@ -152,9 +156,10 @@ export function refreshLinkRollup(
          COUNT(*) AS total_meaningful_events,
          SUM(CASE WHEN counts_for_recency = 1 AND (affinity_delta > 0 OR trust_delta > 0) THEN 1 ELSE 0 END) AS positive_meaningful_events
        FROM link_event_effects
-       WHERE link_id = ? AND occurred_at >= ?`,
+       WHERE link_id = ? AND occurred_at >= ? AND occurred_at <= ? AND counts_for_recency = 1
+         AND event_id IN (SELECT id FROM events WHERE deleted_at IS NULL AND (occurred_on IS NULL OR occurred_on <= ?))`,
     )
-    .get(linkId, trailingWindowStart) as {
+    .get(linkId, trailingWindowStart, now, localCalendarDate(now)) as {
     total_meaningful_events?: number;
     positive_meaningful_events?: number | null;
   };
@@ -165,9 +170,16 @@ export function refreshLinkRollup(
        INNER JOIN event_participants ep ON ep.event_id = le.event_id
        WHERE le.link_id = ? AND le.counts_for_recency = 1 AND ep.contact_id = ?
          AND ep.directionality IS NOT NULL
-         AND le.occurred_at >= ?`,
+         AND le.occurred_at >= ? AND le.occurred_at <= ?
+         AND le.event_id IN (SELECT id FROM events WHERE deleted_at IS NULL AND (occurred_on IS NULL OR occurred_on <= ?))`,
     )
-    .all(linkId, link.from_contact_id, trailingWindowStart) as {
+    .all(
+      linkId,
+      link.from_contact_id,
+      trailingWindowStart,
+      now,
+      localCalendarDate(now),
+    ) as {
     directionality:
       | "owner_initiated"
       | "other_initiated"

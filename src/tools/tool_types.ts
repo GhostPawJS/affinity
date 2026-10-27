@@ -31,6 +31,7 @@ export type ToolWarningCode =
   | "already_in_state"
   | "derived_value_used"
   | "empty_result"
+  | "future_event"
   | "possible_duplicate"
   | "partial_match"
   | "unchanged";

@@ -1,5 +1,13 @@
 # Record Direct Evidence Well
 
+CLI and MCP share epoch ms, ISO with Z/offset, YYYY-MM-DD, DD.MM.YYYY,
+today/yesterday/tomorrow and signed day offsets (+3d/-2d). Date-only inputs
+preserve the calendar day at UTC midnight (UTC end of day for dueAt).
+Keywords use the process local date. Read occurredOn/dueOn and review occursOn
+for calendar dates; *Iso fields remain UTC. Future events carry future_event
+warnings and do not count for recency, cadence or drift until their time and day
+arrive. Commitments and resolutions never reset contact recency or cadence.
+
 Primary tools:
 - `record_event`
 - `inspect_affinity_item`

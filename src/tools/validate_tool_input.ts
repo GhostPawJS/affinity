@@ -1,3 +1,4 @@
+import { parseCalendarTime } from "../lib/parse_calendar_time.ts";
 import { parseTimeInput } from "./parse_time_input.ts";
 import type { JsonSchema } from "./tool_metadata.ts";
 
@@ -58,11 +59,14 @@ export function validateToolInput(
         child.oneOf?.some((choice) => choice.type === "integer")
       ) {
         try {
-          object[key] = parseTimeInput(
+          const parsed = parseCalendarTime(
             object[key] as number | string,
             `${path}.${key}`,
             referenceNow,
           );
+          object[key] = parsed.timestamp;
+          if (["occurredAt", "dueAt"].includes(key))
+            object[key.replace(/At$/, "On")] ??= parsed.day;
         } catch (error) {
           return (error as Error).message;
         }

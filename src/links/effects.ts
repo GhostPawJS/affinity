@@ -19,6 +19,7 @@ import {
 } from "../events/mechanics.ts";
 import type { EventType } from "../events/types.ts";
 import { AffinityStateError } from "../lib/errors/affinity_state_error.ts";
+import { localCalendarDate } from "../lib/parse_calendar_time.ts";
 import type { CommitmentResolutionKind } from "../lib/types/commitment_resolution_kind.ts";
 import type { DerivedLinkEffect } from "../lib/types/derived_link_effect.ts";
 import type { SocialEventParticipantInput } from "../lib/types/social_event_input.ts";
@@ -452,11 +453,14 @@ export function applyEventEffectToLink(
     .prepare(
       `SELECT occurred_at
        FROM link_event_effects
-       WHERE link_id = ?
+       WHERE link_id = ? AND counts_for_recency = 1 AND occurred_at <= ?
+         AND event_id IN (SELECT id FROM events WHERE deleted_at IS NULL AND (occurred_on IS NULL OR occurred_on <= ?))
        ORDER BY occurred_at DESC, event_id DESC
        LIMIT 1`,
     )
-    .get(params.linkId) as { occurred_at: number } | undefined;
+    .get(params.linkId, params.now, localCalendarDate(params.now)) as
+    | { occurred_at: number }
+    | undefined;
   const gapDays =
     latest === undefined
       ? cadenceBefore
@@ -464,8 +468,17 @@ export function applyEventEffectToLink(
           1,
           Math.round((params.occurredAt - latest.occurred_at) / DAY_MS),
         );
+  const eventDay = (
+    db
+      .prepare("SELECT occurred_on FROM events WHERE id = ?")
+      .get(params.eventId) as { occurred_on: string | null } | undefined
+  )?.occurred_on;
   const cadenceAfter =
-    commitmentResolution === "broken" || commitmentResolution === "cancelled"
+    commitmentResolution != null ||
+    params.eventType === "promise" ||
+    params.eventType === "agreement" ||
+    params.occurredAt > params.now ||
+    (eventDay != null && eventDay > localCalendarDate(params.now))
       ? cadenceBefore
       : nextCadenceDays({
           kind: linkKind,
@@ -531,8 +544,9 @@ export function applyEventEffectToLink(
     params.now,
   );
   if (
-    commitmentResolution === "broken" ||
-    commitmentResolution === "cancelled"
+    (commitmentResolution !== undefined && commitmentResolution !== null) ||
+    params.eventType === "promise" ||
+    params.eventType === "agreement"
   ) {
     db.prepare(
       "UPDATE link_event_effects SET counts_for_recency = 0 WHERE event_id = ? AND link_id = ?",

@@ -14,6 +14,7 @@ export interface SocialEventParticipantInput {
 /** Evidence intake shape shared by interaction-style writes — CONCEPT.md. */
 export interface SocialEventInput {
   occurredAt: number;
+  occurredOn?: string;
   summary: string;
   /** Significance 1..10 — enforced at write layer. */
   significance: number;

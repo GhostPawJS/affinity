@@ -6,6 +6,12 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ## [Unreleased]
 
+### Fixed
+
+- Unify CLI and MCP date parsing, preserve calendar days in additive date fields, and upgrade existing databases in place.
+- Exclude future events, commitments and commitment resolutions from contact recency; warn when recording future events.
+- Explain radar reasons, identify cadence drift and prioritize entries with actionable reasons.
+
 ## [0.5.0] - 2026-10-28
 
 ### Added

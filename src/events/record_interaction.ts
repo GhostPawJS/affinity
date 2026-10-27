@@ -9,6 +9,7 @@ import {
   validateSocialEventInput,
 } from "../events/validators.ts";
 import { AffinityValidationError } from "../lib/errors/affinity_validation_error.ts";
+import { localCalendarDate } from "../lib/parse_calendar_time.ts";
 import type { EventMutationReceipt } from "../lib/types/mutation_receipt.ts";
 import type { RecordInteractionInput } from "../lib/types/record_interaction_input.ts";
 import { resolveNow } from "../resolve_now.ts";
@@ -41,6 +42,7 @@ export function recordInteraction(
     const eventId = insertJournalEvent(db, {
       type: input.type,
       occurredAt: input.occurredAt,
+      occurredOn: input.occurredOn,
       summary: input.summary,
       significance: input.significance,
       momentKind: null,
@@ -51,12 +53,26 @@ export function recordInteraction(
       eventId,
       eventType: input.type,
       occurredAt: input.occurredAt,
+      occurredOn: input.occurredOn,
       significance: input.significance,
       participants: input.participants,
       provenance: input.provenance,
       now,
     });
     return buildEventMutationReceipt(loadEventRecord(db, eventId), {
+      warnings:
+        input.occurredAt > now ||
+        (input.occurredOn ??
+          new Date(input.occurredAt).toISOString().slice(0, 10)) >
+          localCalendarDate(now)
+          ? [
+              {
+                code: "future_event",
+                message:
+                  "occurredAt is in the future; it will not count as contact until then",
+              },
+            ]
+          : undefined,
       created: [{ kind: "event", id: eventId }, ...mechanics.created],
       affectedLinks: mechanics.affectedLinks,
       derivedEffects: mechanics.derivedEffects,

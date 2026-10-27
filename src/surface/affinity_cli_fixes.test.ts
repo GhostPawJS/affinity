@@ -137,26 +137,20 @@ test("stdin maps bare and wrapped objects to the sole object positional", async 
   assert.equal(created.code, 0, created.err);
   assert.equal(JSON.parse(created.out).data.primary.name, "X");
 });
-test("date grammar uses local calendar boundaries, strict dates, ISO offsets and signed days", () => {
+test("date grammar uses UTC storage boundaries and local keywords, strict dates, ISO offsets and signed days", () => {
   const now = new Date(2026, 9, 27, 12).getTime();
   assert.equal(
     parsePlainDue("2026-10-27"),
-    new Date(2026, 9, 27, 23, 59, 59, 999).getTime(),
+    Date.UTC(2026, 9, 27, 23, 59, 59, 999),
   );
-  assert.equal(
-    parsePlainDue("27.10.2026", now, false),
-    new Date(2026, 9, 27).getTime(),
-  );
+  assert.equal(parsePlainDue("27.10.2026", now, false), Date.UTC(2026, 9, 27));
   for (const [raw, day] of [
     ["today", 27],
     ["tomorrow", 28],
     ["+3d", 30],
     ["-2d", 25],
   ] as const) {
-    assert.equal(
-      parsePlainDue(raw, now, false),
-      new Date(2026, 9, day).getTime(),
-    );
+    assert.equal(parsePlainDue(raw, now, false), Date.UTC(2026, 9, day));
   }
   assert.equal(
     parsePlainDue("2026-10-20T14:00:00+02:00"),
@@ -185,13 +179,10 @@ test("date grammar uses local calendar boundaries, strict dates, ISO offsets and
     },
     now,
   ) as { input: Record<string, unknown>[] };
-  assert.equal(
-    normalized.input[0]?.occurredAt,
-    new Date(2026, 9, 27).getTime(),
-  );
+  assert.equal(normalized.input[0]?.occurredAt, Date.UTC(2026, 9, 27));
   assert.equal(
     normalized.input[0]?.dueAt,
-    new Date(2026, 9, 27, 23, 59, 59, 999).getTime(),
+    Date.UTC(2026, 9, 27, 23, 59, 59, 999),
   );
   assert.equal(normalized.input[0]?.note, "today");
 });
@@ -221,7 +212,7 @@ test("timestamp conversion covers flags, JSON, files and legacy calls before val
       assert.equal(result.code, 0, result.err);
       assert.equal(
         (result.captured?.input.input as { now: number }).now,
-        new Date(2026, 9, 27).getTime(),
+        Date.UTC(2026, 9, 27),
       );
     }
     const flags = await invoke([

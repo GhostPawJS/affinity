@@ -38,6 +38,9 @@ export function initLinkEventEffectsTables(db: AffinityDb): void {
     "CREATE INDEX IF NOT EXISTS idx_link_event_effects_link_time ON link_event_effects(link_id, occurred_at DESC, event_id DESC)",
   );
   db.exec(
+    "UPDATE link_event_effects SET counts_for_recency = 0 WHERE event_id IN (SELECT id FROM events WHERE type IN ('promise', 'agreement'))",
+  );
+  db.exec(
     "CREATE INDEX IF NOT EXISTS idx_link_event_effects_moment ON link_event_effects(moment_kind, occurred_at DESC, impact_score DESC) WHERE moment_kind IS NOT NULL",
   );
 }

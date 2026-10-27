@@ -4,7 +4,7 @@ import type { EventRow } from "../lib/types/event_row.ts";
 export function getEventRowById(db: AffinityDb, id: number): EventRow | null {
   const row = db
     .prepare(
-      `SELECT id, type, occurred_at, summary, significance, moment_kind,
+      `SELECT id, type, occurred_at, occurred_on, summary, significance, moment_kind,
               recurrence_kind, anchor_month, anchor_day,
               anchor_contact_id, anchor_link_id,
               created_at, updated_at, deleted_at
