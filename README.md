@@ -63,7 +63,7 @@ resolve against the current directory.
 
 A session with the linux-x64 binary against a fresh database:
 
-![ghostpaw-affinity session: version, contact create, identity add, event and commitment record, search, review commitments.open and show contact_profile](https://raw.githubusercontent.com/GhostPawJS/affinity/main/docs/assets/cli.png)
+![ghostpaw-affinity session: version, contact create, a tag, an event and a promise with relative dates, search, an overdue promise in review commitments.open, and the radar](https://raw.githubusercontent.com/GhostPawJS/affinity/main/docs/assets/cli.png)
 
 The same session as an [animated GIF](https://raw.githubusercontent.com/GhostPawJS/affinity/main/docs/assets/cli.gif).
 
