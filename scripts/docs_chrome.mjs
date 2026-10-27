@@ -48,7 +48,7 @@ export function addDocsChrome(html, { lib, layoutCss = "" }) {
   const gh = `https://github.com/GhostPawJS/${lib}`;
   const npm = `https://www.npmjs.com/package/@ghostpaw/${lib}`;
   const fontFace = font
-    ? `@font-face{font-family:Tektur;src:url("${font}") format("woff2");font-weight:500 900;font-stretch:75% 100%;font-style:normal;font-display:swap}`
+    ? `@font-face{font-family:Tektur;src:url("${font}") format("woff2");font-weight:500 900;font-stretch:75% 100%;font-style:normal;font-display:optional}`
     : "";
   const css = minifyCss(`${fontFace}
 :root{--gp-void:#04070b;--gp-rule:#1d2c3c;--gp-ghost:#e3edf5;--gp-haze:#93a5b9;--gp-spectral:#62e6f2;--gp-glow:rgba(98,230,242,.28);--gp-display:"Tektur",Bahnschrift,"Arial Narrow",sans-serif;--gp-body:system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}

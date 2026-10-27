@@ -52,11 +52,11 @@ async function writeHtmlShell() {
     <meta property="og:image:alt" content="A radar scope in cyan light with a ghost paw at its centre and one violet point drifting outward, beside the line: Who have you been meaning to call?" />
     <meta name="twitter:card" content="summary_large_image" />
     <!-- ghostpaw-docs-shell -->
-    <style>.pre{max-width:42rem;margin:4rem auto;padding:0 1.25rem;font:400 1rem/1.6 system-ui,sans-serif;color:#dce7f3}.pre h1{font-size:1.6rem;line-height:1.25;margin:0 0 .75rem}.pre a{color:#62e6f2}.pre li{margin:.25rem 0}#app:not(:empty)~.pre{display:none}@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}</style>
+    <style>.pre{max-width:42rem;min-height:100vh;margin:4rem auto;padding:0 1.25rem;font:400 1rem/1.6 system-ui,sans-serif;color:#dce7f3}.pre h1{font-size:1.6rem;line-height:1.25;margin:0 0 .75rem}.pre a{color:#62e6f2}.pre li{margin:.25rem 0}#app:not(:empty)~.pre{display:none}@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}</style>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><polygon points='16,2 28,10 28,22 16,30 4,22 4,10' fill='%233b82f6'/></svg>" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=optional" rel="stylesheet" />
     <style>
       :root {
         color-scheme: dark;
@@ -136,9 +136,11 @@ async function writeHtmlShell() {
 
       @media (max-width: 768px) {
         .demo-layout {
-          grid-template-columns: 1fr;
+          grid-template-columns: minmax(0, 1fr);
+          grid-template-rows: auto 1fr;
         }
         .demo-sidebar {
+          align-content: flex-start;
           position: static;
           height: auto;
           flex-direction: row;
@@ -268,12 +270,12 @@ async function writeHtmlShell() {
       }
       .button:hover { border-color: var(--text-tertiary); }
       .button.primary {
-        background: var(--accent);
-        border-color: var(--accent);
+        background: #2563eb;
+        border-color: #2563eb;
         color: #fff;
       }
       .button.primary:hover {
-        background: #2563eb;
+        background: #1d4ed8;
         box-shadow: 0 0 16px var(--accent-glow);
       }
       .button.secondary { background: var(--bg-elevated); }
@@ -342,13 +344,15 @@ async function writeHtmlShell() {
       /* ---- Page grid ---- */
       .page-grid {
         display: grid;
+        grid-template-columns: minmax(0, 1fr);
         gap: 18px;
       }
+      .page-grid > * { min-width: 0; }
       .page-grid.two {
         grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
       }
       @media (max-width: 768px) {
-        .page-grid.two { grid-template-columns: 1fr; }
+        .page-grid.two { grid-template-columns: minmax(0, 1fr); }
       }
 
       /* ---- Forms ---- */
@@ -622,6 +626,7 @@ async function writeHtmlShell() {
       /* ---- Tabs ---- */
       .tab-bar {
         display: flex;
+        flex-wrap: wrap;
         gap: 2px;
         border-radius: var(--radius-sm);
         background: rgba(15,23,42,0.5);
