@@ -110,6 +110,12 @@ curl -fsSL https://raw.githubusercontent.com/GhostPawJS/affinity/main/install.sh
 irm https://raw.githubusercontent.com/GhostPawJS/affinity/main/install.ps1 | iex
 ```
 
+A session with the 0.4.0 linux-x64 binary against a fresh database (output piped through `jq` to keep it short):
+
+![ghostpaw-affinity 0.4.0: version, contact create, identity add, event and commitment record, search, review commitments.open and show contact_profile](https://raw.githubusercontent.com/GhostPawJS/affinity/main/docs/assets/cli.png)
+
+The same session as an [animated GIF](https://raw.githubusercontent.com/GhostPawJS/affinity/main/docs/assets/cli.gif).
+
 Other release installers:
 
 ```sh
