@@ -27,6 +27,10 @@ export function normalizeTimeInputs(
   if (!value || typeof value !== "object") return value;
   const result: Record<string, unknown> = {};
   for (const [key, item] of Object.entries(value)) {
+    if (key === "occurredAt" && item === null)
+      throw new CliUsageError(
+        "occurredAt is required (ISO, YYYY-MM-DD, epoch ms, today, +3d …)",
+      );
     if (
       typeof item === "string" &&
       (key.endsWith("At") || ["asOf", "now", "since", "until"].includes(key))

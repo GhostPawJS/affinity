@@ -117,6 +117,8 @@ export interface ReviewAffinityToolData {
   view: ReviewAffinityToolView;
   items: ToolListItem[];
   count: number;
+  total?: number;
+  hasMore?: boolean;
   appliedFilters: Record<string, unknown>;
   chart?: AffinityChartRecord | undefined;
 }
@@ -430,6 +432,13 @@ export function reviewAffinityToolHandler(
   db: AffinityDb,
   rawInput: TimeInputs<ReviewAffinityToolInput>,
 ): ReviewAffinityToolResult {
+  return reviewPage(db, rawInput, false);
+}
+function reviewPage(
+  db: AffinityDb,
+  rawInput: TimeInputs<ReviewAffinityToolInput>,
+  pageOnly: boolean,
+): ReviewAffinityToolResult {
   const input = structuredClone(rawInput) as ReviewAffinityToolInput;
   const inputError = validateToolInput(reviewAffinityTool.inputSchema, input);
   if (inputError)
@@ -445,6 +454,47 @@ export function reviewAffinityToolHandler(
       return invalid;
     }
 
+    if (!pageOnly && input.view !== "graph.chart") {
+      const limit = input.limit ?? 50;
+      const offset = input.offset ?? 0;
+      if (
+        !Number.isInteger(limit) ||
+        limit < 1 ||
+        limit > 250 ||
+        !Number.isInteger(offset) ||
+        offset < 0
+      )
+        return toolFailure(
+          "protocol",
+          "invalid_input",
+          "Invalid pagination.",
+          "limit must be 1..250; offset must be non-negative",
+        );
+      const all: ToolListItem[] = [];
+      let page: ReviewAffinityToolResult;
+      do {
+        page = reviewPage(
+          db,
+          { ...input, limit: 250, offset: all.length },
+          true,
+        );
+        if (!page.ok) return page;
+        all.push(...page.data.items);
+      } while (page.data.items.length === 250);
+      const items = all.slice(offset, offset + limit);
+      return toolSuccess(
+        summarizeCount(items.length, "item"),
+        {
+          view: input.view,
+          items,
+          count: items.length,
+          total: all.length,
+          hasMore: offset + items.length < all.length,
+          appliedFilters: compactFilters(input),
+        },
+        { entities: items.map(({ content: _content, ...item }) => item) },
+      );
+    }
     const options = buildReadOptions(input);
     let items: ToolListItem[] = [];
     let chart: AffinityChartRecord | undefined;
@@ -888,7 +938,20 @@ export const reviewAffinityTool = defineAffinityTool<
       includeArchived: booleanSchema("Whether archived links are included."),
       includeObserved: booleanSchema("Whether observed links are included."),
       eventTypes: arraySchema(
-        stringSchema("Event type."),
+        enumSchema("Event type.", [
+          "conversation",
+          "activity",
+          "gift",
+          "support",
+          "milestone",
+          "observation",
+          "conflict",
+          "correction",
+          "transaction",
+          "promise",
+          "agreement",
+          "date_anchor",
+        ]),
         "Optional event-type filter.",
       ),
       momentKind: enumSchema("Optional moment kind filter.", [

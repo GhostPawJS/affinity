@@ -1,5 +1,14 @@
 # Identify And Locate Contacts
 
+Handle identities normalize leading @ and case. Bluesky uses a domain handle,
+X/Twitter uses 1–15 letters/digits/underscores, Mastodon uses user@host.tld.
+Native did (alias atproto_did) validates did:<method>:<identifier>; legacy
+custom:atproto-did locators find the same identity. Keep old handles as identities.
+An owned identity makes contact creation fail atomically with conflict and
+existingContactId. input.ifExists="return" returns the matching contact and
+matchedIdentities without attaching any free identities. CLI: --if-exists return.
+Name-only possible duplicates still warn. Search @handle is always literal.
+
 Primary tools:
 - `search_affinity`
 - `inspect_affinity_item`

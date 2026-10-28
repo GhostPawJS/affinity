@@ -5,6 +5,7 @@ export interface SocialEventParticipantInput {
   contactId: number;
   role: EventParticipantRole;
   directionality?:
+    | undefined
     | "owner_initiated"
     | "other_initiated"
     | "mutual"
@@ -17,6 +18,7 @@ export interface SocialEventInput {
   occurredOn?: string;
   summary?: string;
   content?: string;
+  affectsBond?: boolean;
   externalRef?: ExternalRef;
   channel?: string;
   parentRef?: ExternalRef;

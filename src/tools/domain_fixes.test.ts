@@ -25,7 +25,7 @@ function error(
   assert.match(result.error.message, pattern);
 }
 
-test("create warns for folded names and shared identities while keeping identity ownership", async () => {
+test("create warns for folded names and refuses shared identities while keeping ownership", async () => {
   const db = await createInitializedAffinityDb();
   try {
     const jana = createContact(db, {
@@ -57,23 +57,20 @@ test("create warns for folded names and shared identities while keeping identity
         ],
       },
     });
-    assert.ok(shared.ok);
-    assert.equal(shared.warnings?.[0]?.contactId, jana.id);
-    assert.equal(shared.warnings?.[0]?.score, 1);
+    assert.equal(shared.ok, false);
+    if (shared.ok || shared.outcome !== "error")
+      throw new Error("expected conflict");
+    assert.equal(shared.error.code, "conflict");
+    assert.equal(shared.data?.existingContactId, jana.id);
+    assert.equal(db.prepare("SELECT COUNT(*) AS n FROM contacts").get()?.n, 2);
     assert.equal(
-      db
-        .prepare("SELECT contact_id FROM identities WHERE value = 'jana@x.de'")
-        .get()?.contact_id,
-      jana.id,
-    );
-    assert.equal(
-      shared.data.created.filter((ref) => ref.kind === "identity").length,
+      db.prepare("SELECT COUNT(*) AS n FROM identities").get()?.n,
       1,
     );
     error(
       manageIdentityToolHandler(db, {
         action: "add",
-        contact: { contactId: shared.data.primary.id },
+        contact: { contactId: duplicate.data.primary.id },
         input: { type: "email", value: "jana@x.de" },
       }),
       new RegExp(

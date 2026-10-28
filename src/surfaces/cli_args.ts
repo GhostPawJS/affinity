@@ -16,6 +16,11 @@ export interface CliArgument {
   required?: boolean;
   variadic?: boolean;
   itemType?: CliValueType;
+  /**
+   * Opt in to file values: `@path` reads the file as UTF-8, `@-` reads stdin and `@@text`
+   * passes `@text`. Without it every value is literal, including a leading `@`.
+   */
+  file?: boolean;
 }
 export interface CliSpec {
   command: string;
@@ -25,6 +30,23 @@ export interface CliSpec {
 }
 export class CliUsageError extends Error {
   readonly exitCode = 2;
+}
+/** Resolves a value for a file-capable argument; see {@link CliArgument.file}. */
+export function readFileValue(raw: string, name: string): string {
+  if (!raw.startsWith("@")) return raw;
+  if (raw.startsWith("@@")) return raw.slice(1);
+  const path = raw.slice(1);
+  if (!path)
+    throw new CliUsageError(
+      `Empty file path for ${name}; use @@ for a literal leading @`,
+    );
+  try {
+    return readFileSync(path === "-" ? 0 : path, "utf8");
+  } catch {
+    throw new CliUsageError(
+      `Cannot read value file for ${name}: ${path} (use @@ for a literal leading @)`,
+    );
+  }
 }
 const keyOf = (name: string) =>
   name.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
@@ -36,14 +58,8 @@ export function parseCliArgs(
   const positions: string[] = [];
   const flags = spec.flags ?? [];
   const convert = (raw: string, arg: CliArgument): unknown => {
-    let value = raw;
-    if (raw.startsWith("@")) {
-      try {
-        value = readFileSync(raw.slice(1), "utf8");
-      } catch {
-        throw new CliUsageError(`Cannot read value file: ${raw.slice(1)}`);
-      }
-    }
+    let value = arg.file ? readFileValue(raw, arg.name) : raw;
+    if (value === "-" && arg.type === "json") value = readFileSync(0, "utf8");
     let result: unknown = value;
     if (arg.type === "number" || arg.type === "integer") {
       result = Number(value);
@@ -115,8 +131,29 @@ export function parseCliArgs(
     }
     const key = keyOf(arg.name);
     if (arg.type === "array") {
-      const item = convert(raw, { ...arg, type: arg.itemType ?? "string" });
-      values[key] = [...((values[key] as unknown[]) ?? []), item];
+      let entries: unknown[];
+      const text = arg.file ? readFileValue(raw, arg.name) : raw;
+      if (text.trimStart().startsWith("[")) {
+        try {
+          entries = JSON.parse(text);
+        } catch {
+          throw new CliUsageError(`Invalid JSON array for ${arg.name}`);
+        }
+      } else if (arg.itemType === "json") {
+        try {
+          entries = [JSON.parse(text)];
+        } catch {
+          throw new CliUsageError(`Invalid JSON for ${arg.name}`);
+        }
+      } else entries = text.split(",").map((item) => item.trim());
+      const items = entries.map((item) =>
+        convert(typeof item === "string" ? item : JSON.stringify(item), {
+          ...arg,
+          type: arg.itemType ?? "string",
+          file: false,
+        }),
+      );
+      values[key] = [...((values[key] as unknown[]) ?? []), ...items];
     } else values[key] = convert(raw, arg);
   }
   let index = 0;
@@ -141,6 +178,6 @@ export function parseCliArgs(
 }
 export function renderCliHelp(spec: CliSpec): string {
   const describe = (arg: CliArgument) =>
-    `${arg.type}${arg.enum ? ` (${arg.enum.join("|")})` : ""}${arg.required ? " required" : ""}  ${arg.description ?? ""}`;
+    `${arg.type}${arg.enum ? ` (${arg.enum.join("|")})` : ""}${arg.required ? " required" : ""}${arg.file ? " (@file, @- stdin, @@ literal @)" : ""}  ${arg.description ?? ""}`;
   return `Usage: ${spec.command} ${(spec.positionals ?? []).map((arg) => `<${arg.name}${arg.variadic ? "..." : ""}>`).join(" ")} [flags]\n${spec.description ?? ""}\n\nPositionals:\n${(spec.positionals ?? []).map((arg) => `  ${arg.name}  ${describe(arg)}`).join("\n")}\nFlags:\n${(spec.flags ?? []).map((arg) => `  --${arg.name}${arg.short ? `, -${arg.short}` : ""}  ${describe(arg)}`).join("\n")}\n`;
 }

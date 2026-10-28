@@ -265,6 +265,11 @@ function deriveMomentKind(params: {
   affinityDelta: number;
   trustDelta: number;
 }): DerivedLinkEffect["momentKind"] {
+  if (
+    params.eventType === "observation" ||
+    (params.eventType === "milestone" && params.significance < 7)
+  )
+    return null;
   if (params.rankAfter > params.rankBefore) {
     return "breakthrough";
   }
@@ -388,7 +393,8 @@ export function applyEventEffectToLink(
     massPenalty(
       weeklyPositiveBaseWeight(db, params.linkId, params.occurredAt),
     ) *
-    salienceMultiplier;
+    salienceMultiplier *
+    (params.participant.directionality === "owner_initiated" ? 0.05 : 1);
   const affinityGain =
     weightedBase *
     Math.max(eventValence, 0) *
@@ -511,16 +517,27 @@ export function applyEventEffectToLink(
   }
   const affinityDelta = affinityAfter - affinityBefore;
   const trustDelta = trustAfter - trustBefore;
-  const momentKind = deriveMomentKind({
-    rankBefore,
-    rankAfter,
-    stateBefore,
-    stateAfter,
-    eventType: params.eventType,
-    significance: params.significance,
-    affinityDelta,
-    trustDelta,
-  });
+  const eventLabel = db
+    .prepare("SELECT summary FROM events WHERE id=?")
+    .get(params.eventId)?.summary;
+  const followLike =
+    params.eventType === "milestone" &&
+    typeof eventLabel === "string" &&
+    /^(?:follow(?:ed|ing)?|like(?:d)?|repost(?:ed)?)(?:\b|[-_])/i.test(
+      eventLabel,
+    );
+  const momentKind = followLike
+    ? null
+    : deriveMomentKind({
+        rankBefore,
+        rankAfter,
+        stateBefore,
+        stateAfter,
+        eventType: params.eventType,
+        significance: params.significance,
+        affinityDelta,
+        trustDelta,
+      });
   validateRelationalMechanics(rankAfter, affinityAfter, trustAfter, stateAfter);
   db.prepare(
     `UPDATE links
@@ -565,7 +582,8 @@ export function applyEventEffectToLink(
   if (
     (commitmentResolution !== undefined && commitmentResolution !== null) ||
     params.eventType === "promise" ||
-    params.eventType === "agreement"
+    params.eventType === "agreement" ||
+    params.participant.directionality === "owner_initiated"
   ) {
     db.prepare(
       "UPDATE link_event_effects SET counts_for_recency = 0 WHERE event_id = ? AND link_id = ?",

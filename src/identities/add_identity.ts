@@ -2,7 +2,11 @@ import { getContactRowById } from "../contacts/queries.ts";
 import { refreshContactRollup } from "../contacts/rollups.ts";
 import type { AffinityDb } from "../database.ts";
 import { mapIdentityRowToIdentityRecord } from "../identities/mappers.ts";
-import { normalizeIdentityKey } from "../identities/normalize.ts";
+import {
+  legacyIdentityKey,
+  normalizeIdentityKey,
+  normalizeIdentityValue,
+} from "../identities/normalize.ts";
 import { getIdentityRowById } from "../identities/queries.ts";
 import { buildIdentityMutationReceipt } from "../identities/receipts.ts";
 import { assertNoIdentityCollision } from "../identities/validators.ts";
@@ -30,12 +34,32 @@ export function addIdentity(
       throw new AffinityStateError("merged contact is read-only");
     }
     const type = input.type.trim();
-    const value = input.value.trim();
+    const value = normalizeIdentityValue(type, input.value);
     if (type.length === 0 || value.length === 0) {
       throw new AffinityValidationError("type and value must be non-empty");
     }
     validateIdentityInput(type, value);
+    if (
+      input.ifExists !== undefined &&
+      !["error", "return"].includes(input.ifExists)
+    )
+      throw new AffinityValidationError("ifExists must be error or return");
     const nk = normalizeIdentityKey(type, value);
+    if (input.ifExists === "return") {
+      const existing = db
+        .prepare(
+          "SELECT id FROM identities WHERE contact_id=? AND (normalized_key IN (?, ?) OR (type='custom:atproto-did' AND ? = 'did:' || lower(value))) AND removed_at IS NULL",
+        )
+        .get(contactId, nk, legacyIdentityKey(nk), nk);
+      if (existing) {
+        const row = getIdentityRowById(db, Number(existing.id));
+        if (row)
+          return buildIdentityMutationReceipt(
+            mapIdentityRowToIdentityRecord(row),
+            {},
+          );
+      }
+    }
     assertNoIdentityCollision(db, nk);
     const now = resolveNow(input.now);
     const verified = input.verified ? 1 : 0;

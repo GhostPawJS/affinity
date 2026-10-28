@@ -22,7 +22,10 @@ export interface MutationReceipt<TPrimary> {
   derivedEffects: DerivedLinkEffect[];
 }
 
-export type ContactMutationReceipt = MutationReceipt<ContactListItem>;
+export type ContactMutationReceipt = MutationReceipt<ContactListItem> & {
+  outcome?: "success" | "no_op";
+  matchedIdentities?: import("./add_identity_input.ts").AddIdentityInput[];
+};
 export type IdentityMutationReceipt = MutationReceipt<IdentityRecord>;
 export type LinkMutationReceipt = MutationReceipt<LinkListItem>;
 export type EventMutationReceipt = MutationReceipt<EventRecord> & {

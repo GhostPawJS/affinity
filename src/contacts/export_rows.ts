@@ -16,6 +16,7 @@ export function exportRows(
           letter.toUpperCase(),
         );
         result[name] = [
+          "affects_bond",
           "is_owner",
           "is_structural",
           "verified",

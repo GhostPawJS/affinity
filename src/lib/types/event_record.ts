@@ -15,6 +15,7 @@ export interface EventRecord {
   threadRef?: import("./social_event_input.ts").ExternalRef;
   attributes?: import("./attribute_record.ts").AttributeRecord[];
   id: number;
+  affectsBond?: boolean;
   type: EventType;
   occurredAt: number;
   occurredOn?: string;

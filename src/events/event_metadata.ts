@@ -31,6 +31,8 @@ export function deriveEventSummary(content: string): string {
   return line.length > 140 ? `${line.slice(0, 139)}…` : line;
 }
 export function validateEventMetadata(input: Partial<SocialEventInput>): void {
+  if (input.affectsBond !== undefined && typeof input.affectsBond !== "boolean")
+    throw new AffinityValidationError("affectsBond must be boolean");
   if (
     input.content !== undefined &&
     (typeof input.content !== "string" ||
@@ -101,6 +103,13 @@ export function existingEventReceipt(db: AffinityDb, ref?: ExternalRef) {
     : null;
 }
 export function enrichEventMetadata(db: AffinityDb, record: EventRecord): void {
+  const bond = db
+    .prepare("SELECT affects_bond FROM events WHERE id=?")
+    .get(record.id);
+  record.affectsBond =
+    bond?.affects_bond == null
+      ? !(record.type === "observation" && record.significance <= 2)
+      : Boolean(bond.affects_bond);
   if (record.parentEventId === undefined && record.parentRef) {
     const row = db
       .prepare(

@@ -40,6 +40,8 @@ export interface SearchAffinityToolData {
   query: string;
   items: ReturnType<typeof toContactListToolItem>[];
   count: number;
+  total?: number;
+  hasMore?: boolean;
 }
 
 export type SearchAffinityToolResult = ToolResult<SearchAffinityToolData>;
@@ -47,6 +49,13 @@ export type SearchAffinityToolResult = ToolResult<SearchAffinityToolData>;
 export function searchAffinityToolHandler(
   db: AffinityDb,
   rawInput: TimeInputs<SearchAffinityToolInput>,
+): SearchAffinityToolResult {
+  return searchPage(db, rawInput, false);
+}
+function searchPage(
+  db: AffinityDb,
+  rawInput: TimeInputs<SearchAffinityToolInput>,
+  pageOnly: boolean,
 ): SearchAffinityToolResult {
   const input = structuredClone(rawInput) as SearchAffinityToolInput;
   const inputError = validateToolInput(searchAffinityTool.inputSchema, input);
@@ -58,6 +67,61 @@ export function searchAffinityToolHandler(
       inputError,
     );
   return withToolHandling<SearchAffinityToolData>(() => {
+    if (!pageOnly) {
+      const limit = input.limit ?? 50;
+      const offset = input.offset ?? 0;
+      if (
+        !Number.isInteger(limit) ||
+        limit < 1 ||
+        limit > 250 ||
+        !Number.isInteger(offset) ||
+        offset < 0
+      )
+        return invalidToolInput(
+          "protocol",
+          "invalid_input",
+          "Invalid pagination.",
+          "limit must be 1..250; offset must be non-negative",
+        );
+      const all: SearchAffinityToolData["items"] = [];
+      const scopes =
+        input.scope === "all"
+          ? (["contacts", "events"] as const)
+          : [input.scope ?? "contacts"];
+      for (const scope of scopes) {
+        let page: SearchAffinityToolResult;
+        let nextOffset = 0;
+        do {
+          page = searchPage(
+            db,
+            { ...input, scope, limit: 250, offset: nextOffset },
+            true,
+          );
+          if (!page.ok) return page;
+          all.push(...page.data.items);
+          nextOffset += page.data.count;
+        } while (page.data.count === 250);
+      }
+      const items = all.slice(offset, offset + limit);
+      return toolSuccess(
+        summarizeCount(
+          items.length,
+          input.scope === "events"
+            ? "event"
+            : input.scope === "all"
+              ? "item"
+              : "contact",
+        ),
+        {
+          query: input.query,
+          items,
+          count: items.length,
+          total: all.length,
+          hasMore: offset + items.length < all.length,
+        },
+        { entities: items },
+      );
+    }
     const options = {
       ...(input.limit === undefined ? {} : { limit: input.limit }),
       ...(input.offset === undefined ? {} : { offset: input.offset }),

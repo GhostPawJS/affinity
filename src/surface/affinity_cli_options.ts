@@ -42,6 +42,10 @@ export const affinityCliOptions: ToolCliOptions<AffinityDb> = {
   },
   closeContext: (db) => db.close(),
   commands: {
+    batch: async (args, options) => {
+      const { runAffinityBatch } = await import("./affinity_batch.ts");
+      return runAffinityBatch(args, options);
+    },
     mcp: async (options) => {
       const { serveAffinityMcp } = await import("./serve_affinity_mcp.ts");
       await serveAffinityMcp(

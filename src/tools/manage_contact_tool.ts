@@ -235,7 +235,11 @@ export const manageContactTool = defineAffinityTool<
               },
               ["type", "value"],
             ),
-            "Optional identities to attach. Identities already owned by another contact are left with that owner and reported as possible duplicates.",
+            "Optional identities to attach. An identity owned by another live contact causes a conflict, or returns that contact when ifExists=return.",
+          ),
+          ifExists: enumSchema(
+            "Identity collision policy; return attaches nothing.",
+            ["error", "return"],
           ),
           name: stringSchema("Contact name."),
           kind: enumSchema("Contact kind.", [

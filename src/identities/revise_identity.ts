@@ -1,7 +1,10 @@
 import { getContactRowById } from "../contacts/queries.ts";
 import type { AffinityDb } from "../database.ts";
 import { mapIdentityRowToIdentityRecord } from "../identities/mappers.ts";
-import { normalizeIdentityKey } from "../identities/normalize.ts";
+import {
+  normalizeIdentityKey,
+  normalizeIdentityValue,
+} from "../identities/normalize.ts";
 import { getIdentityRowById } from "../identities/queries.ts";
 import { buildIdentityMutationReceipt } from "../identities/receipts.ts";
 import { assertNoIdentityCollision } from "../identities/validators.ts";
@@ -41,8 +44,10 @@ export function reviseIdentity(
       });
     }
     const nextType = patch.type !== undefined ? patch.type.trim() : row.type;
-    const nextValue =
-      patch.value !== undefined ? patch.value.trim() : row.value;
+    const nextValue = normalizeIdentityValue(
+      nextType,
+      patch.value ?? row.value,
+    );
     if (nextType.length === 0 || nextValue.length === 0) {
       throw new AffinityValidationError("type and value must be non-empty");
     }

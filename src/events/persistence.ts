@@ -14,6 +14,7 @@ export function insertJournalEvent(
     occurredOn?: string | undefined;
     summary?: string;
     content?: string;
+    affectsBond?: boolean;
     externalRef?: import("../lib/types/social_event_input.ts").ExternalRef;
     channel?: string;
     parentRef?: import("../lib/types/social_event_input.ts").ExternalRef;
@@ -47,6 +48,14 @@ export function insertJournalEvent(
       now,
     );
   const eventId = Number(result.lastInsertRowid);
+  db.prepare("UPDATE events SET affects_bond=? WHERE id=?").run(
+    params.affectsBond === undefined
+      ? params.type === "observation" && params.significance <= 2
+        ? 0
+        : 1
+      : Number(params.affectsBond),
+    eventId,
+  );
   db.prepare("UPDATE events SET declared_moment_kind=? WHERE id=?").run(
     params.momentKind,
     eventId,

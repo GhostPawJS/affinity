@@ -1,3 +1,4 @@
+import type { AddIdentityInput } from "../lib/types/add_identity_input.ts";
 import type { MutationReceipt } from "../lib/types/mutation_receipt.ts";
 import { toReceiptEntityRefs } from "./tool_ref.ts";
 import { type ToolResult, toolNoOp, toolSuccess } from "./tool_types.ts";
@@ -6,6 +7,7 @@ export interface MutationToolData<TPrimary> {
   changes: { entity: string; id: number; action: string; fields?: string[] }[];
   action: string;
   primary: TPrimary;
+  matchedIdentities?: AddIdentityInput[];
   created: MutationReceipt<TPrimary>["created"];
   updated: MutationReceipt<TPrimary>["updated"];
   archived: MutationReceipt<TPrimary>["archived"];

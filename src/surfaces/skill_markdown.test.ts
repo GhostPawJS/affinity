@@ -47,7 +47,7 @@ test("skill output has deterministic frontmatter, CLI, MCP and references", () =
   for (const expected of [
     "MCP:",
     "example call <tool>",
-    "references/search.md",
+    "example skill search",
     "Read-only.",
     "| mode | string | yes | a, b.",
     "Search first.",

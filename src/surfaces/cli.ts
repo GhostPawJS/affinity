@@ -1,7 +1,6 @@
-import { readFileSync } from "node:fs";
 import { type Readable, Writable } from "node:stream";
-import { CliUsageError } from "./cli_args.ts";
-import { runCliCommand } from "./cli_commands.ts";
+import { CliUsageError, readFileValue } from "./cli_args.ts";
+import { FILE_ARGS, runCliCommand } from "./cli_commands.ts";
 import { cliExitCode, humanResult, plainJson } from "./cli_output.ts";
 import type { JsonSchema, SurfaceTool } from "./surface_types.ts";
 import { validateInput } from "./validate_input.ts";
@@ -27,6 +26,15 @@ export interface ToolCliOptions<TCtx> {
   commands?: {
     mcp?: (opts: { db?: string }) => unknown | Promise<unknown>;
     skill?: (args?: string[]) => string | Promise<string>;
+    batch?: (
+      args: string[],
+      options: {
+        db?: string;
+        stdin: Readable;
+        stdout: Writable;
+        stderr: Writable;
+      },
+    ) => Promise<number>;
   };
   stdin?: Readable & { isTTY?: boolean };
   stdout?: Writable;
@@ -133,6 +141,15 @@ async function runToolCliInternal<TCtx>(
     );
     return 0;
   }
+  if (command === "batch") {
+    if (!options.commands?.batch) return fail("batch command unavailable");
+    return options.commands.batch(args, {
+      ...ctxOptions,
+      stdin,
+      stdout,
+      stderr,
+    });
+  }
   if (command === "skill") {
     if (!options.commands?.skill) return fail("skill command unavailable");
     try {
@@ -182,9 +199,9 @@ async function runToolCliInternal<TCtx>(
       input = JSON.parse(
         raw === "-" || (raw === undefined && !stdin.isTTY)
           ? await readStdin()
-          : raw?.startsWith("@")
-            ? readFileSync(raw.slice(1), "utf8")
-            : (raw ?? "{}"),
+          : raw === undefined
+            ? "{}"
+            : readFileValue(raw, "call input"),
       );
     } else {
       const values: Record<string, unknown> = {};
@@ -227,7 +244,7 @@ async function runToolCliInternal<TCtx>(
         );
         if (!property) return fail(`Unknown parameter: ${key}`);
         const schema = tool.inputSchema.properties?.[property] as JsonSchema;
-        const raw =
+        let raw =
           equal === -1
             ? schema.type === "boolean" &&
               (!args[0] || args[0].startsWith("--"))
@@ -235,11 +252,22 @@ async function runToolCliInternal<TCtx>(
               : args.shift()
             : flag.slice(equal + 1);
         if (raw === undefined) return fail(`Missing value: ${key}`);
-        if (schema.type === "array" && !raw.startsWith("[")) {
+        if (
+          raw === "-" &&
+          (schema.type === "object" ||
+            schema.type === "array" ||
+            schema.oneOf ||
+            schema.anyOf)
+        )
+          raw = await readStdin();
+        else if (FILE_ARGS.has(property)) raw = readFileValue(raw, property);
+        if (schema.type === "array") {
           const prior = values[property];
           values[property] = [
             ...(Array.isArray(prior) ? prior : []),
-            coerce(raw, schema.items ?? {}),
+            ...(raw.startsWith("[")
+              ? JSON.parse(raw)
+              : raw.split(",").map((item) => coerce(item, schema.items ?? {}))),
           ];
         } else
           values[property] =
@@ -311,12 +339,13 @@ export async function runToolCli<TCtx>(
   try {
     return await runToolCliInternal(argv, options);
   } catch (error) {
-    const message = `internal error: ${error instanceof Error ? error.message : String(error)}`;
+    const code = error instanceof CliUsageError ? 2 : 70;
+    const message = `${code === 70 ? "internal error: " : ""}${error instanceof Error ? error.message : String(error)}`;
     (options.stderr ?? process.stderr).write(`${message}\n`);
     if (argv.includes("--json") && !argv.includes("--quiet"))
       (options.stdout ?? process.stdout).write(
         `${JSON.stringify({ ok: false, error: { code: "internal_error", message } })}\n`,
       );
-    return 70;
+    return code;
   }
 }

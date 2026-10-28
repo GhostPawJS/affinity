@@ -1,6 +1,9 @@
 import { getContactRowById } from "../contacts/queries.ts";
 import type { AffinityDb } from "../database.ts";
-import { normalizeIdentityKey } from "../identities/normalize.ts";
+import {
+  legacyIdentityKey,
+  normalizeIdentityKey,
+} from "../identities/normalize.ts";
 import type { AffinityError } from "../lib/errors/affinity_error.ts";
 import { isAffinityError } from "../lib/errors/is_affinity_error.ts";
 import type { ContactRow } from "../lib/types/contact_row.ts";
@@ -95,10 +98,14 @@ export function resolveContactLocator(
        INNER JOIN contacts c ON c.id = i.contact_id
        WHERE i.removed_at IS NULL
          AND c.deleted_at IS NULL
-         AND i.normalized_key = ?
+         AND (i.normalized_key IN (?, ?) OR (i.type = 'custom:atproto-did' AND ? = 'did:' || lower(i.value)))
        LIMIT 2`,
     )
-    .all(normalizedKey) as unknown as ContactRow[];
+    .all(
+      normalizedKey,
+      legacyIdentityKey(normalizedKey),
+      normalizedKey,
+    ) as unknown as ContactRow[];
   if (row.length === 0) {
     return {
       ok: false,
@@ -261,13 +268,28 @@ export function mapErrorToToolFailure(
   error: unknown,
   summary = "The tool failed.",
 ): ToolFailure {
+  if (
+    error &&
+    typeof error === "object" &&
+    "ok" in error &&
+    error.ok === false &&
+    "outcome" in error &&
+    error.outcome === "error"
+  )
+    return error as ToolFailure;
   if (isAffinityError(error)) {
-    return toolFailure(
+    const result = toolFailure(
       "domain",
       affinityErrorCodeToToolCode(error),
       summary,
       error.message,
     );
+    const id = (error as { existingContactId?: number }).existingContactId;
+    if (id !== undefined) {
+      result.data = { existingContactId: id };
+      result.error.details = { existingContactId: id };
+    }
+    return result;
   }
   if (error instanceof Error) {
     return toolFailure("system", "system_error", summary, error.message);

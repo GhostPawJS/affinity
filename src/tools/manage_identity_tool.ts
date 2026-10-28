@@ -44,6 +44,10 @@ function contactLocatorSchema(description: string) {
       contactId: integerSchema("Exact contact id."),
       identity: objectSchema(
         {
+          ifExists: enumSchema(
+            "Return an existing identity on this contact without changes.",
+            ["error", "return"],
+          ),
           type: stringSchema(
             `Identity type: ${identityTypes.join(", ")}, or custom:<name> (lowercase a-z, 0-9, underscore or hyphen).`,
           ),
@@ -152,6 +156,10 @@ export const manageIdentityTool = defineAffinityTool<
       ),
       input: objectSchema(
         {
+          ifExists: enumSchema(
+            "Return an existing identity on this contact without changes.",
+            ["error", "return"],
+          ),
           type: stringSchema(
             `Identity type: ${identityTypes.join(", ")}, or custom:<name> (lowercase a-z, 0-9, underscore or hyphen).`,
           ),

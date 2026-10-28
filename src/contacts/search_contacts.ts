@@ -15,7 +15,7 @@ export function searchContacts(
   filters?: ListContactsFilters,
   options?: AffinityListReadOptions,
 ): ContactListItem[] {
-  const q = foldSearchText(query.trim());
+  const q = foldSearchText(query.trim().replace(/^@/, ""));
   if (!q) return [];
   assertDefaultOrdering("searchContacts", options);
   const { limit, offset } = resolveListLimitOffset(options);

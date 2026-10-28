@@ -15,6 +15,9 @@ import {
 import type { JsonSchema, SurfaceTool } from "./surface_types.ts";
 import { validateInput } from "./validate_input.ts";
 
+/** JSON payload bodies accept `@path`, `@-` and `@@`; every other value is literal. */
+export const FILE_ARGS: ReadonlySet<string> = new Set(["input", "patch"]);
+
 export function cliCommands<T>(tools: readonly SurfaceTool<T>[]) {
   return tools.flatMap((tool) => {
     const split = tool.name.indexOf("_");
@@ -70,7 +73,7 @@ export async function runCliCommand<T>(
       );
     return code;
   };
-  const legacy = ["tools", "describe", "call", "mcp", "skill"];
+  const legacy = ["tools", "describe", "call", "mcp", "skill", "batch"];
   let first: string | undefined;
   for (let i = 0; i < argv.length; i++) {
     const token = argv[i] as string;
@@ -140,6 +143,7 @@ export async function runCliCommand<T>(
     ): CliSpec => {
       const argument = (name: string, schema: JsonSchema): CliArgument => ({
         name,
+        ...(FILE_ARGS.has(name) ? { file: true } : {}),
         type:
           options.transformInput && /(?:At|-at)$|^(asOf|as-of|now)$/.test(name)
             ? "string"
@@ -177,20 +181,33 @@ export async function runCliCommand<T>(
               }
             : {}),
         })),
-        flags: Object.entries(properties)
-          .filter(
-            ([name]) =>
-              !(name in command.fixed) &&
-              (!forHelp || !command.fields || command.fields.includes(name)),
-          )
-          .map(([name, schema]) => ({
-            ...argument(
-              name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`),
-              schema,
-            ),
-            required: forHelp && isRequired(command, name),
-            description: `${forHelp ? (schema.description?.replace(/Required when action=[^.]+\. ?/g, "") ?? "") : (schema.description ?? "")}${command.tool.inputSchema.required?.includes(name) ? " (required)" : ""}`,
-          })),
+        flags: [
+          ...(command.path === "contact create"
+            ? [
+                {
+                  name: "if-exists",
+                  type: "string" as const,
+                  enum: ["error", "return"],
+                  description:
+                    "Identity conflict policy (default error). Return attaches nothing.",
+                },
+              ]
+            : []),
+          ...Object.entries(properties)
+            .filter(
+              ([name]) =>
+                !(name in command.fixed) &&
+                (!forHelp || !command.fields || command.fields.includes(name)),
+            )
+            .map(([name, schema]) => ({
+              ...argument(
+                name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`),
+                schema,
+              ),
+              required: forHelp && isRequired(command, name),
+              description: `${forHelp ? (schema.description?.replace(/Required when action=[^.]+\. ?/g, "") ?? "") : (schema.description ?? "")}${command.tool.inputSchema.required?.includes(name) ? " (required)" : ""}`,
+            })),
+        ],
       };
     };
     if (help) {
@@ -279,6 +296,21 @@ export async function runCliCommand<T>(
       );
     }
     const rest = args.slice(entry.path.split(" ").length);
+    let ifExists: string | undefined;
+    if (entry.path === "contact create") {
+      const index = rest.findIndex(
+        (arg) => arg === "--if-exists" || arg.startsWith("--if-exists="),
+      );
+      if (index >= 0) {
+        const inline = rest[index]?.startsWith("--if-exists=");
+        ifExists = inline
+          ? rest[index]?.slice("--if-exists=".length)
+          : rest[index + 1];
+        if (!ifExists)
+          throw new CliUsageError("--if-exists requires error or return");
+        rest.splice(index, inline ? 1 : 2);
+      }
+    }
     let base: unknown = {};
     const spec = specFor(entry);
     const positionalIndexes: number[] = [];
@@ -345,11 +377,18 @@ export async function runCliCommand<T>(
       );
       if (!schema || !flag || flag.type === "boolean") continue;
       const raw = equal < 0 ? rest[i + 1] : token.slice(equal + 1);
+      if (raw === "-" && (flag.type === "json" || flag.type === "array")) {
+        let text = "";
+        for await (const chunk of stdin) text += String(chunk);
+        if (equal < 0) rest[i + 1] = text;
+        else rest[i] = `${token.slice(0, equal + 1)}${text}`;
+      }
       if (
         raw !== undefined &&
+        raw !== "-" &&
         flag.type === "json" &&
         acceptsString(schema) &&
-        !raw.startsWith("@")
+        !(flag.file && raw.startsWith("@"))
       ) {
         try {
           JSON.parse(raw);
@@ -365,6 +404,8 @@ export async function runCliCommand<T>(
       ...parseCliArgs(rest, spec),
       ...entry.fixed,
     };
+    if (ifExists !== undefined)
+      input.input = { ...(input.input as object), ifExists };
     for (const [key, schema] of Object.entries(
       entry.tool.inputSchema.properties ?? {},
     )) {

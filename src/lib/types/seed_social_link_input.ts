@@ -2,6 +2,7 @@ import type { LinkState, RelationalLinkKind } from "../../links/types.ts";
 
 /** Arguments for `write.seedSocialLink`. */
 export interface SeedSocialLinkInput {
+  ifExists?: "error" | "return";
   fromContactId: number;
   toContactId: number;
   kind: RelationalLinkKind;

@@ -6,6 +6,11 @@ export const reviewRadarProgressionAndGraphSkill = defineAffinitySkill({
     "Use the review surfaces to prioritize maintenance, understand progression readiness, and read the shape of the relationship graph without guessing from raw rows.",
   content: `# Review Radar, Progression, And Graph
 
+List reviews accept limit (default 50, maximum 250) and offset. Results include
+total and hasMore; continue paging while hasMore is true. Event type array flags
+accept JSON arrays, comma lists, or repeated --event-types flags; invalid types
+report allowed values with exit 2. Use skill --short for a compact CLI reference.
+
 CLI and MCP share epoch ms, ISO with Z/offset, YYYY-MM-DD, DD.MM.YYYY,
 today/yesterday/tomorrow and signed day offsets (+3d/-2d).
 Date-only values keep their day with UTC boundaries; keywords use the process

@@ -24,6 +24,11 @@ export function seedSocialLink(
   input: SeedSocialLinkInput,
 ): LinkMutationReceipt {
   return withTransaction(db, () => {
+    if (
+      input.ifExists !== undefined &&
+      !["error", "return"].includes(input.ifExists)
+    )
+      throw new AffinityValidationError("ifExists must be error or return");
     if (!isRelationalLinkKind(input.kind)) {
       throw new AffinityValidationError("invalid relational link kind");
     }
@@ -31,13 +36,14 @@ export function seedSocialLink(
       throw new AffinityValidationError("from and to contacts must differ");
     }
     assertContactEndpointsNotMerged(db, input.fromContactId, input.toContactId);
-    if (
-      findLiveRelationalLinkAnyDirection(
-        db,
-        input.fromContactId,
-        input.toContactId,
-      )
-    ) {
+    const existing = findLiveRelationalLinkAnyDirection(
+      db,
+      input.fromContactId,
+      input.toContactId,
+    );
+    if (existing) {
+      if (input.ifExists === "return")
+        return buildLinkMutationReceipt(mapLinkRowToLinkListItem(existing), {});
       throw new AffinityConflictError(
         "relational link already exists between these contacts",
       );

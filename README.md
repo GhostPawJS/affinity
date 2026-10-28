@@ -622,3 +622,92 @@ If this package helps your project, consider sponsoring its maintenance:
 ---
 
 **[Anonyfox](https://anonyfox.com) • [MIT License](LICENSE)**
+
+### Social imports and batch writes
+
+Contact creation accepts `identities` and `ifExists: "error" | "return"` in the
+library and tools. Identity ownership conflicts fail atomically (CLI exit 4),
+including `data.existingContactId` and `error.details.existingContactId` in tool
+results. `contact create '<JSON>' --if-exists return` returns the existing contact
+with `outcome: "no_op"` and `matchedIdentities`; it attaches nothing, including
+other free identities. Name-only duplicates still receive a possible-duplicate
+warning. Links can opt into `input.ifExists: "return"` when seeding repeatedly. Identity
+addition supports the same opt-in policy for an identity already on that contact;
+another contact still conflicts. Importers add changed handles separately after
+contact creation.
+
+Handle identities strip a leading `@` and lowercase on add, revise and lookup.
+Bluesky handles must be domain-like, X/Twitter handles have 1–15 letters, digits
+or underscores, and Mastodon handles use `user@host.tld`. Use native `did` (alias
+`atproto_did`) for stable AT Protocol identities. Locators also find legacy
+`custom:atproto-did` rows. Keep former handles as additional identities.
+`search @handle` works because CLI values are literal.
+
+Only the JSON payload arguments (`--input`, the positional `<input>`, `--patch`
+and the `call` argument) read files. Their help line ends with
+`(@file, @- stdin, @@ literal @)`: `@path` reads the file as UTF-8 relative to
+the current directory, `@-` reads stdin, and `@@text` passes the literal
+`@text`. An empty path (`@`) or an unreadable file exits 2. Every other value,
+including names, notes, attribute values and search queries, is taken byte for
+byte, even with a leading `@` or `@@`.
+
+For large payloads use stdin or `@file` to avoid the operating system's argv
+size limit (`E2BIG`). JSON flag values support `-` too:
+
+```sh
+ghostpaw-affinity event record --kind interaction --input - < event.json
+ghostpaw-affinity event record --kind interaction --input @event.json
+ghostpaw-affinity review events.contact_journal --contact '{"contactId":2}' --event-types '["conversation","observation"]'
+```
+
+Array flags accept JSON arrays, comma lists, or repeated flags. Unknown event
+types fail with exit 2 and allowed values. SQLite timestamps such as
+`2026-10-27 17:51:33` use UTC; explicit offsets are honored. Sub-millisecond
+fractions are rounded silently to milliseconds, including carry into the next
+second. Keep the original timestamp in the source archive if finer precision
+matters. Null `occurredAt` is invalid.
+
+Record likes, reposts and follows as observations with `affectsBond: false`.
+Observations with significance <= 2 default to false; other events default to
+true. These ambient records stay in the journal without changing affinity or
+recency. `provenance.ambient: true` also suppresses bond effects. Explicitly
+outbound-only evidence contributes much less and does not reset radar recency;
+without reciprocal contact it generates no routine check-in or drift prompt.
+Include the owner explicitly with the correct actor/recipient role and use
+`owner_initiated`, `other_initiated`, or `mutual` directionality. Observations and
+follow-like milestones never derive breakthroughs; low-significance milestones
+do not derive moments. An explicit `momentKind` is honored.
+
+List reviews default to 50 rows, accept `--limit` (up to 250) and `--offset`,
+and include `total` and `hasMore`. Follow `hasMore` rather than assuming the
+first page is complete.
+
+`batch` reads one tool invocation per JSONL line, with one transaction for the
+whole input by default, or one per `--chunk N` lines. Each line has its own
+savepoint: failed lines roll back and later lines continue. `--stop-on-error`
+stops at the first failure. Results are JSONL `{line, ok, outcome, id, error?}`
+plus `{done, created, noOp, failed}`; created counts successful non-no-op lines.
+Exit status is 0 for success, 1 for failures, or 2 if a line is invalid JSON.
+Committed chunks remain committed if a later chunk fails.
+
+```jsonl
+{"tool":"manage_contact","args":{"action":"create","input":{"name":"Owner","kind":"human","bootstrapOwner":true,"ifExists":"return","identities":[{"type":"did","value":"did:plc:owner"}]}}}
+{"op":"event","kind":"observation","input":{"occurredAt":"2026-10-27","content":"","significance":1,"affectsBond":false,"externalRef":{"source":"bluesky","id":"at://example/like/1"},"participants":[{"contactId":1,"role":"actor"}]}}
+```
+
+```sh
+ghostpaw-affinity batch --chunk 500 < import.jsonl
+node scripts/examples/import_social_jsonl.mjs scripts/examples/fixtures/social_sample.json | ghostpaw-affinity --db /tmp/social-demo.db batch
+node scripts/examples/import_dry_run.mjs
+```
+
+The dependency-free example consumes a JSON export shaped as accounts, posts,
+interactions and follows; it never opens the source database. It resolves handle
+aliases to DIDs, deduplicates record URIs, keeps content verbatim, sets channel,
+parent references and directionality, and uses first_seen for undated follows
+or counts a skipped timestamp. The dry run checks two imports, DID uniqueness
+and byte-identical content, and reports journal JSON bytes versus raw text bytes.
+Examples and synthetic fixtures are development files, outside the npm package.
+
+`ghostpaw-affinity skill --short` prints the compact command reference without
+frontmatter or an appendix. `skill --list` lists guides; `skill <guide>` reads one.

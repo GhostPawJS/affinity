@@ -1,0 +1,720 @@
+{
+  "owner_did": "did:plc:sample00",
+  "accounts": [
+    {
+      "did": "did:plc:sample00",
+      "handle": "person0.bsky.social",
+      "display_name": "Owner",
+      "first_seen": "2026-10-01T12:00:00Z"
+    },
+    {
+      "did": "did:plc:sample01",
+      "handle": "person1.bsky.social",
+      "display_name": "Sam Example",
+      "first_seen": "2026-10-01T12:00:00Z"
+    },
+    {
+      "did": "did:plc:sample02",
+      "handle": "new.example",
+      "display_name": "Person 2",
+      "first_seen": "2026-10-01T12:00:00Z",
+      "former_handles": ["old.example"]
+    },
+    {
+      "did": "did:plc:sample03",
+      "handle": "person3.bsky.social",
+      "display_name": "Person 3",
+      "first_seen": "2026-10-01T12:00:00Z"
+    },
+    {
+      "did": "did:plc:sample04",
+      "handle": "person4.bsky.social",
+      "display_name": "Person 4",
+      "first_seen": "2026-10-01T12:00:00Z"
+    },
+    {
+      "did": "did:plc:sample05",
+      "handle": "person5.bsky.social",
+      "display_name": "Person 5",
+      "first_seen": "2026-10-01T12:00:00Z"
+    },
+    {
+      "did": "did:plc:sample06",
+      "handle": "person6.bsky.social",
+      "display_name": "Person 6",
+      "first_seen": "2026-10-01T12:00:00Z"
+    },
+    {
+      "did": "did:plc:sample07",
+      "handle": "person7.bsky.social",
+      "display_name": "Person 7",
+      "first_seen": "2026-10-01T12:00:00Z"
+    },
+    {
+      "did": "did:plc:sample08",
+      "handle": "person8.bsky.social",
+      "display_name": "Person 8",
+      "first_seen": "2026-10-01T12:00:00Z"
+    },
+    {
+      "did": "did:plc:sample09",
+      "handle": "person9.bsky.social",
+      "display_name": "Person 9",
+      "first_seen": "2026-10-01T12:00:00Z"
+    },
+    {
+      "did": "did:plc:sample10",
+      "handle": "person10.bsky.social",
+      "display_name": "Person 10",
+      "first_seen": "2026-10-01T12:00:00Z"
+    },
+    {
+      "did": "did:plc:sample11",
+      "handle": "person11.bsky.social",
+      "display_name": "Person 11",
+      "first_seen": "2026-10-01T12:00:00Z"
+    }
+  ],
+  "posts": [
+    {
+      "uri": "at://did:plc:sample02/app.bsky.feed.post/p0",
+      "cid": "cid0",
+      "author_did": "did:plc:sample02",
+      "text": "",
+      "created_at": "2026-10-10T17:51:33.477123Z",
+      "kind": "post",
+      "reply_parent_uri": null,
+      "reply_root_uri": null,
+      "quote_uri": null,
+      "is_own": false
+    },
+    {
+      "uri": "at://did:plc:sample00/app.bsky.feed.post/p1",
+      "cid": "cid1",
+      "author_did": "did:plc:sample00",
+      "text": "trailing whitespace  \t",
+      "created_at": "2026-10-10T17:51:33.477124Z",
+      "kind": "reply",
+      "reply_parent_uri": "at://did:plc:sample02/app.bsky.feed.post/p0",
+      "reply_root_uri": "at://did:plc:sample02/app.bsky.feed.post/p0",
+      "quote_uri": null,
+      "is_own": true
+    },
+    {
+      "uri": "at://did:plc:sample04/app.bsky.feed.post/p2",
+      "cid": "cid2",
+      "author_did": "did:plc:sample04",
+      "text": "Grüße aus Köln 👩🏽‍💻",
+      "created_at": "2026-10-10T17:51:33.477125Z",
+      "kind": "quote",
+      "reply_parent_uri": null,
+      "reply_root_uri": null,
+      "quote_uri": "at://did:plc:sample00/app.bsky.feed.post/p1",
+      "is_own": false
+    },
+    {
+      "uri": "at://did:plc:sample05/app.bsky.feed.post/p3",
+      "cid": "cid3",
+      "author_did": "did:plc:sample05",
+      "text": "line one\r\nline two",
+      "created_at": "2026-10-11T17:51:33.477126Z",
+      "kind": "post",
+      "reply_parent_uri": null,
+      "reply_root_uri": null,
+      "quote_uri": null,
+      "is_own": false
+    },
+    {
+      "uri": "at://did:plc:sample00/app.bsky.feed.post/p4",
+      "cid": "cid4",
+      "author_did": "did:plc:sample00",
+      "text": "👨‍👩‍👧‍👦 é",
+      "created_at": "2026-10-11T17:51:33.477127Z",
+      "kind": "reply",
+      "reply_parent_uri": "at://did:plc:sample05/app.bsky.feed.post/p3",
+      "reply_root_uri": "at://did:plc:sample05/app.bsky.feed.post/p3",
+      "quote_uri": null,
+      "is_own": true
+    },
+    {
+      "uri": "at://did:plc:sample07/app.bsky.feed.post/p5",
+      "cid": "cid5",
+      "author_did": "did:plc:sample07",
+      "text": "  leading space",
+      "created_at": "2026-10-11T17:51:33.477128Z",
+      "kind": "quote",
+      "reply_parent_uri": null,
+      "reply_root_uri": null,
+      "quote_uri": "at://did:plc:sample00/app.bsky.feed.post/p4",
+      "is_own": false
+    },
+    {
+      "uri": "at://did:plc:sample08/app.bsky.feed.post/p6",
+      "cid": "cid6",
+      "author_did": "did:plc:sample08",
+      "text": "a \"quote\" and \\ slash",
+      "created_at": "2026-10-12T17:51:33.477129Z",
+      "kind": "post",
+      "reply_parent_uri": null,
+      "reply_root_uri": null,
+      "quote_uri": null,
+      "is_own": false
+    },
+    {
+      "uri": "at://did:plc:sample00/app.bsky.feed.post/p7",
+      "cid": "cid7",
+      "author_did": "did:plc:sample00",
+      "text": "NUL\u0000inside",
+      "created_at": "2026-10-12T17:51:33.477130Z",
+      "kind": "reply",
+      "reply_parent_uri": "at://did:plc:sample08/app.bsky.feed.post/p6",
+      "reply_root_uri": "at://did:plc:sample08/app.bsky.feed.post/p6",
+      "quote_uri": null,
+      "is_own": true
+    },
+    {
+      "uri": "at://did:plc:sample10/app.bsky.feed.post/p8",
+      "cid": "cid8",
+      "author_did": "did:plc:sample10",
+      "text": " 8",
+      "created_at": "2026-10-12T17:51:33.477131Z",
+      "kind": "quote",
+      "reply_parent_uri": null,
+      "reply_root_uri": null,
+      "quote_uri": "at://did:plc:sample00/app.bsky.feed.post/p7",
+      "is_own": false
+    },
+    {
+      "uri": "at://did:plc:sample11/app.bsky.feed.post/p9",
+      "cid": "cid9",
+      "author_did": "did:plc:sample11",
+      "text": "trailing whitespace  \t 9",
+      "created_at": "2026-10-13T17:51:33.477132Z",
+      "kind": "post",
+      "reply_parent_uri": null,
+      "reply_root_uri": null,
+      "quote_uri": null,
+      "is_own": false
+    },
+    {
+      "uri": "at://did:plc:sample00/app.bsky.feed.post/p10",
+      "cid": "cid10",
+      "author_did": "did:plc:sample00",
+      "text": "Grüße aus Köln 👩🏽‍💻 10",
+      "created_at": "2026-10-13T17:51:33.477133Z",
+      "kind": "reply",
+      "reply_parent_uri": "at://did:plc:sample11/app.bsky.feed.post/p9",
+      "reply_root_uri": "at://did:plc:sample11/app.bsky.feed.post/p9",
+      "quote_uri": null,
+      "is_own": true
+    },
+    {
+      "uri": "at://did:plc:sample03/app.bsky.feed.post/p11",
+      "cid": "cid11",
+      "author_did": "did:plc:sample03",
+      "text": "line one\r\nline two 11",
+      "created_at": "2026-10-13T17:51:33.477134Z",
+      "kind": "quote",
+      "reply_parent_uri": null,
+      "reply_root_uri": null,
+      "quote_uri": "at://did:plc:sample00/app.bsky.feed.post/p10",
+      "is_own": false
+    },
+    {
+      "uri": "at://did:plc:sample04/app.bsky.feed.post/p12",
+      "cid": "cid12",
+      "author_did": "did:plc:sample04",
+      "text": "👨‍👩‍👧‍👦 é 12",
+      "created_at": "2026-10-14T17:51:33.477135Z",
+      "kind": "post",
+      "reply_parent_uri": null,
+      "reply_root_uri": null,
+      "quote_uri": null,
+      "is_own": false
+    },
+    {
+      "uri": "at://did:plc:sample00/app.bsky.feed.post/p13",
+      "cid": "cid13",
+      "author_did": "did:plc:sample00",
+      "text": "  leading space 13",
+      "created_at": "2026-10-14T17:51:33.477136Z",
+      "kind": "reply",
+      "reply_parent_uri": "at://did:plc:sample04/app.bsky.feed.post/p12",
+      "reply_root_uri": "at://did:plc:sample04/app.bsky.feed.post/p12",
+      "quote_uri": null,
+      "is_own": true
+    },
+    {
+      "uri": "at://did:plc:sample06/app.bsky.feed.post/p14",
+      "cid": "cid14",
+      "author_did": "did:plc:sample06",
+      "text": "a \"quote\" and \\ slash 14",
+      "created_at": "2026-10-14T17:51:33.477137Z",
+      "kind": "quote",
+      "reply_parent_uri": null,
+      "reply_root_uri": null,
+      "quote_uri": "at://did:plc:sample00/app.bsky.feed.post/p13",
+      "is_own": false
+    },
+    {
+      "uri": "at://did:plc:sample07/app.bsky.feed.post/p15",
+      "cid": "cid15",
+      "author_did": "did:plc:sample07",
+      "text": "NUL\u0000inside 15",
+      "created_at": "2026-10-15T17:51:33.477138Z",
+      "kind": "post",
+      "reply_parent_uri": null,
+      "reply_root_uri": null,
+      "quote_uri": null,
+      "is_own": false
+    },
+    {
+      "uri": "at://did:plc:sample00/app.bsky.feed.post/p16",
+      "cid": "cid16",
+      "author_did": "did:plc:sample00",
+      "text": " 16",
+      "created_at": "2026-10-15T17:51:33.477139Z",
+      "kind": "reply",
+      "reply_parent_uri": "at://did:plc:sample07/app.bsky.feed.post/p15",
+      "reply_root_uri": "at://did:plc:sample07/app.bsky.feed.post/p15",
+      "quote_uri": null,
+      "is_own": true
+    },
+    {
+      "uri": "at://did:plc:sample09/app.bsky.feed.post/p17",
+      "cid": "cid17",
+      "author_did": "did:plc:sample09",
+      "text": "trailing whitespace  \t 17",
+      "created_at": "2026-10-15T17:51:33.477140Z",
+      "kind": "quote",
+      "reply_parent_uri": null,
+      "reply_root_uri": null,
+      "quote_uri": "at://did:plc:sample00/app.bsky.feed.post/p16",
+      "is_own": false
+    },
+    {
+      "uri": "at://did:plc:sample10/app.bsky.feed.post/p18",
+      "cid": "cid18",
+      "author_did": "did:plc:sample10",
+      "text": "Grüße aus Köln 👩🏽‍💻 18",
+      "created_at": "2026-10-16T17:51:33.477141Z",
+      "kind": "post",
+      "reply_parent_uri": null,
+      "reply_root_uri": null,
+      "quote_uri": null,
+      "is_own": false
+    },
+    {
+      "uri": "at://did:plc:sample00/app.bsky.feed.post/p19",
+      "cid": "cid19",
+      "author_did": "did:plc:sample00",
+      "text": "line one\r\nline two 19",
+      "created_at": "2026-10-16T17:51:33.477142Z",
+      "kind": "reply",
+      "reply_parent_uri": "at://did:plc:sample10/app.bsky.feed.post/p18",
+      "reply_root_uri": "at://did:plc:sample10/app.bsky.feed.post/p18",
+      "quote_uri": null,
+      "is_own": true
+    },
+    {
+      "uri": "at://did:plc:sample02/app.bsky.feed.post/p20",
+      "cid": "cid20",
+      "author_did": "did:plc:sample02",
+      "text": "👨‍👩‍👧‍👦 é 20",
+      "created_at": "2026-10-16T17:51:33.477143Z",
+      "kind": "quote",
+      "reply_parent_uri": null,
+      "reply_root_uri": null,
+      "quote_uri": "at://did:plc:sample00/app.bsky.feed.post/p19",
+      "is_own": false
+    },
+    {
+      "uri": "at://did:plc:sample03/app.bsky.feed.post/p21",
+      "cid": "cid21",
+      "author_did": "did:plc:sample03",
+      "text": "  leading space 21",
+      "created_at": "2026-10-17T17:51:33.477144Z",
+      "kind": "post",
+      "reply_parent_uri": null,
+      "reply_root_uri": null,
+      "quote_uri": null,
+      "is_own": false
+    },
+    {
+      "uri": "at://did:plc:sample00/app.bsky.feed.post/p22",
+      "cid": "cid22",
+      "author_did": "did:plc:sample00",
+      "text": "a \"quote\" and \\ slash 22",
+      "created_at": "2026-10-17T17:51:33.477145Z",
+      "kind": "reply",
+      "reply_parent_uri": "at://did:plc:sample03/app.bsky.feed.post/p21",
+      "reply_root_uri": "at://did:plc:sample03/app.bsky.feed.post/p21",
+      "quote_uri": null,
+      "is_own": true
+    },
+    {
+      "uri": "at://did:plc:sample05/app.bsky.feed.post/p23",
+      "cid": "cid23",
+      "author_did": "did:plc:sample05",
+      "text": "NUL\u0000inside 23",
+      "created_at": "2026-10-17T17:51:33.477146Z",
+      "kind": "quote",
+      "reply_parent_uri": null,
+      "reply_root_uri": null,
+      "quote_uri": "at://did:plc:sample00/app.bsky.feed.post/p22",
+      "is_own": false
+    },
+    {
+      "uri": "at://did:plc:sample06/app.bsky.feed.post/p24",
+      "cid": "cid24",
+      "author_did": "did:plc:sample06",
+      "text": " 24",
+      "created_at": "2026-10-18T17:51:33.477147Z",
+      "kind": "post",
+      "reply_parent_uri": null,
+      "reply_root_uri": null,
+      "quote_uri": null,
+      "is_own": false
+    },
+    {
+      "uri": "at://did:plc:sample00/app.bsky.feed.post/p25",
+      "cid": "cid25",
+      "author_did": "did:plc:sample00",
+      "text": "trailing whitespace  \t 25",
+      "created_at": "2026-10-18T17:51:33.477148Z",
+      "kind": "reply",
+      "reply_parent_uri": "at://did:plc:sample06/app.bsky.feed.post/p24",
+      "reply_root_uri": "at://did:plc:sample06/app.bsky.feed.post/p24",
+      "quote_uri": null,
+      "is_own": true
+    },
+    {
+      "uri": "at://did:plc:sample08/app.bsky.feed.post/p26",
+      "cid": "cid26",
+      "author_did": "did:plc:sample08",
+      "text": "Grüße aus Köln 👩🏽‍💻 26",
+      "created_at": "2026-10-18T17:51:33.477149Z",
+      "kind": "quote",
+      "reply_parent_uri": null,
+      "reply_root_uri": null,
+      "quote_uri": "at://did:plc:sample00/app.bsky.feed.post/p25",
+      "is_own": false
+    },
+    {
+      "uri": "at://did:plc:sample09/app.bsky.feed.post/p27",
+      "cid": "cid27",
+      "author_did": "did:plc:sample09",
+      "text": "line one\r\nline two 27",
+      "created_at": "2026-10-19T17:51:33.477150Z",
+      "kind": "post",
+      "reply_parent_uri": null,
+      "reply_root_uri": null,
+      "quote_uri": null,
+      "is_own": false
+    },
+    {
+      "uri": "at://did:plc:sample00/app.bsky.feed.post/p28",
+      "cid": "cid28",
+      "author_did": "did:plc:sample00",
+      "text": "👨‍👩‍👧‍👦 é 28",
+      "created_at": "2026-10-19T17:51:33.477151Z",
+      "kind": "reply",
+      "reply_parent_uri": "at://did:plc:sample09/app.bsky.feed.post/p27",
+      "reply_root_uri": "at://did:plc:sample09/app.bsky.feed.post/p27",
+      "quote_uri": null,
+      "is_own": true
+    },
+    {
+      "uri": "at://did:plc:sample11/app.bsky.feed.post/p29",
+      "cid": "cid29",
+      "author_did": "did:plc:sample11",
+      "text": "  leading space 29",
+      "created_at": "2026-10-19T17:51:33.477152Z",
+      "kind": "quote",
+      "reply_parent_uri": null,
+      "reply_root_uri": null,
+      "quote_uri": "at://did:plc:sample00/app.bsky.feed.post/p28",
+      "is_own": false
+    }
+  ],
+  "interactions": [
+    {
+      "dir": "out",
+      "kind": "reply",
+      "actor_did": "did:plc:sample00",
+      "subject_uri": "at://did:plc:sample02/app.bsky.feed.post/p0",
+      "subject_did": "did:plc:sample01",
+      "record_uri": "at://did:plc:sample00/app.bsky.reply/i0",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": "Reply 0"
+    },
+    {
+      "dir": "out",
+      "kind": "reply",
+      "actor_did": "did:plc:sample00",
+      "subject_uri": "at://did:plc:sample00/app.bsky.feed.post/p1",
+      "subject_did": "did:plc:sample01",
+      "record_uri": "at://did:plc:sample00/app.bsky.reply/i1",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": "Reply 1"
+    },
+    {
+      "dir": "out",
+      "kind": "like",
+      "actor_did": "did:plc:sample00",
+      "subject_uri": "at://did:plc:sample04/app.bsky.feed.post/p2",
+      "subject_did": "did:plc:sample01",
+      "record_uri": "at://did:plc:sample00/app.bsky.like/i2",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": ""
+    },
+    {
+      "dir": "out",
+      "kind": "like",
+      "actor_did": "did:plc:sample00",
+      "subject_uri": "at://did:plc:sample05/app.bsky.feed.post/p3",
+      "subject_did": "did:plc:sample01",
+      "record_uri": "at://did:plc:sample00/app.bsky.like/i3",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": ""
+    },
+    {
+      "dir": "out",
+      "kind": "follow",
+      "actor_did": "did:plc:sample00",
+      "subject_uri": "at://did:plc:sample00/app.bsky.feed.post/p4",
+      "subject_did": "did:plc:sample01",
+      "record_uri": "at://did:plc:sample00/app.bsky.follow/i4",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": ""
+    },
+    {
+      "dir": "out",
+      "kind": "reply",
+      "actor_did": "did:plc:sample00",
+      "subject_uri": "at://did:plc:sample07/app.bsky.feed.post/p5",
+      "subject_did": "did:plc:sample07",
+      "record_uri": "at://did:plc:sample00/app.bsky.reply/i5",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": "Reply 5"
+    },
+    {
+      "dir": "in",
+      "kind": "reply",
+      "actor_did": "did:plc:sample08",
+      "subject_uri": "at://did:plc:sample08/app.bsky.feed.post/p6",
+      "subject_did": "did:plc:sample00",
+      "record_uri": "at://did:plc:sample08/app.bsky.reply/i6",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": "Reply 6"
+    },
+    {
+      "dir": "out",
+      "kind": "like",
+      "actor_did": "did:plc:sample00",
+      "subject_uri": "at://did:plc:sample00/app.bsky.feed.post/p7",
+      "subject_did": "did:plc:sample09",
+      "record_uri": "at://did:plc:sample00/app.bsky.like/i7",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": ""
+    },
+    {
+      "dir": "in",
+      "kind": "like",
+      "actor_did": "did:plc:sample10",
+      "subject_uri": "at://did:plc:sample10/app.bsky.feed.post/p8",
+      "subject_did": "did:plc:sample00",
+      "record_uri": "at://did:plc:sample10/app.bsky.like/i8",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": ""
+    },
+    {
+      "dir": "out",
+      "kind": "follow",
+      "actor_did": "did:plc:sample00",
+      "subject_uri": "at://did:plc:sample11/app.bsky.feed.post/p9",
+      "subject_did": "did:plc:sample11",
+      "record_uri": "at://did:plc:sample00/app.bsky.follow/i9",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": ""
+    },
+    {
+      "dir": "in",
+      "kind": "reply",
+      "actor_did": "did:plc:sample02",
+      "subject_uri": "at://did:plc:sample00/app.bsky.feed.post/p10",
+      "subject_did": "did:plc:sample00",
+      "record_uri": "at://did:plc:sample02/app.bsky.reply/i10",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": "Reply 10"
+    },
+    {
+      "dir": "out",
+      "kind": "reply",
+      "actor_did": "did:plc:sample00",
+      "subject_uri": "at://did:plc:sample03/app.bsky.feed.post/p11",
+      "subject_did": "did:plc:sample03",
+      "record_uri": "at://did:plc:sample00/app.bsky.reply/i11",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": "Reply 11"
+    },
+    {
+      "dir": "in",
+      "kind": "like",
+      "actor_did": "did:plc:sample04",
+      "subject_uri": "at://did:plc:sample04/app.bsky.feed.post/p12",
+      "subject_did": "did:plc:sample00",
+      "record_uri": "at://did:plc:sample04/app.bsky.like/i12",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": ""
+    },
+    {
+      "dir": "out",
+      "kind": "like",
+      "actor_did": "did:plc:sample00",
+      "subject_uri": "at://did:plc:sample00/app.bsky.feed.post/p13",
+      "subject_did": "did:plc:sample05",
+      "record_uri": "at://did:plc:sample00/app.bsky.like/i13",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": ""
+    },
+    {
+      "dir": "in",
+      "kind": "follow",
+      "actor_did": "did:plc:sample06",
+      "subject_uri": "at://did:plc:sample06/app.bsky.feed.post/p14",
+      "subject_did": "did:plc:sample00",
+      "record_uri": "at://did:plc:sample06/app.bsky.follow/i14",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": ""
+    },
+    {
+      "dir": "out",
+      "kind": "reply",
+      "actor_did": "did:plc:sample00",
+      "subject_uri": "at://did:plc:sample07/app.bsky.feed.post/p15",
+      "subject_did": "did:plc:sample07",
+      "record_uri": "at://did:plc:sample00/app.bsky.reply/i15",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": "Reply 15"
+    },
+    {
+      "dir": "in",
+      "kind": "reply",
+      "actor_did": "did:plc:sample08",
+      "subject_uri": "at://did:plc:sample00/app.bsky.feed.post/p16",
+      "subject_did": "did:plc:sample00",
+      "record_uri": "at://did:plc:sample08/app.bsky.reply/i16",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": "Reply 16"
+    },
+    {
+      "dir": "out",
+      "kind": "like",
+      "actor_did": "did:plc:sample00",
+      "subject_uri": "at://did:plc:sample09/app.bsky.feed.post/p17",
+      "subject_did": "did:plc:sample09",
+      "record_uri": "at://did:plc:sample00/app.bsky.like/i17",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": ""
+    },
+    {
+      "dir": "in",
+      "kind": "like",
+      "actor_did": "did:plc:sample10",
+      "subject_uri": "at://did:plc:sample10/app.bsky.feed.post/p18",
+      "subject_did": "did:plc:sample00",
+      "record_uri": "at://did:plc:sample10/app.bsky.like/i18",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": ""
+    },
+    {
+      "dir": "out",
+      "kind": "follow",
+      "actor_did": "did:plc:sample00",
+      "subject_uri": "at://did:plc:sample00/app.bsky.feed.post/p19",
+      "subject_did": "did:plc:sample11",
+      "record_uri": "at://did:plc:sample00/app.bsky.follow/i19",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": ""
+    },
+    {
+      "dir": "in",
+      "kind": "reply",
+      "actor_did": "did:plc:sample02",
+      "subject_uri": "at://did:plc:sample02/app.bsky.feed.post/p20",
+      "subject_did": "did:plc:sample00",
+      "record_uri": "at://did:plc:sample02/app.bsky.reply/i20",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": "Reply 20"
+    },
+    {
+      "dir": "out",
+      "kind": "reply",
+      "actor_did": "did:plc:sample00",
+      "subject_uri": "at://did:plc:sample03/app.bsky.feed.post/p21",
+      "subject_did": "did:plc:sample03",
+      "record_uri": "at://did:plc:sample00/app.bsky.reply/i21",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": "Reply 21"
+    },
+    {
+      "dir": "in",
+      "kind": "like",
+      "actor_did": "did:plc:sample04",
+      "subject_uri": "at://did:plc:sample00/app.bsky.feed.post/p22",
+      "subject_did": "did:plc:sample00",
+      "record_uri": "at://did:plc:sample04/app.bsky.like/i22",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": ""
+    },
+    {
+      "dir": "out",
+      "kind": "like",
+      "actor_did": "did:plc:sample00",
+      "subject_uri": "at://did:plc:sample05/app.bsky.feed.post/p23",
+      "subject_did": "did:plc:sample05",
+      "record_uri": "at://did:plc:sample00/app.bsky.like/i23",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": ""
+    },
+    {
+      "dir": "in",
+      "kind": "follow",
+      "actor_did": "did:plc:sample06",
+      "subject_uri": "at://did:plc:sample06/app.bsky.feed.post/p24",
+      "subject_did": "did:plc:sample00",
+      "record_uri": "at://did:plc:sample06/app.bsky.follow/i24",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": ""
+    },
+    {
+      "dir": "in",
+      "kind": "reply",
+      "actor_did": "new.example",
+      "subject_uri": "at://did:plc:sample00/app.bsky.feed.post/p10",
+      "subject_did": "did:plc:sample00",
+      "record_uri": "at://did:plc:sample02/app.bsky.reply/i10",
+      "created_at": "2026-10-22 17:51:33.999600",
+      "text": "Reply 10"
+    }
+  ],
+  "follows": [
+    {
+      "did": "did:plc:sample03",
+      "dir": "in",
+      "record_uri": "at://did:plc:sample03/app.bsky.graph.follow/f0",
+      "created_at": null,
+      "first_seen": "2026-10-21T12:00:00Z",
+      "reason": "Met through design community"
+    },
+    {
+      "did": "did:plc:sample04",
+      "dir": "in",
+      "record_uri": "at://did:plc:sample04/app.bsky.graph.follow/f1",
+      "created_at": null,
+      "first_seen": null,
+      "reason": null
+    }
+  ]
+}

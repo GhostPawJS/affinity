@@ -1,5 +1,6 @@
 /** Arguments for `write.addIdentity`. */
 export interface AddIdentityInput {
+  ifExists?: "error" | "return";
   type: string;
   value: string;
   label?: string | null;

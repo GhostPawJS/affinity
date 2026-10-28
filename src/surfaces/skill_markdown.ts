@@ -121,7 +121,7 @@ export function renderSkillMarkdown<TCtx>(
     "",
     ...spec.workflows.map(
       (workflow) =>
-        `- [${workflow.name}](${referencesBase}/${workflow.name}.md): ${workflow.description}`,
+        `- \`${spec.bin} skill ${workflow.name}\`: ${workflow.description}`,
     ),
     "",
     "## Principles",

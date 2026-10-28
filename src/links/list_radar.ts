@@ -53,6 +53,13 @@ export function listRadar(
     clauses.push("c_to.lifecycle_state != 'dormant'");
   if (filters?.includeLost !== true)
     clauses.push("c_to.lifecycle_state != 'lost'");
+  // Outbound-only activity is not an established relationship to maintain.
+  const other = `CASE WHEN l.from_contact_id = ${ownerId} THEN l.to_contact_id ELSE l.from_contact_id END`;
+  clauses.push(`(${lastContact} IS NOT NULL OR ${overdue} OR NOT EXISTS (
+    SELECT 1 FROM event_participants ep JOIN events ev ON ev.id=ep.event_id
+    WHERE ep.contact_id=${other} AND ev.deleted_at IS NULL
+      AND (ev.affects_bond=0 OR (ev.type='observation' AND ev.significance<=2) OR json_extract(ev.provenance_json, '$.ambient')=1 OR ep.directionality='owner_initiated' OR EXISTS (SELECT 1 FROM event_participants op WHERE op.event_id=ev.id AND op.contact_id=${ownerId} AND op.directionality='owner_initiated'))
+  ))`);
   const where = clauses.join(" AND ");
   const rows = db
     .prepare(

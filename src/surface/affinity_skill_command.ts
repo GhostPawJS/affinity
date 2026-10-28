@@ -2,13 +2,21 @@ import { CliUsageError } from "../surfaces/cli_args.ts";
 import { suggestCommand } from "../surfaces/cli_output.ts";
 import { renderSkillMarkdown } from "../surfaces/skill_markdown.ts";
 import { affinitySkillReferences } from "./affinity_skill_references.ts";
-import { affinitySkillSpec } from "./affinity_skill_spec.ts";
+import {
+  affinityShortCheatSheet,
+  affinitySkillSpec,
+} from "./affinity_skill_spec.ts";
 
 export function affinitySkillCommand(args: string[]): string {
   if (args.includes("--help") || args.includes("-h"))
-    return "Usage: ghostpaw-affinity skill [<guide>|--list|--help]\n";
-  if (args.length > 1) throw new CliUsageError("Expected one skill guide");
+    return "Usage: ghostpaw-affinity skill [<guide>|--short|--list|--help]\n";
+  if (args.length > 1)
+    throw new CliUsageError(
+      "Usage: ghostpaw-affinity skill [<guide>|--short|--list|--help]",
+    );
   const guide = args[0];
+  if (guide === "--short")
+    return `${affinityShortCheatSheet.replace(/^## CLI cheat sheet\n\n/, "")}\n`;
   if (guide === "--list")
     return `${Object.entries(affinitySkillReferences)
       .map(([name, entry]) => `${name}\t${entry.description}`)
@@ -21,6 +29,6 @@ export function affinitySkillCommand(args: string[]): string {
     Object.keys(affinitySkillReferences),
   );
   throw new CliUsageError(
-    `Unknown guide: ${guide}.${suggestion ? ` Did you mean ${suggestion}?` : ""}`,
+    `Unknown guide: ${guide}.${suggestion ? ` Did you mean ${suggestion}?` : ""} Usage: ghostpaw-affinity skill [<guide>|--short|--list|--help]`,
   );
 }

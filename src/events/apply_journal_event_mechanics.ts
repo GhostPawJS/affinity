@@ -101,8 +101,51 @@ export function applyJournalEventMechanics(
   affectedLinks: number[];
   derivedEffects: DerivedLinkEffect[];
 } {
+  const bond = db
+    .prepare("SELECT affects_bond, channel FROM events WHERE id=?")
+    .get(params.eventId);
+  const ambient =
+    params.provenance &&
+    typeof params.provenance === "object" &&
+    ((params.provenance as { ambient?: boolean }).ambient === true ||
+      (params.provenance as { tags?: string[] }).tags?.includes("ambient"));
+  if (
+    bond?.affects_bond === 0 ||
+    (bond?.affects_bond == null &&
+      params.eventType === "observation" &&
+      params.significance <= 2) ||
+    ambient
+  )
+    return { created: [], affectedLinks: [], derivedEffects: [] };
   const ownerId = requireOwnerContactId(db);
-  const participantIds = params.participants.map(
+  const owner = params.participants.find((p) => p.contactId === ownerId);
+  const socialChannel = [
+    "bluesky",
+    "x",
+    "twitter",
+    "mastodon",
+    "github",
+    "instagram",
+  ].includes(String(bond?.channel));
+  const direction =
+    owner?.directionality ??
+    (socialChannel
+      ? owner?.role === "actor"
+        ? "owner_initiated"
+        : owner?.role === "recipient"
+          ? "other_initiated"
+          : undefined
+      : undefined);
+  const participants = params.participants.map((p) =>
+    direction && p.directionality === undefined
+      ? { ...p, directionality: direction }
+      : p,
+  );
+  if (direction)
+    db.prepare(
+      "UPDATE event_participants SET directionality=? WHERE event_id=? AND directionality IS NULL",
+    ).run(direction, params.eventId);
+  const participantIds = participants.map(
     (participant) => participant.contactId,
   );
   const hasOwner = participantIds.includes(ownerId);
@@ -113,7 +156,7 @@ export function applyJournalEventMechanics(
   }[] = [];
 
   if (hasOwner) {
-    for (const participant of params.participants) {
+    for (const participant of participants) {
       if (participant.contactId === ownerId) {
         continue;
       }
@@ -121,16 +164,18 @@ export function applyJournalEventMechanics(
         fromContactId: ownerId,
         toContactId: participant.contactId,
         kind: inferAutoLinkKind(db, ownerId, participant.contactId),
+        ...((participant.directionality ??
+          participants.find((p) => p.contactId === ownerId)?.directionality) ===
+        "owner_initiated"
+          ? { affinity: 0.15 }
+          : {}),
         now: params.now,
       });
       created.push(...ensured.created);
       effectInputs.push({ linkId: ensured.linkId, participant });
     }
-  } else if (
-    params.eventType === "observation" &&
-    params.participants.length === 2
-  ) {
-    const [first, second] = params.participants;
+  } else if (params.eventType === "observation" && participants.length === 2) {
+    const [first, second] = participants;
     if (first !== undefined && second !== undefined) {
       const a = Math.min(first.contactId, second.contactId);
       const b = Math.max(first.contactId, second.contactId);
@@ -166,7 +211,12 @@ export function applyJournalEventMechanics(
         eventType: params.eventType,
         occurredAt: params.occurredAt,
         significance: params.significance,
-        participant: input.participant,
+        participant: {
+          ...input.participant,
+          directionality:
+            input.participant.directionality ??
+            participants.find((p) => p.contactId === ownerId)?.directionality,
+        },
         provenance: params.provenance,
         now: params.now,
       }),

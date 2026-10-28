@@ -28,7 +28,7 @@ test("generic parser supports flags, aliases, arrays, files and positionals", ()
             { name: "min-score", type: "number" },
             { name: "enabled", type: "boolean" },
             { name: "tag", type: "array" },
-            { name: "config", short: "c", type: "json" },
+            { name: "config", short: "c", type: "json", file: true },
           ],
           positionals: [{ name: "query", type: "string" }],
         },
@@ -85,4 +85,49 @@ test("flag values may start with dashes unless they look like a flag", () => {
     () => parseCliArgs(["--text", "--json"], spec),
     /Missing value: --text/,
   );
+});
+
+test("array flags accept JSON, comma lists and repeats for strings, integers and objects", () => {
+  const spec = {
+    command: "test",
+    flags: [
+      { name: "event-types", type: "array" as const },
+      { name: "ids", type: "array" as const, itemType: "integer" as const },
+      { name: "entries", type: "array" as const, itemType: "json" as const },
+    ],
+  };
+  for (const args of [
+    ["--event-types", '["conversation","observation"]'],
+    ["--event-types", "conversation,observation"],
+    ["--event-types", "conversation", "--event-types", "observation"],
+  ])
+    assert.deepEqual(parseCliArgs(args, spec), {
+      eventTypes: ["conversation", "observation"],
+    });
+  assert.deepEqual(parseCliArgs(["--ids", "[1,2]", "--ids", "3,4"], spec), {
+    ids: [1, 2, 3, 4],
+  });
+  assert.deepEqual(
+    parseCliArgs(
+      [
+        "--entries",
+        '[{"name":"a","value":"b"}]',
+        "--entries",
+        '{"name":"c","value":"d"}',
+      ],
+      spec,
+    ),
+    {
+      entries: [
+        { name: "a", value: "b" },
+        { name: "c", value: "d" },
+      ],
+    },
+  );
+  for (const args of [
+    ["--entries", "bad"],
+    ["--ids", "[oops"],
+    ["--ids", "a,b"],
+  ])
+    assert.throws(() => parseCliArgs(args, spec), CliUsageError);
 });

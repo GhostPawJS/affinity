@@ -110,6 +110,7 @@ export interface ToolNeedsClarification extends ToolBaseResult {
 }
 
 export interface ToolFailure extends ToolBaseResult {
+  data?: { existingContactId: number };
   ok: false;
   outcome: "error";
   error: {

@@ -1,5 +1,15 @@
 # Record Observations And Referrals
 
+Likes, reposts and follows are ambient observations, not milestones. Record them
+with affectsBond:false; observations with significance <=2 default to false.
+They stay in journals but do not change affinity or meaningful-contact recency.
+provenance.ambient:true also suppresses effects. Use explicit owner and other
+participants, actor/recipient roles, and the correct directionality.
+Unanswered owner_initiated evidence contributes much less and does not reset
+radar recency. A relationship with only outbound activity gets no routine check-in
+or drift prompt. other_initiated evidence counts fully. Observations and follow-like
+milestones never derive breakthroughs; low-significance milestones derive no moment.
+
 Primary tools:
 - `record_event`
 - `review_affinity`

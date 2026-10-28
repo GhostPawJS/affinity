@@ -5,6 +5,8 @@ export function validateInput(
   input: unknown,
   path = "$",
 ): string[] {
+  if (path.endsWith(".occurredAt") && input == null)
+    return ["occurredAt is required (ISO, YYYY-MM-DD, epoch ms, today, +3d …)"];
   const branches = schema.oneOf ?? schema.anyOf;
   if (
     path.endsWith(".value") &&

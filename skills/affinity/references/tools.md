@@ -152,7 +152,8 @@ Writes: writes_state.
 | patch | object | no | Allowed contact patch. Required when action=revise. |
 | lifecycleState | string | no | active, dormant, merged, lost. Target lifecycle state. Required when action=set_lifecycle. |
 | options | object | no | Optional lifecycle metadata. |
-| input.identities | array | no | Optional identities to attach. Identities already owned by another contact are left with that owner and reported as possible duplicates. |
+| input.identities | array | no | Optional identities to attach. An identity owned by another live contact causes a conflict, or returns that contact when ifExists=return. |
+| input.ifExists | string | no | Identity collision policy; return attaches nothing. |
 | input.name | string | yes | Contact name. |
 | input.kind | string | yes | Contact kind. |
 | input.now | oneOf | no | Optional timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
@@ -237,12 +238,13 @@ Writes: writes_state.
 | removedAt | integer / string | no | Removal timestamp. Optional for action=remove. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | contact.contactId | integer | no | Exact contact id. |
 | contact.identity | object | no | Contact identity locator. |
-| input.type | string | yes | Identity type: email, phone, url, website, handle, x, twitter, linkedin, github, mastodon, bluesky, telegram, whatsapp, signal, matrix, discord, slack, instagram, facebook, youtube, tiktok, address, other, account_id, alias, or custom:<name> (lowercase a-z, 0-9, underscore or hyphen). |
+| input.ifExists | string | no | Return an existing identity on this contact without changes. |
+| input.type | string | yes | Identity type: did, atproto_did, email, phone, url, website, handle, x, twitter, linkedin, github, mastodon, bluesky, telegram, whatsapp, signal, matrix, discord, slack, instagram, facebook, youtube, tiktok, address, other, account_id, alias, or custom:<name> (lowercase a-z, 0-9, underscore or hyphen). |
 | input.value | string | yes | Identity value. |
 | input.label | string | no | Optional label. |
 | input.verified | boolean | no | Whether the identity starts verified. |
 | input.now | oneOf | no | Optional timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
-| patch.type | string | no | Optional identity type: email, phone, url, website, handle, x, twitter, linkedin, github, mastodon, bluesky, telegram, whatsapp, signal, matrix, discord, slack, instagram, facebook, youtube, tiktok, address, other, account_id, alias, or custom:<name> (lowercase a-z, 0-9, underscore or hyphen). |
+| patch.type | string | no | Optional identity type: did, atproto_did, email, phone, url, website, handle, x, twitter, linkedin, github, mastodon, bluesky, telegram, whatsapp, signal, matrix, discord, slack, instagram, facebook, youtube, tiktok, address, other, account_id, alias, or custom:<name> (lowercase a-z, 0-9, underscore or hyphen). |
 | patch.value | string | no | Optional identity value. |
 | patch.label | string | no | Optional label. |
 
@@ -300,6 +302,7 @@ Writes: writes_state.
 | kind | string | yes | interaction, observation, milestone, transaction. Event kind. |
 | input | object | yes | Event payload. Always required. Interaction events also require `type`. |
 | input.type | string | no | Interaction subtype. Required when kind=interaction, omit otherwise. |
+| input.affectsBond | boolean | no | Whether evidence affects the relationship; defaults false for observations with significance <=2. |
 | input.content | string | no | Verbatim text, including empty text; at most 1 MB UTF-8. Summary may be omitted when content is supplied. |
 | input.externalRef | object | no |  |
 | input.channel | string | no | Free-text channel, trimmed and lowercased, at most 40 characters. |
@@ -337,6 +340,7 @@ Writes: writes_state.
 | resolution | string | no | kept, cancelled, broken. How the commitment was resolved. Required when action=resolve. |
 | options | object | no | Optional metadata. |
 | input.commitmentType | string | yes | Promise or agreement. |
+| input.affectsBond | boolean | no | Whether evidence affects the relationship; defaults false for observations with significance <=2. |
 | input.content | string | no | Verbatim text, including empty text; at most 1 MB UTF-8. Summary may be omitted when content is supplied. |
 | input.externalRef | object | no |  |
 | input.channel | string | no | Free-text channel, trimmed and lowercased, at most 40 characters. |
@@ -462,18 +466,18 @@ ghostpaw-affinity event revise --event-id 1 --patch '{"summary":"Corrected"}'
 
 ## Workflow guides
 
-- [bootstrap-and-cold-start](references/bootstrap-and-cold-start.md): Establish a clean Affinity baseline with one owner, one verified identity, and the minimum structure needed for later evidence and review work.
-- [identify-and-locate-contacts](references/identify-and-locate-contacts.md): Find the right contact reliably, prefer stable natural keys when possible, and avoid creating duplicates through weak lookup discipline.
-- [import-history-without-faking-evidence](references/import-history-without-faking-evidence.md): Import pre-existing relationship state honestly, using seeded links for known history instead of inventing fake journal evidence.
-- [model-structure-orgs-and-households](references/model-structure-orgs-and-households.md): Model factual structure such as employment, membership, hierarchy, and household ties without confusing it with live relational mechanics.
-- [record-direct-evidence-well](references/record-direct-evidence-well.md): Record direct owner-facing social evidence in a way that produces truthful mechanics, good moments, and useful future review surfaces.
-- [record-observations-and-referrals](references/record-observations-and-referrals.md): Capture third-party and referral truth without overclaiming intimacy, directness, or trust that the operator did not actually earn.
-- [capture-transactions-and-commercial-events](references/capture-transactions-and-commercial-events.md): Capture commercially meaningful interactions as transactions so operational and service relationships accumulate the right evidence shape.
-- [manage-promises-and-agreements](references/manage-promises-and-agreements.md): Track obligations explicitly from creation to resolution so open commitments remain actionable and trust consequences stay honest.
-- [manage-recurring-dates-and-reminders](references/manage-recurring-dates-and-reminders.md): Use date anchors for recurring salience so important birthdays, anniversaries, renewals, and memorials feed review surfaces cleanly.
-- [review-radar-progression-and-graph](references/review-radar-progression-and-graph.md): Use the review surfaces to prioritize maintenance, understand progression readiness, and read the shape of the relationship graph without guessing from raw rows.
-- [reconcile-duplicates-and-merge-safely](references/reconcile-duplicates-and-merge-safely.md): Review duplicate candidates carefully and merge only after the identity, history, and structural consequences are understood.
-- [tools](references/tools.md): Tool parameters, nested fields, and examples.
+- `ghostpaw-affinity skill bootstrap-and-cold-start`: Establish a clean Affinity baseline with one owner, one verified identity, and the minimum structure needed for later evidence and review work.
+- `ghostpaw-affinity skill identify-and-locate-contacts`: Find the right contact reliably, prefer stable natural keys when possible, and avoid creating duplicates through weak lookup discipline.
+- `ghostpaw-affinity skill import-history-without-faking-evidence`: Import pre-existing relationship state honestly, using seeded links for known history instead of inventing fake journal evidence.
+- `ghostpaw-affinity skill model-structure-orgs-and-households`: Model factual structure such as employment, membership, hierarchy, and household ties without confusing it with live relational mechanics.
+- `ghostpaw-affinity skill record-direct-evidence-well`: Record direct owner-facing social evidence in a way that produces truthful mechanics, good moments, and useful future review surfaces.
+- `ghostpaw-affinity skill record-observations-and-referrals`: Capture third-party and referral truth without overclaiming intimacy, directness, or trust that the operator did not actually earn.
+- `ghostpaw-affinity skill capture-transactions-and-commercial-events`: Capture commercially meaningful interactions as transactions so operational and service relationships accumulate the right evidence shape.
+- `ghostpaw-affinity skill manage-promises-and-agreements`: Track obligations explicitly from creation to resolution so open commitments remain actionable and trust consequences stay honest.
+- `ghostpaw-affinity skill manage-recurring-dates-and-reminders`: Use date anchors for recurring salience so important birthdays, anniversaries, renewals, and memorials feed review surfaces cleanly.
+- `ghostpaw-affinity skill review-radar-progression-and-graph`: Use the review surfaces to prioritize maintenance, understand progression readiness, and read the shape of the relationship graph without guessing from raw rows.
+- `ghostpaw-affinity skill reconcile-duplicates-and-merge-safely`: Review duplicate candidates carefully and merge only after the identity, history, and structural consequences are understood.
+- `ghostpaw-affinity skill tools`: Tool parameters, nested fields, and examples.
 
 ## Principles
 

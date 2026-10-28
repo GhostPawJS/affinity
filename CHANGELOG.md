@@ -8,6 +8,11 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ### Added
 
+- Add atomic identity-aware contact creation with an opt-in return-existing policy, normalized social handles and native DID locators compatible with legacy identities.
+- Add JSONL batch writes with chunk transactions, per-line rollback, failure reporting and idempotent external references.
+- Add a synthetic social import example and a repeat-import content audit.
+- Add compact `skill --short` output and command-based workflow guide references.
+
 - Support unique external event references with idempotent intake, exact event lookup, and event/all search scopes.
 - Store verbatim event content up to 1 MB, derive bounded summaries when omitted, and include content in journal/review rows only on request.
 - Add event attributes, channel filters, parent/root references and chronological thread reviews.
@@ -18,11 +23,17 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ### Changed
 
+- CLI values are literal by default. Only the JSON payload arguments (`--input`, the positional `<input>`, `--patch` and the `call` argument) read `@path` files and `@-` stdin, `@@text` passes a literal `@text`, and an empty or unreadable path exits 2. Other values, such as names, notes, attribute values and search queries, no longer load a file when they start with `@`. Callers that passed `@path` to other flags must inline the value.
+- New database files are created with mode 0600, and a missing parent directory is created with mode 0700. Existing files and directories keep their modes.
 - Slim tool review rows: compact named journal participants, one event/link id and summary, rounded radar scores, and upcoming link dates without radar metrics. Compact and default piped CLI mutation output retains ids and warnings rather than repeating full entities.
 - Keep the skill entry focused on the CLI cheat sheet and tool index; move parameter details and examples to the embedded `tools` guide.
 - Export whole-database events once at the top level, referenced by contact event/date ids; export stored flags as JSON booleans.
 
 ### Fixed
+
+- Keep ambient observations and unanswered outbound activity from inflating bond strength or triggering routine radar prompts; avoid automatic moments for observations and follow-like milestones.
+- Accept JSON arrays, comma lists and repeated array flags, JSON flag stdin, literal social handles and explicit `@@` escapes.
+- Accept SQLite UTC timestamps, round sub-millisecond precision, explain missing event timestamps, and report list review pagination totals and continuation state.
 
 - Reject unknown event/commitment fields and unsupported moment kinds with allowed-field/value diagnostics.
 - Preserve NUL-containing event content when reading through node:sqlite and avoid duplicating content in review entity references.

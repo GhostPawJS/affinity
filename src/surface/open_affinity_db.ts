@@ -1,4 +1,4 @@
-import { mkdirSync } from "node:fs";
+import { closeSync, existsSync, mkdirSync, openSync } from "node:fs";
 import { dirname } from "node:path";
 import type { AffinityDb } from "../database.ts";
 import { initAffinityTables } from "../init_affinity_tables.ts";
@@ -28,7 +28,11 @@ export async function openAffinityDb(path: string): Promise<AffinityDb> {
   } finally {
     process.emitWarning = original;
   }
-  if (path !== ":memory:") mkdirSync(dirname(path), { recursive: true });
+  if (path !== ":memory:" && !path.startsWith("file:")) {
+    // New databases hold private data: create the directory 0700 and the file 0600.
+    mkdirSync(dirname(path), { recursive: true, mode: 0o700 });
+    if (!existsSync(path)) closeSync(openSync(path, "wx", 0o600));
+  }
   const db = new sqlite.DatabaseSync(path);
   try {
     db.exec("PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;");

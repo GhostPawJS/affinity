@@ -6,6 +6,23 @@ export const importHistoryWithoutFakingEvidenceSkill = defineAffinitySkill({
     "Import pre-existing relationship state honestly, using seeded links for known history instead of inventing fake journal evidence.",
   content: `# Import History Without Faking Evidence
 
+For social imports, use native did identities (atproto_did is an alias; legacy
+custom:atproto-did locators remain equivalent). Create with input.ifExists="return"
+for safe retries: this attaches nothing to an existing contact. For handle changes,
+call manage_identity add separately with input.ifExists="return"; an identity already
+on that contact is a no-op, while another owner still conflicts. Seed links with
+input.ifExists="return" to reuse them without changing their state.
+Use ghostpaw-affinity batch [--chunk 500] with JSONL {tool,args}, or
+{op:"event",kind:"interaction",input:{...}}. Per-line savepoints isolate failures;
+--stop-on-error stops early. Exit 2 identifies malformed JSON; other failures exit 1.
+Use externalRef {source:"bluesky",id:recordUri}, verbatim content and channel.
+Participant contact locators may use identities, including did, instead of ids.
+Read JSON flags from stdin with --input - or from @file for large payloads (E2BIG).
+SQLite date-times without offsets mean UTC; microseconds round to milliseconds.
+Missing inbound-follow timestamps should use a known first_seen or be counted as skipped.
+The synthetic scripts/examples/import_social_jsonl.mjs and import_dry_run.mjs
+show the mapping and verify an idempotent retry and byte-identical text.
+
 For archived messages with known timestamps, record actual evidence with externalRef:
 {source, id} deduplicates retries across event families and commitments. Keep original
 message text in content, use channel and parentRef/threadRef for context, and keep

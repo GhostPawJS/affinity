@@ -1,4 +1,5 @@
 import {
+  booleanSchema,
   enumSchema,
   integerSchema,
   objectSchema,
@@ -12,6 +13,9 @@ export const externalRefSchema = objectSchema(
   ["source", "id"],
 );
 export const eventMetadataSchema = {
+  affectsBond: booleanSchema(
+    "Whether evidence affects the relationship; defaults false for observations with significance <=2.",
+  ),
   content: stringSchema(
     "Verbatim text, including empty text; at most 1 MB UTF-8. Summary may be omitted when content is supplied.",
   ),

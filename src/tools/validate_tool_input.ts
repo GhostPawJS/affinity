@@ -10,6 +10,8 @@ export function validateToolInput(
   injectedNow = Date.now(),
   strict = false,
 ): string | null {
+  if (path.endsWith(".occurredAt") && value == null)
+    return "occurredAt is required (ISO, YYYY-MM-DD, epoch ms, today, +3d …)";
   const branches = schema.oneOf ?? schema.anyOf;
   if (
     path.endsWith(".value") &&

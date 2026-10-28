@@ -18,7 +18,13 @@ test("identity validation accepts documented types and rejects bad routing value
           ? "+49 12345"
           : ["url", "website"].includes(type)
             ? "example.com"
-            : "value";
+            : ["did", "atproto_did"].includes(type)
+              ? "did:plc:abc"
+              : type === "bluesky"
+                ? "name.bsky.social"
+                : type === "mastodon"
+                  ? "user@host.social"
+                  : "value";
     assert.doesNotThrow(() => validateIdentityInput(type, value));
   }
   assert.doesNotThrow(() =>

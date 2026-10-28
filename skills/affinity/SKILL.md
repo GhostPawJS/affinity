@@ -18,8 +18,8 @@ export GHOSTPAW_AFFINITY_DB=/abs/path/affinity.db
 # Version: --version includes variant; scripts should use --version --short for exact semver matching.
 # --version --json (or version --json) returns name, version, variant, target (null outside a binary).
 # Missing DB reads exit 3 and create nothing; the first write creates it. MCP creates on startup.
-# String flags accept plain text: --value Hamburg; object/array flags require JSON.
-# Tag filters accept gastro-radar or tag:gastro-radar. Use per-command --help for action flags.
+# JSON: --input - reads stdin; @existing-file loads a value, @@x escapes @x. Use stdin/@file for E2BIG.
+# Arrays accept JSON, comma lists or repeats. Tag filters accept gastro-radar or tag:gastro-radar. Use per-command --help for action flags.
 # Exit: 0 ok/no_op, 1 tool error, 2 usage/invalid input, 3 not found/clarification, 4 conflict, 70 internal.
 # Dates: epoch ms, ISO with offset/Z, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, +3d, -2d.
 # CLI and MCP use the same grammar, including yesterday. Keywords use the local date.
@@ -28,7 +28,7 @@ export GHOSTPAW_AFFINITY_DB=/abs/path/affinity.db
 # Commitments and resolutions do not reset recency; radar drift means gap > 1.5 times cadence.
 ghostpaw-affinity contact create '{"name":"Fox","kind":"human","bootstrapOwner":true}'
 ghostpaw-affinity search "Jana" # Search names, identities, tags, attributes, roles and events before creating.
-ghostpaw-affinity contact create '{"name":"Jana Petersen","kind":"human"}'
+ghostpaw-affinity contact create '{"name":"Jana Petersen","kind":"human"}' --if-exists return
 ghostpaw-affinity identity add --contact '{"contactId":2}' --input '{"type":"email","value":"jana@x.de"}'
 ghostpaw-affinity relationship tie --from '{"contactId":2}' --to '{"contactId":3}' --kind works_at --role Founder
 ghostpaw-affinity relationship add --from '{"contactId":1}' --to '{"contactId":2}' --kind professional --role lead
@@ -57,6 +57,8 @@ ghostpaw-affinity event delete --event-id 12 --confirm
 ghostpaw-affinity contact export --contact '{"contactId":2}'
 ghostpaw-affinity contact delete --contact '{"contactId":2}' --confirm
 ```
+
+Batch imports: use `ghostpaw-affinity batch --chunk 500 < import.jsonl` with {tool,args} lines. See `ghostpaw-affinity skill import-history-without-faking-evidence`.
 
 For bots and agents: run `ghostpaw-affinity mcp` for MCP stdio, or use this CLI with `--json`. Read a guide with `ghostpaw-affinity skill <guide>`.
 
@@ -93,18 +95,18 @@ Parameter details and examples: `ghostpaw-affinity skill tools` or `ghostpaw-aff
 
 ### Workflow guides
 
-- [bootstrap-and-cold-start](references/bootstrap-and-cold-start.md): Establish a clean Affinity baseline with one owner, one verified identity, and the minimum structure needed for later evidence and review work.
-- [identify-and-locate-contacts](references/identify-and-locate-contacts.md): Find the right contact reliably, prefer stable natural keys when possible, and avoid creating duplicates through weak lookup discipline.
-- [import-history-without-faking-evidence](references/import-history-without-faking-evidence.md): Import pre-existing relationship state honestly, using seeded links for known history instead of inventing fake journal evidence.
-- [model-structure-orgs-and-households](references/model-structure-orgs-and-households.md): Model factual structure such as employment, membership, hierarchy, and household ties without confusing it with live relational mechanics.
-- [record-direct-evidence-well](references/record-direct-evidence-well.md): Record direct owner-facing social evidence in a way that produces truthful mechanics, good moments, and useful future review surfaces.
-- [record-observations-and-referrals](references/record-observations-and-referrals.md): Capture third-party and referral truth without overclaiming intimacy, directness, or trust that the operator did not actually earn.
-- [capture-transactions-and-commercial-events](references/capture-transactions-and-commercial-events.md): Capture commercially meaningful interactions as transactions so operational and service relationships accumulate the right evidence shape.
-- [manage-promises-and-agreements](references/manage-promises-and-agreements.md): Track obligations explicitly from creation to resolution so open commitments remain actionable and trust consequences stay honest.
-- [manage-recurring-dates-and-reminders](references/manage-recurring-dates-and-reminders.md): Use date anchors for recurring salience so important birthdays, anniversaries, renewals, and memorials feed review surfaces cleanly.
-- [review-radar-progression-and-graph](references/review-radar-progression-and-graph.md): Use the review surfaces to prioritize maintenance, understand progression readiness, and read the shape of the relationship graph without guessing from raw rows.
-- [reconcile-duplicates-and-merge-safely](references/reconcile-duplicates-and-merge-safely.md): Review duplicate candidates carefully and merge only after the identity, history, and structural consequences are understood.
-- [tools](references/tools.md): Tool parameters, nested fields, and examples.
+- `ghostpaw-affinity skill bootstrap-and-cold-start`: Establish a clean Affinity baseline with one owner, one verified identity, and the minimum structure needed for later evidence and review work.
+- `ghostpaw-affinity skill identify-and-locate-contacts`: Find the right contact reliably, prefer stable natural keys when possible, and avoid creating duplicates through weak lookup discipline.
+- `ghostpaw-affinity skill import-history-without-faking-evidence`: Import pre-existing relationship state honestly, using seeded links for known history instead of inventing fake journal evidence.
+- `ghostpaw-affinity skill model-structure-orgs-and-households`: Model factual structure such as employment, membership, hierarchy, and household ties without confusing it with live relational mechanics.
+- `ghostpaw-affinity skill record-direct-evidence-well`: Record direct owner-facing social evidence in a way that produces truthful mechanics, good moments, and useful future review surfaces.
+- `ghostpaw-affinity skill record-observations-and-referrals`: Capture third-party and referral truth without overclaiming intimacy, directness, or trust that the operator did not actually earn.
+- `ghostpaw-affinity skill capture-transactions-and-commercial-events`: Capture commercially meaningful interactions as transactions so operational and service relationships accumulate the right evidence shape.
+- `ghostpaw-affinity skill manage-promises-and-agreements`: Track obligations explicitly from creation to resolution so open commitments remain actionable and trust consequences stay honest.
+- `ghostpaw-affinity skill manage-recurring-dates-and-reminders`: Use date anchors for recurring salience so important birthdays, anniversaries, renewals, and memorials feed review surfaces cleanly.
+- `ghostpaw-affinity skill review-radar-progression-and-graph`: Use the review surfaces to prioritize maintenance, understand progression readiness, and read the shape of the relationship graph without guessing from raw rows.
+- `ghostpaw-affinity skill reconcile-duplicates-and-merge-safely`: Review duplicate candidates carefully and merge only after the identity, history, and structural consequences are understood.
+- `ghostpaw-affinity skill tools`: Tool parameters, nested fields, and examples.
 
 ### Principles
 

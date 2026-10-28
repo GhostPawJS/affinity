@@ -22,16 +22,33 @@ import {
 } from "./tool_metadata.ts";
 import { type MutationToolData, mutationToolResult } from "./tool_mutation.ts";
 import { recordEventToolName } from "./tool_names.ts";
-import { withToolHandling } from "./tool_resolvers.ts";
+import {
+  type ContactLocator,
+  resolveContactLocator,
+  withToolHandling,
+} from "./tool_resolvers.ts";
 import { toolFailure as invalidToolInput } from "./tool_types.ts";
 import type { ToolResult } from "./tool_types.ts";
 import { validateToolInput } from "./validate_tool_input.ts";
 
+type ToolEvidence<
+  T extends { participants: readonly SocialEventParticipantInput[] },
+> = Omit<T, "participants"> & {
+  participants: readonly (
+    | SocialEventParticipantInput
+    | {
+        contact: ContactLocator;
+        role: SocialEventParticipantInput["role"];
+        directionality?: SocialEventParticipantInput["directionality"];
+      }
+  )[];
+};
+
 export type RecordEventToolInput =
-  | { kind: "interaction"; input: RecordInteractionInput }
-  | { kind: "observation"; input: RecordObservationInput }
-  | { kind: "milestone"; input: RecordMilestoneInput }
-  | { kind: "transaction"; input: RecordTransactionInput };
+  | { kind: "interaction"; input: ToolEvidence<RecordInteractionInput> }
+  | { kind: "observation"; input: ToolEvidence<RecordObservationInput> }
+  | { kind: "milestone"; input: ToolEvidence<RecordMilestoneInput> }
+  | { kind: "transaction"; input: ToolEvidence<RecordTransactionInput> };
 
 export type RecordEventToolResult = ToolResult<MutationToolData<EventRecord>>;
 
@@ -40,12 +57,15 @@ export type RecordEventToolResult = ToolResult<MutationToolData<EventRecord>>;
  * pattern (used everywhere else) in addition to `{ contactId, role }`.
  */
 function normalizeParticipant(
+  db: AffinityDb,
   p: Record<string, unknown>,
 ): SocialEventParticipantInput {
   let contactId = p.contactId as number | undefined;
   if (contactId === undefined && p.contact != null) {
     const loc = p.contact as Record<string, unknown>;
-    contactId = loc.contactId as number | undefined;
+    const resolved = resolveContactLocator(db, loc as ContactLocator);
+    if (!resolved.ok) throw resolved.result;
+    contactId = resolved.value.id;
   }
   const result: SocialEventParticipantInput = {
     contactId: contactId as number,
@@ -78,7 +98,7 @@ function prepareParticipants(
   raw: readonly Record<string, unknown>[],
   injectOwner: boolean,
 ): SocialEventParticipantInput[] {
-  const normalized = raw.map(normalizeParticipant);
+  const normalized = raw.map((p) => normalizeParticipant(db, p));
   return injectOwner ? ensureOwnerParticipates(db, normalized) : normalized;
 }
 
@@ -195,8 +215,17 @@ export const recordEventTool = defineAffinityTool<
             objectSchema(
               {
                 contact: objectSchema(
-                  { contactId: integerSchema("Contact id.") },
-                  ["contactId"],
+                  {
+                    contactId: integerSchema("Contact id."),
+                    identity: objectSchema(
+                      {
+                        type: stringSchema("Identity type."),
+                        value: stringSchema("Identity value."),
+                      },
+                      ["type", "value"],
+                    ),
+                  },
+                  [],
                 ),
                 contactId: integerSchema(
                   "Participant contact id. The owner contact MUST be included.",

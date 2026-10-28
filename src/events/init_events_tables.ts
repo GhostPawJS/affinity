@@ -55,6 +55,8 @@ export function initEventsTables(db: AffinityDb): void {
   }[];
   if (!columns.some((c) => c.name === "declared_moment_kind"))
     db.exec("ALTER TABLE events ADD COLUMN declared_moment_kind TEXT");
+  if (!columns.some((c) => c.name === "affects_bond"))
+    db.exec("ALTER TABLE events ADD COLUMN affects_bond INTEGER");
   if (!columns.some((c) => c.name === "content"))
     db.exec("ALTER TABLE events ADD COLUMN content TEXT");
   if (!columns.some((c) => c.name === "external_source"))

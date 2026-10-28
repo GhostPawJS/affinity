@@ -35,6 +35,10 @@ export function parseCalendarTime(
   field = "time",
   now = Date.now(),
 ): { timestamp: number; day: string } {
+  if (value == null && field.endsWith("occurredAt"))
+    throw new AffinityValidationError(
+      "occurredAt is required (ISO, YYYY-MM-DD, epoch ms, today, +3d …)",
+    );
   const fail = (): never => {
     throw new AffinityValidationError(`${field}: expected ${timeInputForms}`);
   };
@@ -52,6 +56,19 @@ export function parseCalendarTime(
   }
   if (typeof value !== "string") return fail();
   let text = value.trim();
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(text)) {
+    text = text.replace(" ", "T");
+    if (!/(?:Z|[+-]\d{2}:\d{2})$/.test(text)) text += "Z";
+  }
+  let rounding = 0;
+  text = text.replace(
+    /\.(\d{4,})(?=Z|[+-]\d{2}:\d{2}$)/,
+    (_, digits: string) => {
+      const ms = Math.round(Number(`0.${digits}`) * 1000);
+      rounding = ms === 1000 ? 1 : 0;
+      return `.${String(ms === 1000 ? 999 : ms).padStart(3, "0")}`;
+    },
+  );
   if (/^(today|yesterday|tomorrow|[+-]\d+d)$/.test(text)) {
     const offset =
       text === "today"
@@ -85,7 +102,7 @@ export function parseCalendarTime(
     return fail();
   const timestamp = dateOnly
     ? midnight + (field.split(".").at(-1) === "dueAt" ? 86399999 : 0)
-    : Date.parse(text);
+    : Date.parse(text) + rounding;
   if (!Number.isFinite(timestamp)) return fail();
   return { timestamp, day };
 }
