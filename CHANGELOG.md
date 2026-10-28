@@ -6,6 +6,8 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-28
+
 ### Added
 
 - Events take an optional `externalRef` (`{source, id}`), unique per source. Recording the same ref again returns `no_op` with the existing event id. Look an event up with `show event --ref-source <s> --ref-id <id>` or search event text with `search --scope events|all`.
@@ -241,7 +243,8 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 - Public read and write namespaces, tool facade, skills, and relationship guidance.
 - Validation, tests, API documentation, lifecycle examples, and release workflows.
 
-[Unreleased]: https://github.com/GhostPawJS/affinity/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/GhostPawJS/affinity/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/GhostPawJS/affinity/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/GhostPawJS/affinity/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/GhostPawJS/affinity/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/GhostPawJS/affinity/compare/v0.3.0...v0.4.0
