@@ -39,7 +39,8 @@ ghostpaw-affinity date add --input '{"target":{"kind":"contact","contact":{"cont
 ghostpaw-affinity attribute set --target '{"kind":"contact","contact":{"contactId":2}}' --name pipeline_stage --value '"proposal"'
 ghostpaw-affinity attribute set --target '{"kind":"contact","contact":{"contactId":2}}' --name tag:gastro-radar --value null
 ghostpaw-affinity show contact_profile --contact '{"contactId":2}'
-ghostpaw-affinity review events.contact_journal --contact '{"contactId":2}'
+ghostpaw-affinity review events.contact_journal --with-content --channel bluesky --contact '{"contactId":2}'
+ghostpaw-affinity search --scope events "record id"
 ghostpaw-affinity review links.radar
 ghostpaw-affinity review commitments.open
 ghostpaw-affinity review dates.upcoming --horizon-days 14
@@ -51,6 +52,8 @@ ghostpaw-affinity duplicate dismiss --left '{"contactId":5}' --right '{"contactI
 ghostpaw-affinity contact revise '{"contactId":3}' --patch '{"name":"New Name"}'
 ghostpaw-affinity contact lifecycle '{"contactId":9}' dormant
 ghostpaw-affinity relationship state --link '{"linkId":7}' --state dormant
+ghostpaw-affinity event revise --event-id 12 --patch '{"summary":"Corrected"}'
+ghostpaw-affinity event delete --event-id 12 --confirm
 ghostpaw-affinity contact export --contact '{"contactId":2}'
 ghostpaw-affinity contact delete --contact '{"contactId":2}' --confirm
 ```
@@ -83,7 +86,8 @@ Inspect schemas with `ghostpaw-affinity describe <tool>`. Use `--db <path>` to s
 - **record_event**: Record one social event such as an interaction, observation, milestone, or transaction.
 - **manage_commitment**: Record or resolve one commitment such as a promise or agreement.
 - **manage_date_anchor**: Add, revise, or remove recurring date anchors on contacts or links.
-- **manage_attribute**: Set, unset, or replace custom metadata attributes on contacts and links.
+- **manage_attribute**: Set, unset, or replace custom metadata attributes on contacts, links and events.
+- **manage_event**: Revise or delete one event by eventId or external reference.
 
 Parameter details and examples: `ghostpaw-affinity skill tools` or `ghostpaw-affinity describe <tool>`.
 

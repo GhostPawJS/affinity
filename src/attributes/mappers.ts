@@ -5,6 +5,7 @@ export function mapAttributeRowToAttributeRecord(
   row: AttributeRow,
 ): AttributeRecord {
   return {
+    ...(row.event_id == null ? {} : { eventId: row.event_id }),
     id: row.id,
     contactId: row.contact_id,
     linkId: row.link_id,

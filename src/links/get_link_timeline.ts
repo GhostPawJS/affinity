@@ -32,6 +32,10 @@ export function getLinkTimeline(
     clauses.push(`e.type IN (${ph})`);
     params.push(...options.eventTypes);
   }
+  if (options?.channel !== undefined) {
+    clauses.push("e.channel = ?");
+    params.push(options.channel.trim().toLowerCase());
+  }
   const where = clauses.join(" AND ");
   const rows = db
     .prepare(
@@ -46,5 +50,6 @@ export function getLinkTimeline(
   return batchLoadEventRecords(
     db,
     rows.map((r) => r.id),
+    options?.includeContent ?? false,
   );
 }

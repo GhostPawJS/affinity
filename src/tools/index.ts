@@ -139,3 +139,13 @@ export {
 } from "./tool_ref.ts";
 
 export { parseTimeInput } from "./parse_time_input.ts";
+
+export {
+  manageEventTool,
+  manageEventToolHandler,
+} from "./manage_event_tool.ts";
+export type {
+  ManageEventToolInput,
+  ManageEventToolResult,
+} from "./manage_event_tool.ts";
+export { manageEventToolName } from "./tool_names.ts";

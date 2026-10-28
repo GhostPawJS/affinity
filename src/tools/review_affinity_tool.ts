@@ -3,6 +3,8 @@ import { listDuplicateCandidates } from "../contacts/list_duplicate_candidates.t
 import type { ContactKind, ContactLifecycleState } from "../contacts/types.ts";
 import type { AffinityDb } from "../database.ts";
 import { listUpcomingDates } from "../dates/list_upcoming_dates.ts";
+import { getEventThread } from "../events/event_discovery.ts";
+import { getEventById } from "../events/event_metadata.ts";
 import { getContactJournal } from "../events/get_contact_journal.ts";
 import { listMoments } from "../events/list_moments.ts";
 import { listOpenCommitments } from "../events/list_open_commitments.ts";
@@ -14,6 +16,7 @@ import type {
 import { getAffinityChart } from "../graph/get_affinity_chart.ts";
 import type { AffinityChartRecord } from "../lib/types/affinity_chart_record.ts";
 import type { DismissedDuplicateRecord } from "../lib/types/dismissed_duplicate_record.ts";
+import type { ExternalRef } from "../lib/types/social_event_input.ts";
 import { getLinkTimeline } from "../links/get_link_timeline.ts";
 import { listObservedLinks } from "../links/list_observed_links.ts";
 import { listOwnerSocialLinks } from "../links/list_owner_social_links.ts";
@@ -23,6 +26,7 @@ import type { LinkKind, LinkState } from "../links/types.ts";
 import { getMergeHistory } from "../merges/get_merge_history.ts";
 import { listDismissedDuplicates } from "../merges/list_dismissed_duplicates.ts";
 import { enrichReviewItem } from "./enrich_review_item.ts";
+import { externalRefSchema } from "./event_metadata_schema.ts";
 import type { TimeInputs } from "./parse_time_input.ts";
 import {
   arraySchema,
@@ -62,6 +66,7 @@ import { validateToolInput } from "./validate_tool_input.ts";
 export type ReviewAffinityToolView =
   | "contacts.list"
   | "contacts.duplicates"
+  | "events.thread"
   | "events.contact_journal"
   | "events.link_timeline"
   | "events.moments"
@@ -76,6 +81,9 @@ export type ReviewAffinityToolView =
   | "merges.dismissed";
 
 export interface ReviewAffinityToolInput {
+  ref?: ExternalRef;
+  includeContent?: boolean;
+  channel?: string;
   view: ReviewAffinityToolView;
   now?: number;
   contact?: ContactLocator;
@@ -117,6 +125,10 @@ export type ReviewAffinityToolResult = ToolResult<ReviewAffinityToolData>;
 
 function buildReadOptions(input: ReviewAffinityToolInput) {
   return {
+    ...(input.includeContent === undefined
+      ? {}
+      : { includeContent: input.includeContent }),
+    ...(input.channel === undefined ? {} : { channel: input.channel }),
     ...(input.now === undefined ? {} : { now: input.now }),
     ...(input.limit === undefined ? {} : { limit: input.limit }),
     ...(input.offset === undefined ? {} : { offset: input.offset }),
@@ -485,6 +497,19 @@ export function reviewAffinityToolHandler(
           options,
         ).map(duplicateCandidateItem);
         break;
+      case "events.thread": {
+        if (!input.ref)
+          return toolFailure(
+            "protocol",
+            "invalid_input",
+            "Missing thread reference.",
+            "ref is required for events.thread.",
+          );
+        items = getEventThread(db, input.ref.source, input.ref.id, options).map(
+          toEventListToolItem,
+        );
+        break;
+      }
       case "events.contact_journal": {
         const locator = input.contact;
         if (locator === undefined) {
@@ -707,6 +732,17 @@ export function reviewAffinityToolHandler(
         break;
     }
 
+    if (
+      input.includeContent &&
+      ["events.moments", "commitments.open"].includes(input.view)
+    )
+      items = items.map((item) => {
+        const content = getEventById(
+          db,
+          Number(item.eventId ?? item.id),
+        )?.content;
+        return content === undefined ? item : { ...item, content };
+      });
     items = items.map((item) => enrichReviewItem(db, item));
     return toolSuccess(
       summarizeCount(items.length, "item"),
@@ -718,7 +754,7 @@ export function reviewAffinityToolHandler(
         ...(chart === undefined ? {} : { chart }),
       },
       {
-        entities: items,
+        entities: items.map(({ content: _content, ...item }) => item),
         warnings:
           items.length === 0
             ? [
@@ -789,9 +825,15 @@ export const reviewAffinityTool = defineAffinityTool<
     "Returns compact review items, a count, the applied filters, and the chart payload for graph review.",
   inputSchema: objectSchema(
     {
+      ref: externalRefSchema,
+      includeContent: booleanSchema(
+        "Include verbatim content in event rows; defaults to false.",
+      ),
+      channel: stringSchema("Filter events by channel."),
       view: enumSchema("Which review surface to return.", [
         "contacts.list",
         "contacts.duplicates",
+        "events.thread",
         "events.contact_journal",
         "events.link_timeline",
         "events.moments",

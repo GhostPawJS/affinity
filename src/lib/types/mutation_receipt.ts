@@ -25,7 +25,9 @@ export interface MutationReceipt<TPrimary> {
 export type ContactMutationReceipt = MutationReceipt<ContactListItem>;
 export type IdentityMutationReceipt = MutationReceipt<IdentityRecord>;
 export type LinkMutationReceipt = MutationReceipt<LinkListItem>;
-export type EventMutationReceipt = MutationReceipt<EventRecord>;
+export type EventMutationReceipt = MutationReceipt<EventRecord> & {
+  outcome?: "success" | "no_op";
+};
 export type AttributeMutationReceipt = MutationReceipt<AttributeRecord>;
 export type MergeReceipt = MutationReceipt<MergePrimary>;
 export type DismissalMutationReceipt = MutationReceipt<DismissedPairRef>;

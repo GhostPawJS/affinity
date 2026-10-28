@@ -23,7 +23,9 @@ export function exportRows(
           "manual",
         ].includes(key)
           ? Boolean(value)
-          : value;
+          : value instanceof Uint8Array
+            ? Buffer.from(value).toString("utf8")
+            : value;
         if (name.endsWith("At") && typeof value === "number")
           result[`${name}Iso`] = new Date(value).toISOString();
         if (key.endsWith("_json") && typeof value === "string")

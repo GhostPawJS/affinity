@@ -7,6 +7,7 @@ import type { EventRecord } from "../lib/types/event_record.ts";
 import type { RecordCommitmentInput } from "../lib/types/record_commitment_input.ts";
 import type { ResolveCommitmentOptions } from "../lib/types/resolve_commitment_options.ts";
 import type { SocialEventParticipantInput } from "../lib/types/social_event_input.ts";
+import { eventMetadataSchema } from "./event_metadata_schema.ts";
 import type { TimeInputs } from "./parse_time_input.ts";
 import {
   arraySchema,
@@ -78,7 +79,13 @@ export function manageCommitmentToolHandler(
   rawInput: TimeInputs<ManageCommitmentToolInput>,
 ): ManageCommitmentToolResult {
   const input = structuredClone(rawInput) as ManageCommitmentToolInput;
-  const inputError = validateToolInput(manageCommitmentTool.inputSchema, input);
+  const inputError = validateToolInput(
+    manageCommitmentTool.inputSchema,
+    input,
+    "input",
+    Date.now(),
+    true,
+  );
   if (inputError)
     return invalidToolInput(
       "protocol",
@@ -174,15 +181,21 @@ export const manageCommitmentTool = defineAffinityTool<
             "promise",
             "agreement",
           ]),
+          ...eventMetadataSchema,
           occurredAt: integerSchema(
             "When the commitment was made, Unix timestamp in milliseconds.",
           ),
           summary: stringSchema("Commitment summary. Must be non-empty."),
           significance: integerSchema("Commitment significance from 1 to 10."),
           dueAt: integerSchema("Optional due timestamp."),
+          dueOn: stringSchema("Due calendar day."),
           participants: arraySchema(
             objectSchema(
               {
+                contact: objectSchema(
+                  { contactId: integerSchema("Contact id.") },
+                  ["contactId"],
+                ),
                 contactId: integerSchema(
                   "Participant contact id. The owner contact MUST be included.",
                 ),
@@ -195,13 +208,7 @@ export const manageCommitmentTool = defineAffinityTool<
           ),
           now: integerSchema("Optional timestamp override."),
         },
-        [
-          "commitmentType",
-          "occurredAt",
-          "summary",
-          "significance",
-          "participants",
-        ],
+        ["commitmentType", "occurredAt", "significance", "participants"],
         "Commitment payload. Required when action=record.",
       ),
       commitmentEventId: integerSchema(
@@ -216,6 +223,19 @@ export const manageCommitmentTool = defineAffinityTool<
           now: integerSchema("Optional timestamp."),
           resolvingEvent: objectSchema(
             {
+              occurredOn: stringSchema("Calendar day."),
+              provenance: {},
+              participants: arraySchema(
+                objectSchema(
+                  {
+                    contactId: integerSchema("Contact id."),
+                    role: stringSchema("Role."),
+                    directionality: stringSchema("Directionality."),
+                  },
+                  ["contactId", "role"],
+                ),
+                "Resolving participants.",
+              ),
               type: stringSchema("Optional resolving event type."),
               occurredAt: integerSchema("Optional resolving event timestamp."),
               summary: stringSchema("Optional resolving event summary."),

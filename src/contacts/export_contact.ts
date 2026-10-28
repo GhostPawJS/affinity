@@ -12,10 +12,14 @@ export function exportContact(db: AffinityDb, id: number) {
   const events: Array<
     Record<string, unknown> & { participants: Record<string, unknown>[] }
   > = query(
-    "SELECT DISTINCT e.* FROM events e JOIN event_participants p ON p.event_id = e.id WHERE p.contact_id = ? AND e.type != 'date_anchor' ORDER BY e.id",
+    "SELECT DISTINCT e.*, CAST(e.content AS BLOB) AS content, CAST(e.summary AS BLOB) AS summary FROM events e JOIN event_participants p ON p.event_id = e.id WHERE p.contact_id = ? AND e.type != 'date_anchor' ORDER BY e.id",
     id,
   ).map((event) => ({
     ...event,
+    attributes: query(
+      "SELECT * FROM attributes WHERE event_id=? ORDER BY id",
+      event.id as number,
+    ),
     participants: query(
       "SELECT p.*, c.name AS contact_name FROM event_participants p JOIN contacts c ON c.id = p.contact_id WHERE event_id = ? ORDER BY p.contact_id",
       event.id as number,

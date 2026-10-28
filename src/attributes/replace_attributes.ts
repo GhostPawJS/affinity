@@ -17,6 +17,7 @@ import type { EntityRef } from "../lib/types/entity_ref.ts";
 import type { AttributeMutationReceipt } from "../lib/types/mutation_receipt.ts";
 import { resolveNow } from "../resolve_now.ts";
 import { withTransaction } from "../with_transaction.ts";
+import { attributeTargetSql } from "./queries.ts";
 
 export function replaceAttributes(
   db: AffinityDb,
@@ -39,26 +40,14 @@ export function replaceAttributes(
     }
     const created: EntityRef[] = [];
     let lastId = 0;
-    if (target.kind === "contact") {
-      const insert = db.prepare(
-        `INSERT INTO attributes (contact_id, link_id, name, value, created_at, updated_at)
-         VALUES (?, NULL, ?, ?, ?, ?)`,
-      );
-      for (const e of normalized) {
-        const r = insert.run(target.id, e.name, e.value, now, now);
-        lastId = Number(r.lastInsertRowid);
-        created.push({ kind: "attribute", id: lastId });
-      }
-    } else {
-      const insert = db.prepare(
-        `INSERT INTO attributes (contact_id, link_id, name, value, created_at, updated_at)
-         VALUES (NULL, ?, ?, ?, ?, ?)`,
-      );
-      for (const e of normalized) {
-        const r = insert.run(target.id, e.name, e.value, now, now);
-        lastId = Number(r.lastInsertRowid);
-        created.push({ kind: "attribute", id: lastId });
-      }
+    const t = attributeTargetSql(target);
+    const insert = db.prepare(
+      `INSERT INTO attributes (${t.column},name,value,created_at,updated_at) VALUES (?,?,?,?,?)`,
+    );
+    for (const e of normalized) {
+      const r = insert.run(t.id, e.name, e.value, now, now);
+      lastId = Number(r.lastInsertRowid);
+      created.push({ kind: "attribute", id: lastId });
     }
     if (normalized.length === 0) {
       return buildAttributeMutationReceipt(clearedAttributePrimary(target), {

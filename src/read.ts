@@ -24,3 +24,8 @@ export {
 } from "./events/index.ts";
 export { exportContact } from "./contacts/export_contact.ts";
 export { exportAffinity } from "./contacts/export_affinity.ts";
+export {
+  getEventById,
+  getEventByExternalRef,
+} from "./events/event_metadata.ts";
+export { searchEvents, getEventThread } from "./events/event_discovery.ts";

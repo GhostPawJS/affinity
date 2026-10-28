@@ -10,6 +10,7 @@ import type { RecordMilestoneInput } from "../lib/types/record_milestone_input.t
 import type { RecordObservationInput } from "../lib/types/record_observation_input.ts";
 import type { RecordTransactionInput } from "../lib/types/record_transaction_input.ts";
 import type { SocialEventParticipantInput } from "../lib/types/social_event_input.ts";
+import { eventMetadataSchema } from "./event_metadata_schema.ts";
 import type { TimeInputs } from "./parse_time_input.ts";
 import {
   arraySchema,
@@ -86,7 +87,13 @@ export function recordEventToolHandler(
   rawInput: TimeInputs<RecordEventToolInput>,
 ): RecordEventToolResult {
   const input = structuredClone(rawInput) as RecordEventToolInput;
-  const inputError = validateToolInput(recordEventTool.inputSchema, input);
+  const inputError = validateToolInput(
+    recordEventTool.inputSchema,
+    input,
+    "input",
+    Date.now(),
+    true,
+  );
   if (inputError)
     return invalidToolInput(
       "protocol",
@@ -178,6 +185,7 @@ export const recordEventTool = defineAffinityTool<
               "correction",
             ],
           ),
+          ...eventMetadataSchema,
           occurredAt: integerSchema(
             "When the event occurred, Unix timestamp in milliseconds.",
           ),
@@ -186,6 +194,10 @@ export const recordEventTool = defineAffinityTool<
           participants: arraySchema(
             objectSchema(
               {
+                contact: objectSchema(
+                  { contactId: integerSchema("Contact id.") },
+                  ["contactId"],
+                ),
                 contactId: integerSchema(
                   "Participant contact id. The owner contact MUST be included.",
                 ),
@@ -209,7 +221,7 @@ export const recordEventTool = defineAffinityTool<
           ),
           now: integerSchema("Optional timestamp override."),
         },
-        ["occurredAt", "summary", "significance", "participants"],
+        ["occurredAt", "significance", "participants"],
         "Event payload. Always required. Interaction events also require `type`.",
       ),
     },

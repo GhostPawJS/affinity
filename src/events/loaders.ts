@@ -4,6 +4,7 @@ import { AffinityNotFoundError } from "../lib/errors/affinity_not_found_error.ts
 import type { EventParticipantView } from "../lib/types/event_participant_view.ts";
 import type { EventRecord } from "../lib/types/event_record.ts";
 import type { EventRow } from "../lib/types/event_row.ts";
+import { enrichEventMetadata } from "./event_metadata.ts";
 import { mapEventRowToEventRecord } from "./mappers.ts";
 import { getEventRowById } from "./queries.ts";
 import type { EventParticipantRole } from "./types.ts";
@@ -57,6 +58,7 @@ export function loadEventRecord(db: AffinityDb, eventId: number): EventRecord {
         ? null
         : new Date(due.due_at).toISOString().slice(0, 10));
   }
+  enrichEventMetadata(db, record);
   return record;
 }
 
@@ -64,6 +66,7 @@ export function loadEventRecord(db: AffinityDb, eventId: number): EventRecord {
 export function batchLoadEventRecords(
   db: AffinityDb,
   eventIds: readonly number[],
+  includeContent = false,
 ): EventRecord[] {
   if (eventIds.length === 0) {
     return [];
@@ -71,10 +74,11 @@ export function batchLoadEventRecords(
   const ph = eventIds.map(() => "?").join(", ");
   const eventRows = db
     .prepare(
-      `SELECT e.id, e.type, e.occurred_at, e.occurred_on, oc.due_at, oc.due_on, summary, significance, moment_kind,
+      `SELECT e.id, e.type, e.occurred_at, e.occurred_on, oc.due_at, oc.due_on, significance, moment_kind,
+              e.external_source,e.external_id,e.channel,e.parent_source,e.parent_ref_id,e.parent_event_id,e.thread_source,e.thread_id,
               recurrence_kind, anchor_month, anchor_day,
               anchor_contact_id, anchor_link_id,
-              e.created_at, e.updated_at, e.deleted_at
+              e.created_at, e.updated_at, e.deleted_at, ${includeContent ? "CAST(e.content AS BLOB)" : "NULL"} AS content, CAST(e.summary AS BLOB) AS summary
        FROM events e LEFT JOIN open_commitments oc ON oc.event_id = e.id WHERE e.id IN (${ph}) AND e.deleted_at IS NULL`,
     )
     .all(...eventIds) as unknown as EventRow[];
@@ -114,7 +118,9 @@ export function batchLoadEventRecords(
   for (const id of eventIds) {
     const row = rowById.get(id);
     if (row) {
-      out.push(mapEventRowToEventRecord(row, partsByEvent.get(id) ?? []));
+      const record = mapEventRowToEventRecord(row, partsByEvent.get(id) ?? []);
+      enrichEventMetadata(db, record);
+      out.push(record);
     }
   }
   return out;

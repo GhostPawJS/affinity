@@ -2,6 +2,7 @@ import type { AffinityDb } from "../database.ts";
 import { AffinityInvariantError } from "../lib/errors/affinity_invariant_error.ts";
 import type { SocialEventParticipantInput } from "../lib/types/social_event_input.ts";
 import { resolveNow } from "../resolve_now.ts";
+import { deriveEventSummary } from "./event_metadata.ts";
 import { getEventRowById } from "./queries.ts";
 import type { EventMomentKind, EventType } from "./types.ts";
 
@@ -11,7 +12,14 @@ export function insertJournalEvent(
     type: EventType;
     occurredAt: number;
     occurredOn?: string | undefined;
-    summary: string;
+    summary?: string;
+    content?: string;
+    externalRef?: import("../lib/types/social_event_input.ts").ExternalRef;
+    channel?: string;
+    parentRef?: import("../lib/types/social_event_input.ts").ExternalRef;
+    parentEventId?: number;
+    threadRef?: import("../lib/types/social_event_input.ts").ExternalRef;
+    provenance?: unknown;
     significance: number;
     momentKind: EventMomentKind | null;
     participants: readonly SocialEventParticipantInput[];
@@ -19,7 +27,8 @@ export function insertJournalEvent(
   },
 ): number {
   const now = resolveNow(params.now);
-  const summary = params.summary.trim();
+  const summary =
+    params.summary?.trim() ?? deriveEventSummary(params.content ?? "");
   const result = db
     .prepare(
       `INSERT INTO events (
@@ -38,6 +47,25 @@ export function insertJournalEvent(
       now,
     );
   const eventId = Number(result.lastInsertRowid);
+  db.prepare("UPDATE events SET declared_moment_kind=? WHERE id=?").run(
+    params.momentKind,
+    eventId,
+  );
+  db.prepare(
+    "UPDATE events SET content=?, external_source=?, external_id=?, channel=?, parent_source=?, parent_ref_id=?, parent_event_id=?, thread_source=?, thread_id=?, provenance_json=? WHERE id=?",
+  ).run(
+    params.content ?? null,
+    params.externalRef?.source ?? null,
+    params.externalRef?.id ?? null,
+    params.channel ?? null,
+    params.parentRef?.source ?? null,
+    params.parentRef?.id ?? null,
+    params.parentEventId ?? null,
+    params.threadRef?.source ?? null,
+    params.threadRef?.id ?? null,
+    params.provenance === undefined ? null : JSON.stringify(params.provenance),
+    eventId,
+  );
   db.prepare("UPDATE events SET occurred_on = ? WHERE id = ?").run(
     params.occurredOn ?? new Date(params.occurredAt).toISOString().slice(0, 10),
     eventId,

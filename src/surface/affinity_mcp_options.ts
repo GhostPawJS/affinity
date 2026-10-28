@@ -18,6 +18,7 @@ export function affinityMcpOptions(
       readOnlyHint: tool.readOnly ?? false,
       destructiveHint:
         tool.name === "merge_contacts" ||
+        tool.name === "manage_event" ||
         /remove|unset|undismiss/.test(
           String(tool.inputSchema.properties?.action?.enum ?? []),
         ),

@@ -1,6 +1,7 @@
 import { searchContacts } from "../contacts/search_contacts.ts";
 import type { ContactKind, ContactLifecycleState } from "../contacts/types.ts";
 import type { AffinityDb } from "../database.ts";
+import { searchEvents } from "../events/event_discovery.ts";
 import type { TimeInputs } from "./parse_time_input.ts";
 import {
   arraySchema,
@@ -22,6 +23,7 @@ import { toolSuccess } from "./tool_types.ts";
 import { validateToolInput } from "./validate_tool_input.ts";
 
 export interface SearchAffinityToolInput {
+  scope?: "contacts" | "events" | "all";
   query: string;
   kind?: ContactKind;
   lifecycleState?: ContactLifecycleState;
@@ -60,33 +62,48 @@ export function searchAffinityToolHandler(
       ...(input.limit === undefined ? {} : { limit: input.limit }),
       ...(input.offset === undefined ? {} : { offset: input.offset }),
     };
-    const rows = searchContacts(
-      db,
-      input.query,
-      {
-        ...(input.attribute === undefined
-          ? {}
-          : { attribute: input.attribute }),
-        ...(input.tag === undefined ? {} : { tag: input.tag }),
-        ...(input.includeLost === undefined
-          ? {}
-          : { includeLost: input.includeLost }),
-        ...(input.kind === undefined ? {} : { kind: input.kind }),
-        ...(input.lifecycleState === undefined
-          ? {}
-          : { lifecycleState: input.lifecycleState }),
-        ...(input.includeOwner === undefined
-          ? {}
-          : { includeOwner: input.includeOwner }),
-        ...(input.includeDormant === undefined
-          ? {}
-          : { includeDormant: input.includeDormant }),
-      },
-      options,
-    );
-    const items = rows.map(toContactListToolItem);
+    const rows =
+      input.scope === "events"
+        ? []
+        : searchContacts(
+            db,
+            input.query,
+            {
+              ...(input.attribute === undefined
+                ? {}
+                : { attribute: input.attribute }),
+              ...(input.tag === undefined ? {} : { tag: input.tag }),
+              ...(input.includeLost === undefined
+                ? {}
+                : { includeLost: input.includeLost }),
+              ...(input.kind === undefined ? {} : { kind: input.kind }),
+              ...(input.lifecycleState === undefined
+                ? {}
+                : { lifecycleState: input.lifecycleState }),
+              ...(input.includeOwner === undefined
+                ? {}
+                : { includeOwner: input.includeOwner }),
+              ...(input.includeDormant === undefined
+                ? {}
+                : { includeDormant: input.includeDormant }),
+            },
+            options,
+          );
+    const items = [
+      ...rows.map(toContactListToolItem),
+      ...(input.scope === "events" || input.scope === "all"
+        ? searchEvents(db, input.query, options)
+        : []),
+    ];
     return toolSuccess(
-      summarizeCount(items.length, "contact"),
+      summarizeCount(
+        items.length,
+        input.scope === "events"
+          ? "event"
+          : input.scope === "all"
+            ? "item"
+            : "contact",
+      ),
       {
         query: input.query,
         items,
@@ -130,6 +147,11 @@ export const searchAffinityTool = defineAffinityTool<
     "Returns compact contact hits, the original query, and the hit count.",
   inputSchema: objectSchema(
     {
+      scope: enumSchema("Search scope; defaults to contacts.", [
+        "contacts",
+        "events",
+        "all",
+      ]),
       query: stringSchema("Free-text or natural-key query."),
       kind: enumSchema("Optional contact kind filter.", [
         "human",

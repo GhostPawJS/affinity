@@ -4,6 +4,7 @@ import { manageCommitmentTool } from "./manage_commitment_tool.ts";
 import { manageContactTool } from "./manage_contact_tool.ts";
 import { manageDateAnchorTool } from "./manage_date_anchor_tool.ts";
 import { manageDuplicateDismissalTool } from "./manage_duplicate_dismissal_tool.ts";
+import { manageEventTool } from "./manage_event_tool.ts";
 import { manageIdentityTool } from "./manage_identity_tool.ts";
 import { manageRelationshipTool } from "./manage_relationship_tool.ts";
 import { mergeContactsTool } from "./merge_contacts_tool.ts";
@@ -25,6 +26,7 @@ export const affinityTools = [
   manageCommitmentTool,
   manageDateAnchorTool,
   manageAttributeTool,
+  manageEventTool,
 ] satisfies ToolDefinitionRegistry;
 
 export function listAffinityToolDefinitions() {

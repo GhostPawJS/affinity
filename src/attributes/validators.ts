@@ -40,6 +40,15 @@ export function assertAttributeTargetWritable(
   db: AffinityDb,
   target: AttributeTarget,
 ): void {
+  if (target.kind === "event") {
+    if (
+      !db
+        .prepare("SELECT id FROM events WHERE id=? AND deleted_at IS NULL")
+        .get(target.eventId)
+    )
+      throw new AffinityNotFoundError("event not found");
+    return;
+  }
   if (target.kind === "contact") {
     const contact = getContactRowById(db, target.id);
     if (!contact) {

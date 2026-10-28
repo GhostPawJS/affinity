@@ -113,7 +113,11 @@
     },
     {
       "name": "manage_attribute",
-      "description": "Set, unset, or replace custom metadata attributes on contacts and links. For emails, phones, handles, and URLs use manage_identity instead — those are routing keys, not attributes."
+      "description": "Set, unset, or replace custom metadata attributes on contacts, links and events. For emails, phones, handles, and URLs use manage_identity instead — those are routing keys, not attributes."
+    },
+    {
+      "name": "manage_event",
+      "description": "Revise or delete one event by eventId or external reference. Delete requires confirm=true and recomputes affected relationships."
     }
   ],
   "compatibility": {

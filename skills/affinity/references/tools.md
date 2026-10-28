@@ -21,14 +21,15 @@ Inspect schemas with `ghostpaw-affinity describe <tool>`. Use `--db <path>` to s
 
 Search contacts by name, identity, attributes, link roles, bonds and event text. All whitespace tokens must match. Dormant and lost contacts are excluded by default; use includeDormant and includeLost to include them.
 
-Use when: 
+Use when:
 
-Not for: 
+Not for:
 
 Read-only.
 
 | Parameter | Type | Required | Values / description |
 | --- | --- | --- | --- |
+| scope | string | no | contacts, events, all. Search scope; defaults to contacts. |
 | query | string | yes | Free-text or natural-key query. |
 | kind | string | no | human, group, company, team, pet, service, other. Optional contact kind filter. |
 | lifecycleState | string | no | active, dormant, merged, lost. Optional lifecycle state filter. |
@@ -48,15 +49,18 @@ ghostpaw-affinity search "Jana"
 
 Review one affinity surface such as contacts, journals, link queues, commitments, dates, graph state, or merge history.
 
-Use when: 
+Use when:
 
-Not for: 
+Not for:
 
 Read-only.
 
 | Parameter | Type | Required | Values / description |
 | --- | --- | --- | --- |
-| view | string | yes | contacts.list, contacts.duplicates, events.contact_journal, events.link_timeline, events.moments, commitments.open, links.owner, links.observed, links.progression_readiness, links.radar, dates.upcoming, graph.chart, merges.history, merges.dismissed. Which review surface to return. |
+| ref | object | no |  |
+| includeContent | boolean | no | Include verbatim content in event rows; defaults to false. |
+| channel | string | no | Filter events by channel. |
+| view | string | yes | contacts.list, contacts.duplicates, events.thread, events.contact_journal, events.link_timeline, events.moments, commitments.open, links.owner, links.observed, links.progression_readiness, links.radar, dates.upcoming, graph.chart, merges.history, merges.dismissed. Which review surface to return. |
 | now | integer / string | no | Optional current timestamp for overdue calculations. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | contact | object | no | Optional target contact locator. |
 | link | object | no | Optional target link locator. |
@@ -83,32 +87,43 @@ Read-only.
 | until | integer / string | no | Optional upper timestamp bound. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | limit | integer | no | Optional result limit. |
 | offset | integer | no | Optional result offset. |
+| refSource | string | no | External reference source. |
+| refId | string | no | External reference id. |
+| withContent | boolean | no | Include verbatim event content. |
+| ref.source | string | yes | External source; trimmed and lowercased. |
+| ref.id | string | yes | Non-empty external id. |
 | contact.contactId | integer | no | Exact contact id. |
 | contact.identity | object | no | Contact identity locator. |
 | link.linkId | integer | no | Exact link id. |
 | link.endpoints | object | no | Endpoint-based link locator. |
 
 ```sh
-ghostpaw-affinity review events.contact_journal --contact '{"contactId":2}'
+ghostpaw-affinity review events.contact_journal --with-content --channel bluesky --contact '{"contactId":2}'
 ```
 
 ## inspect_affinity_item
 
 Inspect one exact affinity item such as the owner profile, a contact profile, or one link detail.
 
-Use when: 
+Use when:
 
-Not for: 
+Not for:
 
 Read-only.
 
 | Parameter | Type | Required | Values / description |
 | --- | --- | --- | --- |
-| kind | string | yes | owner_profile, contact_profile, link. What to inspect. |
+| kind | string | yes | event, owner_profile, contact_profile, link. What to inspect. |
+| eventId | integer | no | Exact event id. |
+| ref | object | no |  |
 | contact | object | no | Target contact. Required when kind=contact_profile. Provide contactId or identity. |
 | link | object | no | Target link. Required when kind=link. Provide linkId or endpoints. |
 | topLinksLimit | integer | no | Optional top-links cap. |
 | recentEventsLimit | integer | no | Optional recent-events cap. |
+| refSource | string | no | External reference source. |
+| refId | string | no | External reference id. |
+| ref.source | string | yes | External source; trimmed and lowercased. |
+| ref.id | string | yes | Non-empty external id. |
 | contact.contactId | integer | no | Exact contact id. |
 | contact.identity | object | no | Contact identity locator. |
 | link.linkId | integer | no | Exact link id. |
@@ -122,9 +137,9 @@ ghostpaw-affinity show contact_profile --contact '{"contactId":2}'
 
 Create, revise, export or permanently delete a contact (confirm: true required; owner cannot be deleted). Export without contact exports the whole database. Lifecycle lost is soft delete. ALWAYS search_affinity first before creating — duplicates corrupt the graph.
 
-Use when: 
+Use when:
 
-Not for: 
+Not for:
 
 Writes: writes_state.
 
@@ -155,9 +170,9 @@ ghostpaw-affinity contact create '{"name":"Fox","kind":"human","bootstrapOwner":
 
 Merge one loser contact into one winner contact using explicit contact locators.
 
-Use when: 
+Use when:
 
-Not for: 
+Not for:
 
 Writes: writes_state.
 
@@ -180,9 +195,9 @@ ghostpaw-affinity contact merge --winner '{"contactId":2}' --loser '{"contactId"
 
 Dismiss or un-dismiss a duplicate candidate pair so it does not resurface in review_affinity contacts.duplicates.
 
-Use when: 
+Use when:
 
-Not for: 
+Not for:
 
 Writes: writes_state.
 
@@ -205,9 +220,9 @@ ghostpaw-affinity duplicate dismiss --left '{"contactId":5}' --right '{"contactI
 
 Add, revise, verify, or remove one routing identity on a contact. Use this for emails, phone numbers, social handles, and URLs — anything that could locate a person. Do not use manage_attribute for these.
 
-Use when: 
+Use when:
 
-Not for: 
+Not for:
 
 Writes: writes_state.
 
@@ -239,9 +254,9 @@ ghostpaw-affinity identity add --contact '{"contactId":2}' --input '{"type":"ema
 
 Seed social links, revise bond and state, and manage structural ties. Seed a link as soon as a relationship is mentioned — do not wait for repeated evidence.
 
-Use when: 
+Use when:
 
-Not for: 
+Not for:
 
 Writes: writes_state.
 
@@ -274,9 +289,9 @@ ghostpaw-affinity relationship tie --from '{"contactId":2}' --to '{"contactId":3
 
 Record one social event such as an interaction, observation, milestone, or transaction. For interactions, milestones, and transactions the owner contact is auto-injected into participants if missing. Observations may omit the owner when recording third-party evidence.
 
-Use when: 
+Use when:
 
-Not for: 
+Not for:
 
 Writes: writes_state.
 
@@ -285,8 +300,17 @@ Writes: writes_state.
 | kind | string | yes | interaction, observation, milestone, transaction. Event kind. |
 | input | object | yes | Event payload. Always required. Interaction events also require `type`. |
 | input.type | string | no | Interaction subtype. Required when kind=interaction, omit otherwise. |
+| input.content | string | no | Verbatim text, including empty text; at most 1 MB UTF-8. Summary may be omitted when content is supplied. |
+| input.externalRef | object | no |  |
+| input.channel | string | no | Free-text channel, trimmed and lowercased, at most 40 characters. |
+| input.parentRef | object | no |  |
+| input.parentEventId | integer | no | Parent event id. |
+| input.threadRef | object | no |  |
+| input.momentKind | string | no | Optional moment kind. |
+| input.occurredOn | string | no | Calendar day. |
+| input.provenance | oneOf | no |  |
 | input.occurredAt | oneOf | yes | When the event occurred, Unix timestamp in milliseconds. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
-| input.summary | string | yes | Event summary. Must be non-empty. |
+| input.summary | string | no | Event summary. Must be non-empty. |
 | input.significance | integer | yes | Event significance from 1 to 10. |
 | input.participants | array | yes | Participant list. Must be non-empty and include the owner contact. |
 | input.now | oneOf | no | Optional timestamp override. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
@@ -299,9 +323,9 @@ ghostpaw-affinity event record --kind interaction --input '{"type":"conversation
 
 Record or resolve one commitment such as a promise or agreement. The owner contact is auto-injected into participants if missing.
 
-Use when: 
+Use when:
 
-Not for: 
+Not for:
 
 Writes: writes_state.
 
@@ -313,10 +337,20 @@ Writes: writes_state.
 | resolution | string | no | kept, cancelled, broken. How the commitment was resolved. Required when action=resolve. |
 | options | object | no | Optional metadata. |
 | input.commitmentType | string | yes | Promise or agreement. |
+| input.content | string | no | Verbatim text, including empty text; at most 1 MB UTF-8. Summary may be omitted when content is supplied. |
+| input.externalRef | object | no |  |
+| input.channel | string | no | Free-text channel, trimmed and lowercased, at most 40 characters. |
+| input.parentRef | object | no |  |
+| input.parentEventId | integer | no | Parent event id. |
+| input.threadRef | object | no |  |
+| input.momentKind | string | no | Optional moment kind. |
+| input.occurredOn | string | no | Calendar day. |
+| input.provenance | oneOf | no |  |
 | input.occurredAt | oneOf | yes | When the commitment was made, Unix timestamp in milliseconds. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
-| input.summary | string | yes | Commitment summary. Must be non-empty. |
+| input.summary | string | no | Commitment summary. Must be non-empty. |
 | input.significance | integer | yes | Commitment significance from 1 to 10. |
 | input.dueAt | oneOf | no | Optional due timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| input.dueOn | string | no | Due calendar day. |
 | input.participants | array | yes | Participant list. Must be non-empty and include the owner contact. |
 | input.now | oneOf | no | Optional timestamp override. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | options.now | oneOf | no | Optional timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
@@ -330,9 +364,9 @@ ghostpaw-affinity commitment record --input '{"commitmentType":"promise","occurr
 
 Add, revise, or remove recurring date anchors on contacts or links. Use this for birthdays, anniversaries, and yearly events — not manage_attribute.
 
-Use when: 
+Use when:
 
-Not for: 
+Not for:
 
 Writes: writes_state.
 
@@ -366,11 +400,11 @@ ghostpaw-affinity date add --input '{"target":{"kind":"contact","contact":{"cont
 
 ## manage_attribute
 
-Set, unset, or replace custom metadata attributes on contacts and links. For emails, phones, handles, and URLs use manage_identity instead — those are routing keys, not attributes.
+Set, unset, or replace custom metadata attributes on contacts, links and events. For emails, phones, handles, and URLs use manage_identity instead — those are routing keys, not attributes.
 
-Use when: 
+Use when:
 
-Not for: 
+Not for:
 
 Writes: writes_state.
 
@@ -383,6 +417,7 @@ Writes: writes_state.
 | entries | array | no | Key-value map to replace all attributes. Required when action=replace. |
 | removedAt | integer / string | no | Removal timestamp. Optional for action=unset. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | target.kind | string | yes | Target kind. |
+| target.eventId | integer | no | Target event id. |
 | target.contact | object | no | Contact locator. Required when kind=contact. Provide contactId or identity. |
 | target.link | object | no | Link locator. Required when kind=link. Provide linkId or endpoints. |
 | entries.name | string | yes | Attribute name. |
@@ -390,6 +425,39 @@ Writes: writes_state.
 
 ```sh
 ghostpaw-affinity attribute set --target '{"kind":"contact","contact":{"contactId":2}}' --name pipeline_stage --value '"proposal"'
+```
+
+## manage_event
+
+Revise or delete one event by eventId or external reference. Delete requires confirm=true and recomputes affected relationships.
+
+Use when:
+
+Not for:
+
+Writes: writes_state.
+
+| Parameter | Type | Required | Values / description |
+| --- | --- | --- | --- |
+| action | string | yes | revise, delete. Action. |
+| eventId | integer | no | Event id; provide eventId or ref. |
+| ref | object | no |  |
+| confirm | boolean | no | Must be true to delete. |
+| patch | object | no | Fields to revise; externalRef may only be added when absent. |
+| refSource | string | no | External reference source. |
+| refId | string | no | External reference id. |
+| ref.source | string | yes | External source; trimmed and lowercased. |
+| ref.id | string | yes | Non-empty external id. |
+| patch.summary | string | no | Short non-empty label. |
+| patch.content | string | no | Verbatim content, at most 1 MB UTF-8. |
+| patch.occurredAt | oneOf | no | Event timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| patch.significance | integer | no | Significance 1..10. |
+| patch.channel | string | no | Channel, at most 40 characters. |
+| patch.type | string | no | Type within the same event kind. |
+| patch.externalRef | object | no |  |
+
+```sh
+ghostpaw-affinity event revise --event-id 1 --patch '{"summary":"Corrected"}'
 ```
 
 ## Workflow guides

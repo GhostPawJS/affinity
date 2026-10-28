@@ -7,6 +7,40 @@ import { cliActionFields } from "./cli_action_fields.ts";
 import { normalizeTimeInputs } from "./plain_dates.ts";
 import { timestampSchema } from "./timestamp_schema.ts";
 
+function surfaceProperties(tool: {
+  name: string;
+  inputSchema: {
+    properties?:
+      | Readonly<Record<string, import("../tools/tool_metadata.ts").JsonSchema>>
+      | undefined;
+  };
+}) {
+  return {
+    ...tool.inputSchema.properties,
+    ...(["inspect_affinity_item", "review_affinity", "manage_event"].includes(
+      tool.name,
+    )
+      ? {
+          refSource: {
+            type: "string" as const,
+            description: "External reference source.",
+          },
+          refId: {
+            type: "string" as const,
+            description: "External reference id.",
+          },
+        }
+      : {}),
+    ...(tool.name === "review_affinity"
+      ? {
+          withContent: {
+            type: "boolean" as const,
+            description: "Include verbatim event content.",
+          },
+        }
+      : {}),
+  };
+}
 const affinitySurfaceTools: readonly SurfaceTool<AffinityDb>[] =
   affinityTools.map((tool) => ({
     name: tool.name,
@@ -15,12 +49,28 @@ const affinitySurfaceTools: readonly SurfaceTool<AffinityDb>[] =
     readOnly: tool.readOnly,
     sideEffects: tool.sideEffects,
     inputSchema: {
-      ...timestampSchema({ ...tool.inputSchema, type: "object" }),
+      ...timestampSchema({
+        ...tool.inputSchema,
+        properties: surfaceProperties(tool),
+        type: "object",
+      }),
       type: "object",
     },
     handler: (db, input) => {
       try {
-        return tool.handler(db, normalizeTimeInputs(input) as never);
+        const { withContent, refSource, refId, ...normalized } = input;
+        if (withContent !== undefined) normalized.includeContent = withContent;
+        if (refSource !== undefined || refId !== undefined) {
+          if (normalized.ref !== undefined)
+            return toolFailure(
+              "protocol",
+              "invalid_input",
+              "Invalid target.",
+              "Provide ref or ref-source/ref-id, not both.",
+            );
+          normalized.ref = { source: refSource, id: refId };
+        }
+        return tool.handler(db, normalizeTimeInputs(normalized) as never);
       } catch (error) {
         if (error instanceof CliUsageError)
           return toolFailure(
@@ -92,6 +142,17 @@ const mapping: Record<string, NonNullable<SurfaceTool<AffinityDb>["cli"]>> = {
       },
     },
   },
+  manage_event: {
+    noun: "event",
+    verb: "manage",
+    action: {
+      property: "action",
+      fields: {
+        revise: ["eventId", "ref", "refSource", "refId", "patch"],
+        delete: ["eventId", "ref", "refSource", "refId", "confirm"],
+      },
+    },
+  },
   record_event: { noun: "event", verb: "record" },
   manage_commitment: { noun: "commitment", verb: "manage" },
   manage_date_anchor: {
@@ -114,6 +175,12 @@ const affinityCliSurfaceTools: readonly SurfaceTool<AffinityDb>[] =
         ...affinityTools.find((original) => original.name === tool.name)
           ?.inputSchema,
         type: "object",
+        properties: surfaceProperties({
+          name: tool.name,
+          inputSchema:
+            affinityTools.find((original) => original.name === tool.name)
+              ?.inputSchema ?? {},
+        }),
       },
       ...(cli
         ? {

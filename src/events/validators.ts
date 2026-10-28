@@ -4,6 +4,7 @@ import { AffinityNotFoundError } from "../lib/errors/affinity_not_found_error.ts
 import { AffinityStateError } from "../lib/errors/affinity_state_error.ts";
 import { AffinityValidationError } from "../lib/errors/affinity_validation_error.ts";
 import type { SocialEventInput } from "../lib/types/social_event_input.ts";
+import { validateEventMetadata } from "./event_metadata.ts";
 import type { EventRecurrenceKind } from "./types.ts";
 
 const PARTICIPANT_ROLES = new Set([
@@ -59,8 +60,14 @@ export function assertParticipantContactsLive(
 
 export function validateSocialEventInput(input: SocialEventInput): void {
   assertFiniteTimestamp(input.occurredAt, "occurredAt");
-  const summary = input.summary.trim();
-  if (summary.length === 0) {
+  validateEventMetadata(input);
+  if (input.summary !== undefined && typeof input.summary !== "string")
+    throw new AffinityValidationError("summary must be a string");
+  const summary = input.summary?.trim();
+  if (
+    summary === "" ||
+    (summary === undefined && input.content === undefined)
+  ) {
     throw new AffinityValidationError("summary must be non-empty");
   }
   const sig = input.significance;

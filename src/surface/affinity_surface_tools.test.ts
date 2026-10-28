@@ -25,6 +25,11 @@ const inputs: Record<string, Record<string, unknown>> = {
     to: { contactId: 2 },
     input: { kind: "personal" },
   },
+  manage_event: {
+    action: "revise",
+    eventId: 1,
+    patch: { summary: "Corrected" },
+  },
   record_event: {
     kind: "interaction",
     input: {

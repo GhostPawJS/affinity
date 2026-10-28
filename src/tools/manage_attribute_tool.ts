@@ -34,7 +34,8 @@ import { validateToolInput } from "./validate_tool_input.ts";
 
 type AttributeTargetInput =
   | { kind: "contact"; contact: ContactLocator }
-  | { kind: "link"; link: LinkLocator };
+  | { kind: "link"; link: LinkLocator }
+  | { kind: "event"; eventId: number };
 
 export type ManageAttributeToolInput =
   | {
@@ -104,6 +105,7 @@ function resolveAttributeTarget(
       kind: "error";
       result: ToolFailure | ToolNeedsClarification;
     } {
+  if (target.kind === "event") return { kind: "ok", target };
   if (target.kind === "contact") {
     const contact = resolveContactLocator(db, target.contact, "target.contact");
     if (!contact.ok) {
@@ -172,7 +174,7 @@ export const manageAttributeTool = defineAffinityTool<
 >({
   name: manageAttributeToolName,
   description:
-    "Set, unset, or replace custom metadata attributes on contacts and links. For emails, phones, handles, and URLs use manage_identity instead — those are routing keys, not attributes.",
+    "Set, unset, or replace custom metadata attributes on contacts, links and events. For emails, phones, handles, and URLs use manage_identity instead — those are routing keys, not attributes.",
   whenToUse:
     "Use this for metadata such as tags, notes, or small labeled facts attached to a contact or link.",
   whenNotToUse:
@@ -196,7 +198,8 @@ export const manageAttributeTool = defineAffinityTool<
       action: enumSchema("Operation to perform.", ["set", "unset", "replace"]),
       target: objectSchema(
         {
-          kind: enumSchema("Target kind.", ["contact", "link"]),
+          kind: enumSchema("Target kind.", ["contact", "link", "event"]),
+          eventId: integerSchema("Target event id."),
           contact: contactLocatorSchema(
             "Contact locator. Required when kind=contact. Provide contactId or identity.",
           ),
@@ -226,7 +229,7 @@ export const manageAttributeTool = defineAffinityTool<
       removedAt: integerSchema("Removal timestamp. Optional for action=unset."),
     },
     ["action"],
-    "Set, unset, or replace attributes on contacts and links.",
+    "Set, unset, or replace attributes on contacts, links and events.",
   ),
   handler: manageAttributeToolHandler,
 });

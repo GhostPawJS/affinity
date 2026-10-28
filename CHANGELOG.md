@@ -8,6 +8,12 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ### Added
 
+- Support unique external event references with idempotent intake, exact event lookup, and event/all search scopes.
+- Store verbatim event content up to 1 MB, derive bounded summaries when omitted, and include content in journal/review rows only on request.
+- Add event attributes, channel filters, parent/root references and chronological thread reviews.
+- Add event revision and confirmed deletion through the library, tool facade, MCP and CLI, with surviving link effects replayed and rollups refreshed.
+- Upgrade existing databases in place for event metadata and effect replay baselines.
+
 - Add `--version --short` for exact semver matching and `--version --json` for structured package and variant metadata, including `version` subcommand equivalents.
 
 ### Changed
@@ -17,6 +23,9 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 - Export whole-database events once at the top level, referenced by contact event/date ids; export stored flags as JSON booleans.
 
 ### Fixed
+
+- Reject unknown event/commitment fields and unsupported moment kinds with allowed-field/value diagnostics.
+- Preserve NUL-containing event content when reading through node:sqlite and avoid duplicating content in review entity references.
 
 - Match national phone queries by digit suffix, excluding short suffixes.
 - Name profile top-link counterparties and exclude date anchors from recent journal events.

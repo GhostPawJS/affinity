@@ -1,3 +1,4 @@
+import { deriveEventSummary } from "../events/event_metadata.ts";
 import type { AttributeRecord } from "../lib/types/attribute_record.ts";
 import type { ContactCore } from "../lib/types/contact_core.ts";
 import type { ContactListItem } from "../lib/types/contact_list_item.ts";
@@ -83,7 +84,7 @@ export function toEventEntityRef(value: EventRecord): ToolEntityRef {
   return {
     kind: "event",
     id: value.id,
-    title: value.summary,
+    title: deriveEventSummary(value.summary),
     subtitle: value.type,
     state: value.type,
   };

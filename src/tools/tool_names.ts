@@ -10,3 +10,5 @@ export const recordEventToolName = "record_event";
 export const manageCommitmentToolName = "manage_commitment";
 export const manageDateAnchorToolName = "manage_date_anchor";
 export const manageAttributeToolName = "manage_attribute";
+
+export const manageEventToolName = "manage_event";

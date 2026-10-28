@@ -35,6 +35,7 @@ test("MCP exposes the complete registry with honest annotations without opening 
       tool.annotations.destructiveHint,
       [
         "merge_contacts",
+        "manage_event",
         "manage_duplicate_dismissal",
         "manage_identity",
         "manage_relationship",

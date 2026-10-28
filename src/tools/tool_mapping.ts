@@ -22,6 +22,24 @@ export interface AffinityToolMapping {
 }
 
 export const affinityToolMappings: AffinityToolMapping[] = [
+  {
+    source: "getEventById",
+    tool: inspectAffinityItemToolName,
+    action: "event",
+  },
+  {
+    source: "getEventByExternalRef",
+    tool: inspectAffinityItemToolName,
+    action: "event",
+  },
+  {
+    source: "getEventThread",
+    tool: reviewAffinityToolName,
+    view: "events.thread",
+  },
+  { source: "searchEvents", tool: searchAffinityToolName },
+  { source: "reviseEvent", tool: "manage_event", action: "revise" },
+  { source: "deleteEvent", tool: "manage_event", action: "delete" },
   { source: "exportContact", tool: manageContactToolName, action: "export" },
   { source: "exportAffinity", tool: manageContactToolName, action: "export" },
   { source: "deleteContact", tool: manageContactToolName, action: "delete" },

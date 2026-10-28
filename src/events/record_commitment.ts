@@ -15,6 +15,7 @@ import type { RecordCommitmentInput } from "../lib/types/record_commitment_input
 import { resolveNow } from "../resolve_now.ts";
 import { withTransaction } from "../with_transaction.ts";
 import { applyJournalEventMechanics } from "./apply_journal_event_mechanics.ts";
+import { existingEventReceipt } from "./event_metadata.ts";
 
 export function recordCommitment(
   db: AffinityDb,
@@ -22,6 +23,8 @@ export function recordCommitment(
 ): EventMutationReceipt {
   return withTransaction(db, () => {
     validateSocialEventInput(input);
+    const existing = existingEventReceipt(db, input.externalRef);
+    if (existing) return existing;
     if (
       input.commitmentType !== "promise" &&
       input.commitmentType !== "agreement"
@@ -39,12 +42,12 @@ export function recordCommitment(
     assertOwnerParticipates(ownerId, ids);
     const now = resolveNow(input.now);
     const eventId = insertJournalEvent(db, {
+      ...input,
       type: input.commitmentType,
       occurredAt: input.occurredAt,
       occurredOn: input.occurredOn,
-      summary: input.summary,
       significance: input.significance,
-      momentKind: null,
+      momentKind: input.momentKind ?? null,
       participants: input.participants,
       now,
     });
@@ -69,6 +72,11 @@ export function recordCommitment(
       provenance: input.provenance,
       now,
     });
+    if (input.momentKind !== undefined)
+      db.prepare("UPDATE events SET moment_kind=? WHERE id=?").run(
+        input.momentKind,
+        eventId,
+      );
     return buildEventMutationReceipt(loadEventRecord(db, eventId), {
       created: [{ kind: "event", id: eventId }, ...mechanics.created],
       affectedLinks: mechanics.affectedLinks,

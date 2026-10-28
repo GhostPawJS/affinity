@@ -1,9 +1,16 @@
 import { getContactProfile } from "../contacts/get_contact_profile.ts";
 import { getOwnerProfile } from "../contacts/get_owner_profile.ts";
 import type { AffinityDb } from "../database.ts";
+import {
+  getEventByExternalRef,
+  getEventById,
+} from "../events/event_metadata.ts";
 import type { ContactProfileRecord } from "../lib/types/contact_profile_record.ts";
+import type { EventRecord } from "../lib/types/event_record.ts";
 import type { LinkDetailRecord } from "../lib/types/link_detail_record.ts";
+import type { ExternalRef } from "../lib/types/social_event_input.ts";
 import { getLinkDetail } from "../links/get_link_detail.ts";
+import { externalRefSchema } from "./event_metadata_schema.ts";
 import type { TimeInputs } from "./parse_time_input.ts";
 import {
   defineAffinityTool,
@@ -27,6 +34,7 @@ import { toolFailure, toolSuccess } from "./tool_types.ts";
 import { validateToolInput } from "./validate_tool_input.ts";
 
 export type InspectAffinityItemToolInput =
+  | { kind: "event"; eventId?: number; ref?: ExternalRef }
   | { kind: "owner_profile"; topLinksLimit?: number }
   | {
       kind: "contact_profile";
@@ -41,6 +49,7 @@ export type InspectAffinityItemToolInput =
     };
 
 export type InspectAffinityItemToolData =
+  | { kind: "event"; detail: EventRecord }
   | { kind: "owner_profile"; detail: ContactProfileRecord }
   | { kind: "contact_profile"; detail: ContactProfileRecord }
   | { kind: "link"; detail: LinkDetailRecord };
@@ -101,6 +110,30 @@ export function inspectAffinityItemToolHandler(
       inputError,
     );
   return withToolHandling<InspectAffinityItemToolData>(() => {
+    if (input.kind === "event") {
+      if ((input.eventId === undefined) === (input.ref === undefined))
+        return toolFailure(
+          "protocol",
+          "invalid_input",
+          "Invalid event target.",
+          "Provide exactly one of eventId or ref.",
+        );
+      const detail = input.ref
+        ? getEventByExternalRef(db, input.ref.source, input.ref.id)
+        : getEventById(db, input.eventId as number);
+      return detail
+        ? toolSuccess(
+            `Loaded event #${detail.id}.`,
+            { kind: "event", detail },
+            { entities: [{ kind: "event", id: detail.id }] },
+          )
+        : toolFailure(
+            "domain",
+            "not_found",
+            "Event not found.",
+            "No event matches the target.",
+          );
+    }
     if (input.kind === "owner_profile") {
       const detail = getOwnerProfile(
         db,
@@ -220,10 +253,13 @@ export const inspectAffinityItemTool = defineAffinityTool<
   inputSchema: objectSchema(
     {
       kind: enumSchema("What to inspect.", [
+        "event",
         "owner_profile",
         "contact_profile",
         "link",
       ]),
+      eventId: integerSchema("Exact event id."),
+      ref: externalRefSchema,
       contact: contactLocatorSchema(
         "Target contact. Required when kind=contact_profile. Provide contactId or identity.",
       ),

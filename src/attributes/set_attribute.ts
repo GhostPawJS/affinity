@@ -15,6 +15,7 @@ import type { AttributeTarget } from "../lib/types/attribute_target.ts";
 import type { AttributeMutationReceipt } from "../lib/types/mutation_receipt.ts";
 import { resolveNow } from "../resolve_now.ts";
 import { withTransaction } from "../with_transaction.ts";
+import { attributeTargetSql } from "./queries.ts";
 
 export function setAttribute(
   db: AffinityDb,
@@ -43,31 +44,12 @@ export function setAttribute(
         },
       );
     }
-    if (target.kind === "contact") {
-      const r = db
-        .prepare(
-          `INSERT INTO attributes (contact_id, link_id, name, value, created_at, updated_at)
-           VALUES (?, NULL, ?, ?, ?, ?)`,
-        )
-        .run(target.id, key, stored, now, now);
-      const id = Number(r.lastInsertRowid);
-      const row = getAttributeRowById(db, id);
-      if (!row) {
-        throw new AffinityInvariantError("attribute row missing after insert");
-      }
-      return buildAttributeMutationReceipt(
-        mapAttributeRowToAttributeRecord(row),
-        {
-          created: [{ kind: "attribute", id }],
-        },
-      );
-    }
+    const t = attributeTargetSql(target);
     const r = db
       .prepare(
-        `INSERT INTO attributes (contact_id, link_id, name, value, created_at, updated_at)
-         VALUES (NULL, ?, ?, ?, ?, ?)`,
+        `INSERT INTO attributes (${t.column},name,value,created_at,updated_at) VALUES (?,?,?,?,?)`,
       )
-      .run(target.id, key, stored, now, now);
+      .run(t.id, key, stored, now, now);
     const id = Number(r.lastInsertRowid);
     const row = getAttributeRowById(db, id);
     if (!row) {

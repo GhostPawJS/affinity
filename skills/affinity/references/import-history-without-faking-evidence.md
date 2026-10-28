@@ -1,5 +1,13 @@
 # Import History Without Faking Evidence
 
+For archived messages with known timestamps, record actual evidence with externalRef:
+{source, id} deduplicates retries across event families and commitments. Keep original
+message text in content, use channel and parentRef/threadRef for context, and keep
+summary short or let it derive from content. Content is limited to 1 MB UTF-8;
+keep larger raw archives in the source system. Inspect events by external reference,
+search scope "events", and use manage_event revise/delete to correct imports.
+See the tools guide for field details. Existing 0.5.x databases upgrade in place.
+
 Primary tools:
 - `manage_contact`
 - `manage_identity`

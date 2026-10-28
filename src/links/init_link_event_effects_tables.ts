@@ -37,6 +37,19 @@ export function initLinkEventEffectsTables(db: AffinityDb): void {
   db.exec(
     "CREATE INDEX IF NOT EXISTS idx_link_event_effects_link_time ON link_event_effects(link_id, occurred_at DESC, event_id DESC)",
   );
+  for (const name of ["participant_json", "provenance_json"])
+    if (!columns.some((c) => c.name === name))
+      db.exec(`ALTER TABLE link_event_effects ADD COLUMN ${name} TEXT`);
+  db.exec(
+    "CREATE TABLE IF NOT EXISTS event_link_baselines (link_id INTEGER PRIMARY KEY REFERENCES links(id) ON DELETE CASCADE, state_json TEXT NOT NULL)",
+  );
+  db.exec(
+    "CREATE TABLE IF NOT EXISTS event_link_state_changes (id INTEGER PRIMARY KEY AUTOINCREMENT, link_id INTEGER NOT NULL REFERENCES links(id) ON DELETE CASCADE, after_event_id INTEGER NOT NULL, state TEXT NOT NULL)",
+  );
+  // Historical deltas retain the original affinity/trust/rank even across promotions.
+  db.exec(`INSERT OR IGNORE INTO event_link_baselines(link_id,state_json)
+    SELECT l.id,json_object('rank',l.rank-COALESCE(SUM(e.rank_delta),0),'affinity',l.affinity-COALESCE(SUM(e.affinity_delta),0),'trust',l.trust-COALESCE(SUM(e.trust_delta),0),'state','active','cadence_days',NULL)
+    FROM links l JOIN link_event_effects e ON e.link_id=l.id GROUP BY l.id`);
   db.exec(
     "UPDATE link_event_effects SET counts_for_recency = 0 WHERE event_id IN (SELECT id FROM events WHERE type IN ('promise', 'agreement'))",
   );

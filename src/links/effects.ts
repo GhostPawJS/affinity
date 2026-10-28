@@ -325,6 +325,18 @@ export function applyEventEffectToLink(
   if (!link || link.is_structural !== 0) {
     throw new AffinityStateError("relational link not found");
   }
+  db.prepare(
+    "INSERT OR IGNORE INTO event_link_baselines(link_id,state_json) VALUES (?,?)",
+  ).run(
+    params.linkId,
+    JSON.stringify({
+      rank: link.rank ?? 0,
+      affinity: link.affinity ?? 0,
+      trust: link.trust ?? 0,
+      state: link.state ?? "active",
+      cadence_days: link.cadence_days,
+    }),
+  );
   const stateBefore = (link.state ?? "active") as LinkState;
   const linkKind = link.kind as RelationalLinkKind;
   const rankBefore = link.rank ?? 0;
@@ -541,6 +553,14 @@ export function applyEventEffectToLink(
     rankAfter - rankBefore,
     params.now,
     params.now,
+  );
+  db.prepare(
+    "UPDATE link_event_effects SET participant_json=?,provenance_json=? WHERE event_id=? AND link_id=?",
+  ).run(
+    JSON.stringify(params.participant),
+    params.provenance === undefined ? null : JSON.stringify(params.provenance),
+    params.eventId,
+    params.linkId,
   );
   if (
     (commitmentResolution !== undefined && commitmentResolution !== null) ||

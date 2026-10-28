@@ -17,7 +17,11 @@ export function parsePlainDue(
 export function parsePlainStart(raw: string, now = Date.now()): number {
   return parsePlainDue(raw, now, false);
 }
-export function normalizeTimeInputs(value: unknown, now = Date.now()): unknown {
+export function normalizeTimeInputs(
+  value: unknown,
+  now = Date.now(),
+  inPatch = false,
+): unknown {
   if (Array.isArray(value))
     return value.map((item) => normalizeTimeInputs(item, now));
   if (!value || typeof value !== "object") return value;
@@ -36,9 +40,9 @@ export function normalizeTimeInputs(value: unknown, now = Date.now()): unknown {
         );
       }
       result[key] = parsed.timestamp;
-      if (["occurredAt", "dueAt"].includes(key))
+      if (!inPatch && ["occurredAt", "dueAt"].includes(key))
         result[key.replace(/At$/, "On")] = parsed.day;
-    } else result[key] = normalizeTimeInputs(item, now);
+    } else result[key] = normalizeTimeInputs(item, now, key === "patch");
   }
   return result;
 }

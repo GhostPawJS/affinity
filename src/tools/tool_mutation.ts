@@ -46,7 +46,12 @@ export function mutationToolResult<TPrimary>(
   };
   const summary =
     changedCount === 0
-      ? `No ${entitySummary} changes were needed.`
+      ? receipt.primary &&
+        typeof receipt.primary === "object" &&
+        "externalRef" in receipt.primary &&
+        "id" in receipt.primary
+        ? `Event already recorded (#${receipt.primary.id}, ${(receipt.primary.externalRef as { source: string; id: string }).source} ${(receipt.primary.externalRef as { source: string; id: string }).id}).`
+        : `No ${entitySummary} changes were needed.`
       : describeChanges(receipt);
   if (changedCount === 0) {
     return toolNoOp(summary, data, {

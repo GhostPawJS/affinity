@@ -12,6 +12,7 @@ import type { RecordObservationInput } from "../lib/types/record_observation_inp
 import { resolveNow } from "../resolve_now.ts";
 import { withTransaction } from "../with_transaction.ts";
 import { applyJournalEventMechanics } from "./apply_journal_event_mechanics.ts";
+import { existingEventReceipt } from "./event_metadata.ts";
 
 export function recordObservation(
   db: AffinityDb,
@@ -19,16 +20,18 @@ export function recordObservation(
 ): EventMutationReceipt {
   return withTransaction(db, () => {
     validateSocialEventInput(input);
+    const existing = existingEventReceipt(db, input.externalRef);
+    if (existing) return existing;
     const ids = input.participants.map((p) => p.contactId);
     assertParticipantContactsLive(db, ids);
     const now = resolveNow(input.now);
     const eventId = insertJournalEvent(db, {
+      ...input,
       type: "observation",
       occurredAt: input.occurredAt,
       occurredOn: input.occurredOn,
-      summary: input.summary,
       significance: input.significance,
-      momentKind: null,
+      momentKind: input.momentKind ?? null,
       participants: input.participants,
       now,
     });
@@ -42,6 +45,11 @@ export function recordObservation(
       provenance: input.provenance,
       now,
     });
+    if (input.momentKind !== undefined)
+      db.prepare("UPDATE events SET moment_kind=? WHERE id=?").run(
+        input.momentKind,
+        eventId,
+      );
     return buildEventMutationReceipt(loadEventRecord(db, eventId), {
       warnings:
         input.occurredAt > now &&

@@ -8,6 +8,7 @@ export function validateToolInput(
   value: unknown,
   path = "input",
   injectedNow = Date.now(),
+  strict = false,
 ): string | null {
   const branches = schema.oneOf ?? schema.anyOf;
   if (
@@ -21,7 +22,8 @@ export function validateToolInput(
   if (schema.anyOf || schema.oneOf) {
     const choices = schema.anyOf ?? schema.oneOf ?? [];
     return choices.some(
-      (choice) => validateToolInput(choice, value, path, injectedNow) === null,
+      (choice) =>
+        validateToolInput(choice, value, path, injectedNow, strict) === null,
     )
       ? null
       : `${path}: invalid value`;
@@ -30,12 +32,15 @@ export function validateToolInput(
     if (value === null || typeof value !== "object" || Array.isArray(value))
       return `${path}: missing input or expected object`;
     const object = value as Record<string, unknown>;
-    if (path.endsWith(".patch") && schema.additionalProperties === false) {
+    if (
+      (strict || path.endsWith(".patch")) &&
+      schema.additionalProperties === false
+    ) {
       for (const key of Object.keys(object)) {
         if (!Object.hasOwn(schema.properties ?? {}, key))
           return key === "kind" && "name" in (schema.properties ?? {})
             ? "kind cannot be changed after creation"
-            : `${path}.${key}: unknown patch key; allowed keys: ${Object.keys(schema.properties ?? {}).join(", ")}`;
+            : `${path}.${key}: unknown ${path.endsWith(".patch") ? "patch key" : "key"}; allowed keys: ${Object.keys(schema.properties ?? {}).join(", ")}`;
       }
     }
     if (
@@ -45,7 +50,7 @@ export function validateToolInput(
     )
       return `${path}.patch: missing required field`;
     if (object.patch !== undefined && !schema.properties?.patch)
-      return `${path}.patch: unknown patch key; allowed keys: none (use the action's named fields)`;
+      return `${path}.patch: unknown key; allowed keys: none (use the action's named fields)`;
     const referenceNow =
       object.now === undefined
         ? injectedNow
@@ -74,7 +79,7 @@ export function validateToolInput(
             referenceNow,
           );
           object[key] = parsed.timestamp;
-          if (["occurredAt", "dueAt"].includes(key))
+          if (!path.endsWith(".patch") && ["occurredAt", "dueAt"].includes(key))
             object[key.replace(/At$/, "On")] ??= parsed.day;
         } catch (error) {
           return (error as Error).message;
@@ -92,6 +97,7 @@ export function validateToolInput(
         object[key],
         `${path}.${key}`,
         referenceNow,
+        strict,
       );
       if (error) return error;
     }
@@ -105,6 +111,7 @@ export function validateToolInput(
         item,
         `${path}[${index}]`,
         injectedNow,
+        strict,
       );
       if (error) return error;
     }

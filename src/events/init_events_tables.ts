@@ -53,6 +53,31 @@ export function initEventsTables(db: AffinityDb): void {
   const columns = db.prepare("PRAGMA table_info(events)").all() as {
     name: string;
   }[];
+  if (!columns.some((c) => c.name === "declared_moment_kind"))
+    db.exec("ALTER TABLE events ADD COLUMN declared_moment_kind TEXT");
+  if (!columns.some((c) => c.name === "content"))
+    db.exec("ALTER TABLE events ADD COLUMN content TEXT");
+  if (!columns.some((c) => c.name === "external_source"))
+    db.exec("ALTER TABLE events ADD COLUMN external_source TEXT");
+  if (!columns.some((c) => c.name === "external_id"))
+    db.exec("ALTER TABLE events ADD COLUMN external_id TEXT");
+  if (!columns.some((c) => c.name === "channel"))
+    db.exec("ALTER TABLE events ADD COLUMN channel TEXT");
+  if (!columns.some((c) => c.name === "parent_source"))
+    db.exec("ALTER TABLE events ADD COLUMN parent_source TEXT");
+  if (!columns.some((c) => c.name === "parent_ref_id"))
+    db.exec("ALTER TABLE events ADD COLUMN parent_ref_id TEXT");
+  if (!columns.some((c) => c.name === "parent_event_id"))
+    db.exec("ALTER TABLE events ADD COLUMN parent_event_id INTEGER");
+  if (!columns.some((c) => c.name === "thread_source"))
+    db.exec("ALTER TABLE events ADD COLUMN thread_source TEXT");
+  if (!columns.some((c) => c.name === "thread_id"))
+    db.exec("ALTER TABLE events ADD COLUMN thread_id TEXT");
+  if (!columns.some((c) => c.name === "provenance_json"))
+    db.exec("ALTER TABLE events ADD COLUMN provenance_json TEXT");
+  db.exec(
+    "CREATE UNIQUE INDEX IF NOT EXISTS idx_events_external_ref ON events(external_source, external_id)",
+  );
   if (!columns.some((column) => column.name === "occurred_on"))
     db.exec("ALTER TABLE events ADD COLUMN occurred_on TEXT");
 }

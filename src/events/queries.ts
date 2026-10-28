@@ -1,13 +1,11 @@
 import type { AffinityDb } from "../database.ts";
 import type { EventRow } from "../lib/types/event_row.ts";
+import { decodeEventText } from "./mappers.ts";
 
 export function getEventRowById(db: AffinityDb, id: number): EventRow | null {
   const row = db
     .prepare(
-      `SELECT id, type, occurred_at, occurred_on, summary, significance, moment_kind,
-              recurrence_kind, anchor_month, anchor_day,
-              anchor_contact_id, anchor_link_id,
-              created_at, updated_at, deleted_at
+      `SELECT *, CAST(content AS BLOB) AS content, CAST(summary AS BLOB) AS summary
        FROM events
        WHERE id = ? AND deleted_at IS NULL`,
     )
@@ -15,7 +13,10 @@ export function getEventRowById(db: AffinityDb, id: number): EventRow | null {
   if (row === undefined) {
     return null;
   }
-  return row as unknown as EventRow;
+  const event = row as unknown as EventRow;
+  event.summary = decodeEventText(event.summary);
+  if (event.content != null) event.content = decodeEventText(event.content);
+  return event;
 }
 
 /**

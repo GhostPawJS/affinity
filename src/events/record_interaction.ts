@@ -15,6 +15,7 @@ import type { RecordInteractionInput } from "../lib/types/record_interaction_inp
 import { resolveNow } from "../resolve_now.ts";
 import { withTransaction } from "../with_transaction.ts";
 import { applyJournalEventMechanics } from "./apply_journal_event_mechanics.ts";
+import { existingEventReceipt } from "./event_metadata.ts";
 
 const ALLOWED = new Set<string>([
   "conversation",
@@ -31,6 +32,8 @@ export function recordInteraction(
 ): EventMutationReceipt {
   return withTransaction(db, () => {
     validateSocialEventInput(input);
+    const existing = existingEventReceipt(db, input.externalRef);
+    if (existing) return existing;
     if (!ALLOWED.has(input.type)) {
       throw new AffinityValidationError("invalid interaction event type");
     }
@@ -40,12 +43,12 @@ export function recordInteraction(
     assertOwnerParticipates(ownerId, ids);
     const now = resolveNow(input.now);
     const eventId = insertJournalEvent(db, {
+      ...input,
       type: input.type,
       occurredAt: input.occurredAt,
       occurredOn: input.occurredOn,
-      summary: input.summary,
       significance: input.significance,
-      momentKind: null,
+      momentKind: input.momentKind ?? null,
       participants: input.participants,
       now,
     });
@@ -59,6 +62,11 @@ export function recordInteraction(
       provenance: input.provenance,
       now,
     });
+    if (input.momentKind !== undefined)
+      db.prepare("UPDATE events SET moment_kind=? WHERE id=?").run(
+        input.momentKind,
+        eventId,
+      );
     return buildEventMutationReceipt(loadEventRecord(db, eventId), {
       warnings:
         input.occurredAt > now &&

@@ -228,6 +228,43 @@ ghostpaw-affinity skill --list       # workflow guides
 ghostpaw-affinity skill bootstrap-and-cold-start
 ```
 
+## Events
+
+Record events and commitments with an optional `externalRef: {source, id}`.
+Both values are trimmed and non-empty; source is lowercased. The pair is unique
+across the database. Repeated intake returns the original event and `no_op`,
+without creating rows or relationship effects.
+
+`content` preserves text exactly, including whitespace, empty strings and NUL,
+up to 1 MB (1,048,576 UTF-8 bytes). Supply a short `summary`, or omit it to derive
+one from the first non-empty content line (at most 140 characters; empty text
+becomes `(no text)`). Unknown event fields and moment kinds are validation errors.
+Journal/timeline rows omit content by default; use `{includeContent: true}` in
+library/tool options or CLI `--with-content`. Content appears once in review JSON.
+
+Events support a free-text `channel` (trimmed, lowercased, at most 40 characters),
+`parentRef`, `parentEventId`, and a root `threadRef`. Journal, timeline, moments,
+and open commitment reviews accept a channel filter. Set event attributes with
+`write.setAttribute(db, {kind: "event", eventId}, name, value)`; unset and replace
+use the same target and validation as contact/link attributes.
+
+Read exact events with `read.getEventById(db, eventId)` or
+`read.getEventByExternalRef(db, source, id)`. `read.searchEvents` searches folded
+summary, content, reference and channel text. The search tool's `scope` is
+`contacts` by default, with additive `events` and `all` modes.
+`read.getEventThread(db, source, id)` returns a root and its descendants in time
+order, including parents imported after their children.
+
+`write.reviseEvent(db, eventIdOrTarget, patch)` accepts summary, content,
+occurredAt, significance, channel, type within the same event family, and an
+externalRef only when absent. `write.deleteEvent(db, eventIdOrTarget,
+{confirm: true})` removes evidence, participants, attributes and link effects,
+then replays surviving effects and refreshes rollups. Targets can also be
+`{ref: {source, id}}`. Existing 0.5.x databases migrate through
+`initAffinityTables`. Historical affinity/trust/rank baselines are recovered
+from saved deltas; historical cadence and state before evidence were not stored
+and use the default cadence and active state during replay.
+
 ## CLI
 
 ```sh
@@ -262,6 +299,13 @@ ghostpaw-affinity commitment record|resolve [flags]
 ghostpaw-affinity attribute set|unset|replace [flags]
 ghostpaw-affinity date add|revise|remove [flags]
 ghostpaw-affinity event record [flags]
+ghostpaw-affinity show event --event-id 12
+ghostpaw-affinity show event --ref-source bluesky --ref-id at://record
+ghostpaw-affinity search --scope events "text or record id"
+ghostpaw-affinity review events.contact_journal --contact '{"contactId":2}' --with-content --channel bluesky
+ghostpaw-affinity review events.thread --ref-source bluesky --ref-id at://root
+ghostpaw-affinity event revise --event-id 12 --patch '{"summary":"Corrected"}'
+ghostpaw-affinity event delete --event-id 12 --confirm
 ghostpaw-affinity duplicate dismiss|undismiss [flags]
 ghostpaw-affinity mcp|skill|tools|describe|call|completions|version|help
 ```

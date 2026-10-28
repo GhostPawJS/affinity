@@ -40,3 +40,5 @@ export {
   unsetAttribute,
 } from "./attributes/index.ts";
 export { deleteContact } from "./contacts/delete_contact.ts";
+
+export { reviseEvent, deleteEvent } from "./events/manage_event.ts";

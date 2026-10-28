@@ -10,8 +10,16 @@ export function exportAffinity(db: AffinityDb) {
   ).map((row) => exportContact(db, row.id));
   const events: Array<
     Record<string, unknown> & { participants: Record<string, unknown>[] }
-  > = exportRows(db, "SELECT * FROM events ORDER BY id").map((event) => ({
+  > = exportRows(
+    db,
+    "SELECT *, CAST(content AS BLOB) AS content, CAST(summary AS BLOB) AS summary FROM events ORDER BY id",
+  ).map((event) => ({
     ...event,
+    attributes: exportRows(
+      db,
+      "SELECT * FROM attributes WHERE event_id=? ORDER BY id",
+      event.id as number,
+    ),
     participants: exportRows(
       db,
       "SELECT p.contact_id, p.role, c.name AS contact_name FROM event_participants p JOIN contacts c ON c.id = p.contact_id WHERE p.event_id = ? ORDER BY p.contact_id",

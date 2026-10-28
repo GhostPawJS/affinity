@@ -6,6 +6,7 @@ export function clearedAttributePrimary(
   target: AttributeTarget,
 ): AttributeRecord {
   return {
+    ...(target.kind === "event" ? { eventId: target.eventId } : {}),
     id: 0,
     contactId: target.kind === "contact" ? target.id : null,
     linkId: target.kind === "link" ? target.id : null,

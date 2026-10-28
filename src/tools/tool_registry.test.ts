@@ -7,8 +7,8 @@ import {
 } from "./tool_registry.ts";
 
 describe("tool_registry", () => {
-  it("registers all 12 tools", () => {
-    strictEqual(affinityTools.length, 12);
+  it("registers all 13 tools", () => {
+    strictEqual(affinityTools.length, 13);
     deepStrictEqual(
       affinityTools.map((tool) => tool.name),
       [
@@ -24,12 +24,13 @@ describe("tool_registry", () => {
         "manage_commitment",
         "manage_date_anchor",
         "manage_attribute",
+        "manage_event",
       ],
     );
   });
 
   it("lists definitions and resolves by name", () => {
-    strictEqual(listAffinityToolDefinitions().length, 12);
+    strictEqual(listAffinityToolDefinitions().length, 13);
     strictEqual(
       getAffinityToolByName("review_affinity")?.name,
       "review_affinity",

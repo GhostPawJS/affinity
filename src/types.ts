@@ -104,3 +104,7 @@ export type {
   UpcomingDateTargetRef,
 } from "./lib/types/upcoming_date_record.ts";
 export type { MergeHistoryRecord } from "./lib/types/merge_history_record.ts";
+export type { ExternalRef } from "./lib/types/social_event_input.ts";
+export type { EventSearchItem } from "./events/event_discovery.ts";
+
+export type { EventTarget, ReviseEventPatch } from "./events/manage_event.ts";

@@ -1,5 +1,6 @@
 /** `attributes` table row — snake_case storage. */
 export interface AttributeRow {
+  event_id?: number | null;
   id: number;
   contact_id: number | null;
   link_id: number | null;

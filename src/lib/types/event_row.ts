@@ -1,5 +1,15 @@
 /** Raw `events` row from SQLite (snake_case columns). */
 export interface EventRow {
+  content?: string | null;
+  external_source?: string | null;
+  external_id?: string | null;
+  channel?: string | null;
+  parent_source?: string | null;
+  parent_ref_id?: string | null;
+  parent_event_id?: number | null;
+  thread_source?: string | null;
+  thread_id?: string | null;
+  provenance_json?: string | null;
   id: number;
   type: string;
   occurred_at: number;

@@ -9,7 +9,7 @@ import type { EventMomentKind } from "./types.ts";
 export function listMoments(
   db: AffinityDb,
   filters?: ListMomentsFilters,
-  options?: AffinityListReadOptions,
+  options?: AffinityListReadOptions & { channel?: string },
 ): MomentRecord[] {
   assertDefaultOrdering("listMoments", options);
   const { limit, offset } = resolveListLimitOffset(options);
@@ -39,6 +39,10 @@ export function listMoments(
   if (filters?.linkId !== undefined) {
     clauses.push("le.link_id = ?");
     params.push(filters.linkId);
+  }
+  if (options?.channel !== undefined) {
+    clauses.push("e.channel=?");
+    params.push(options.channel.trim().toLowerCase());
   }
   const where = clauses.join(" AND ");
   return db

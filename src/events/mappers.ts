@@ -20,11 +20,20 @@ export function mapEventRowToEventRecord(
     occurredAt: row.occurred_at,
     occurredOn:
       row.occurred_on ?? new Date(row.occurred_at).toISOString().slice(0, 10),
-    summary: row.summary,
+    summary: decodeEventText(row.summary),
     significance: row.significance,
     momentKind: row.moment_kind as EventMomentKind | null,
     participants,
   };
+  if (row.content != null) base.content = decodeEventText(row.content);
+  if (row.channel != null) base.channel = row.channel;
+  if (row.external_source != null && row.external_id != null)
+    base.externalRef = { source: row.external_source, id: row.external_id };
+  if (row.parent_source != null && row.parent_ref_id != null)
+    base.parentRef = { source: row.parent_source, id: row.parent_ref_id };
+  if (row.thread_source != null && row.thread_id != null)
+    base.threadRef = { source: row.thread_source, id: row.thread_id };
+  if (row.parent_event_id != null) base.parentEventId = row.parent_event_id;
   if (row.type === "promise" || row.type === "agreement") {
     base.dueAt = row.due_at ?? null;
     base.dueOn =
@@ -72,7 +81,14 @@ export function mapUpcomingRowToUpcomingDateRecord(row: {
     recurrenceKind,
     occursOn: row.occurs_on,
     occursOnDate: new Date(row.occurs_on).toISOString().slice(0, 10),
-    summary: row.summary,
+    summary: decodeEventText(row.summary),
     significance: row.significance,
   };
+}
+
+/** Read byte lengths explicitly because node:sqlite text reads may stop at NUL. */
+export function decodeEventText(value: string | Uint8Array): string {
+  return typeof value === "string"
+    ? value
+    : Buffer.from(value).toString("utf8");
 }

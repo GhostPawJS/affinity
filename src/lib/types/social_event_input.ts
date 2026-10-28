@@ -15,9 +15,22 @@ export interface SocialEventParticipantInput {
 export interface SocialEventInput {
   occurredAt: number;
   occurredOn?: string;
-  summary: string;
+  summary?: string;
+  content?: string;
+  externalRef?: ExternalRef;
+  channel?: string;
+  parentRef?: ExternalRef;
+  parentEventId?: number;
+  threadRef?: ExternalRef;
+  momentKind?: import("../../events/types.ts").EventMomentKind;
   /** Significance 1..10 — enforced at write layer. */
   significance: number;
   participants: readonly SocialEventParticipantInput[];
   provenance?: unknown;
+}
+
+/** Stable external event identity. */
+export interface ExternalRef {
+  source: string;
+  id: string;
 }

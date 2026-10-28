@@ -29,7 +29,7 @@ function mapResolution(
 export function listOpenCommitments(
   db: AffinityDb,
   filters?: ListOpenCommitmentsFilters,
-  options?: AffinityListReadOptions,
+  options?: AffinityListReadOptions & { channel?: string },
 ): CommitmentRecord[] {
   assertDefaultOrdering("listOpenCommitments", options);
   const now = resolveNow(options?.now);
@@ -76,6 +76,10 @@ export function listOpenCommitments(
     clauses.push("oc.due_at IS NOT NULL");
     clauses.push("oc.due_at <= ?");
     params.push(anchor + filters.horizonDays * DAY_MS);
+  }
+  if (options?.channel !== undefined) {
+    clauses.push("e.channel=?");
+    params.push(options.channel.trim().toLowerCase());
   }
   const where = clauses.join(" AND ");
   const rows = db

@@ -43,6 +43,9 @@ export function overrideLinkState(
       now,
       linkId,
     );
+    db.prepare(
+      "INSERT INTO event_link_state_changes(link_id,after_event_id,state) SELECT ?, COALESCE(MAX(event_id),0), ? FROM link_event_effects WHERE link_id=?",
+    ).run(linkId, state, linkId);
     refreshLinkRollup(db, linkId, now);
     if (state === "archived" || row.state === "archived") {
       refreshAllBridgeScores(db, now);

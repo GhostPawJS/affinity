@@ -27,6 +27,10 @@ export function getContactJournal(
     clauses.push(`e.type IN (${ph})`);
     params.push(...options.eventTypes);
   }
+  if (options?.channel !== undefined) {
+    clauses.push("e.channel = ?");
+    params.push(options.channel.trim().toLowerCase());
+  }
   const where = clauses.join(" AND ");
   const rows = db
     .prepare(
@@ -40,5 +44,6 @@ export function getContactJournal(
   return batchLoadEventRecords(
     db,
     rows.map((r) => r.id),
+    options?.includeContent ?? false,
   );
 }
