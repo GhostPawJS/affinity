@@ -211,7 +211,7 @@ read.listOpenCommitments(db).length
 
   <section id="binaries" class="sec binaries" aria-labelledby="binaries-title">
     <h2 id="binaries-title">One binary per platform</h2>
-    <p class="intro">Every release ships <code>ghostpaw-affinity</code> as one executable with the Node.js runtime inside. It has the same commands and the same MCP server as the npm package. Each line below downloads the latest release, checks it against SHA256SUMS, puts it on your PATH and prints the version.</p>
+    <p class="intro">Each release ships <code>ghostpaw-affinity</code> with Node.js inside: the same CLI and MCP server as npm. These commands download latest, verify SHA256SUMS and install to the listed directory; Linux adds <code>~/.local/bin</code> to PATH via <code>~/.profile</code> only if missing. To pin, replace the latest lookup with <code>V=0.6.0</code>.</p>
     <div class="bin-cmds">
         {{range .data.install.targets}}<div><p class="cmd-label" id="bin-{{.id}}-label">{{.label}}</p>
         <div class="cmd" data-shell="{{.shell}}"><input id="bin-{{.id}}" readonly value="{{.cmd}}" aria-labelledby="bin-{{.id}}-label" spellcheck="false"><button type="button" class="copy" data-copy="bin-{{.id}}">Copy</button></div></div>

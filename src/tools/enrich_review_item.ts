@@ -53,15 +53,40 @@ export function enrichReviewItem(
       result.subtitle = `${item.subtitle} · ${name(link.from_contact_id)} · ${name(link.to_contact_id)}`;
   }
   if (Array.isArray(item.participants)) {
-    result.counterpartyNames = item.participants.map(
-      (p: { contactId: number }) => name(p.contactId),
+    result.participants = item.participants.map(
+      (p: { contactId: number; role: string }) => ({
+        id: p.contactId,
+        name: name(p.contactId),
+        role: p.role,
+      }),
     );
-    result.subtitle = [
-      item.subtitle,
-      (result.counterpartyNames as string[]).join(", "),
-    ]
-      .filter(Boolean)
-      .join(" · ");
+    for (const key of ["title", "subtitle", "snippet", "state", "eventId"])
+      result[key] = undefined;
+  }
+  if (result.momentKind === null) result.momentKind = undefined;
+  if (result.eventId === result.id) result.eventId = undefined;
+  if (result.linkId === result.id) result.linkId = undefined;
+  if (result.title === result.summary) result.title = undefined;
+  if (item.kind === "link" && item.occursAt !== undefined) {
+    for (const key of [
+      "affinity",
+      "trust",
+      "rank",
+      "recencyScore",
+      "driftPriority",
+      "readinessScore",
+      "normalizedRank",
+      "reciprocityScore",
+      "radarScore",
+      "subtitle",
+      "snippet",
+      "targetRef",
+      "occursOnDate",
+    ])
+      result[key] = undefined;
+  } else if (item.kind === "link") {
+    result.recommendedReason = undefined;
+    result.snippet = undefined;
   }
   if (typeof item.leftContactId === "number")
     result.title = `${name(item.leftContactId)} · ${name(item.rightContactId)}`;

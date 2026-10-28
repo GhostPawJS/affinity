@@ -644,6 +644,9 @@ export function reviewAffinityToolHandler(
         items = listRadar(
           db,
           {
+            ...(input.includeLost === undefined
+              ? {}
+              : { includeLost: input.includeLost }),
             ...(input.kind === undefined
               ? {}
               : { kind: input.kind as LinkKind }),

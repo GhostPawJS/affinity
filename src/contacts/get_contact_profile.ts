@@ -29,6 +29,19 @@ export function getContactProfile(
     ...profile,
     recentEvents: getContactJournal(db, contactId, {
       limit: options?.recentEventsLimit ?? 5,
+      eventTypes: [
+        "conversation",
+        "activity",
+        "gift",
+        "support",
+        "milestone",
+        "observation",
+        "conflict",
+        "correction",
+        "transaction",
+        "promise",
+        "agreement",
+      ],
     }).map((event) => ({
       ...event,
       occurredAtIso: new Date(event.occurredAt).toISOString(),

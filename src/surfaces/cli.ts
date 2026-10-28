@@ -282,7 +282,7 @@ async function runToolCliInternal<TCtx>(
     );
     stdout.write(
       explicitJson || !(stdout as { isTTY?: boolean }).isTTY
-        ? `${JSON.stringify(plainJson(result, compact, options.formatError), null, compact ? undefined : 2)}\n`
+        ? `${JSON.stringify(plainJson(result, compact || (!explicitJson && !(stdout as { isTTY?: boolean }).isTTY), options.formatError), null, compact ? undefined : 2)}\n`
         : humanResult(result),
     );
     const code = cliExitCode(result);

@@ -46,6 +46,12 @@ export const affinitySkillSpec = {
   server: "ghostpaw-affinity",
   about: affinityMcpInstructions,
   tools: affinitySurfaceTools,
-  workflows: affinitySkills,
+  workflows: [
+    ...affinitySkills,
+    {
+      name: "tools",
+      description: "Tool parameters, nested fields, and examples.",
+    },
+  ],
   principles: affinitySoulTraits.map((trait) => trait.principle),
 };

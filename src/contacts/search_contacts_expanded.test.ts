@@ -48,9 +48,12 @@ test("search matches unordered folded tokens across attributes, identities, role
       "+4940 1234567",
       "+49 40 1234567",
       "0049401234567",
+      "040 1234567",
+      "401234567",
     ]) {
       assert.equal(searchContacts(db, query)[0]?.id, jana.id, query);
     }
+    assert.deepEqual(searchContacts(db, "023456"), []);
     for (const query of ["Fischbrötchen", "fischbroetchen", "Fischbrotchen"])
       assert.equal(searchContacts(db, query)[0]?.id, company.id);
     assert.deepEqual(searchContacts(db, "gastro")[0]?.matchedOn, [

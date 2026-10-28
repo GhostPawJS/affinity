@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { affinitySkills } from "../../src/skills/skill_registry.ts";
 import { affinitySkillSpec } from "../../src/surface/affinity_skill_spec.ts";
 import { affinitySurfaceTools } from "../../src/surface/affinity_surface_tools.ts";
+import { renderSkillMarkdown } from "../../src/surfaces/skill_markdown.ts";
 
 const pkg = JSON.parse(
   readFileSync(new URL("../../package.json", import.meta.url), "utf8"),
@@ -9,7 +10,14 @@ const pkg = JSON.parse(
 export const config = {
   slug: "affinity",
   skill: affinitySkillSpec,
-  workflows: affinitySkills,
+  workflows: [
+    ...affinitySkills,
+    {
+      name: "tools",
+      description: "Tool parameters, nested fields, and examples.",
+      content: renderSkillMarkdown(affinitySkillSpec, { details: true }),
+    },
+  ],
   manifest: {
     name: "ghostpaw-affinity",
     version: pkg.version,

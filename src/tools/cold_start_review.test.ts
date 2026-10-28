@@ -58,7 +58,11 @@ test("profiles and reviews retain names, ISO times, overdue commitments and stru
     const review = reviewAffinityToolHandler(db, { view: "commitments.open" });
     assert.ok(review.ok);
     assert.equal(review.data.items[0]?.overdue, true);
-    assert.ok(String(review.data.items[0]?.subtitle).includes("Jana Petersen"));
+    assert.ok(
+      JSON.stringify(review.data.items[0]?.participants).includes(
+        "Jana Petersen",
+      ),
+    );
     assert.ok(!review.data.items[0]?.snippet?.includes(String(now - 86400000)));
     const before = listRadar(db, undefined, { now })[0];
     assert.ok(before?.reasons?.includes("overdue_commitment"));

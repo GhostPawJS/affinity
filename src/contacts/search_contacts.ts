@@ -38,6 +38,7 @@ export function searchContacts(
   const tokens = q.split(/\s+/);
   const phone = /^[+\d()\-/.\s]+$/.test(q) && q.replace(/\D/g, "").length >= 3;
   const digits = q.replace(/\D/g, "").replace(/^00/, "");
+  const suffix = digits.replace(/^0/, "");
   const attributeFilters = contactAttributeClauses(filters);
   const clauses = [
     "deleted_at IS NULL",
@@ -86,13 +87,16 @@ export function searchContacts(
     const phoneFields = phone
       ? values.filter(
           (field) =>
-            field.source === "identity:phone" &&
-            field.text
-              .split(" ")
-              .join("")
-              .replace(/[^\d]/g, "")
-              .replace(/^00/, "")
-              .includes(digits),
+            (field.source === "identity:phone" &&
+              field.text
+                .split(" ")
+                .join("")
+                .replace(/[^\d]/g, "")
+                .replace(/^00/, "")
+                .includes(digits)) ||
+            (field.source === "identity:phone" &&
+              suffix.length >= 6 &&
+              field.text.replace(/\D/g, "").endsWith(suffix)),
         )
       : [];
     if (

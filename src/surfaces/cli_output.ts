@@ -117,6 +117,32 @@ export function plainJson(
     JSON.stringify(result.entities) === JSON.stringify(data.items)
   )
     result.entities = undefined;
+  if (compact && data?.primary) {
+    result.entities = undefined;
+    const ids = (value: unknown): unknown =>
+      Array.isArray(value)
+        ? value.map(ids)
+        : value && typeof value === "object"
+          ? "id" in value
+            ? { id: (value as { id: unknown }).id }
+            : Object.fromEntries(
+                Object.entries(value).map(([key, entry]) => [key, ids(entry)]),
+              )
+          : value;
+    for (const key of [
+      "primary",
+      "created",
+      "updated",
+      "archived",
+      "removed",
+      "affectedLinks",
+    ])
+      if (data[key] !== undefined) data[key] = ids(data[key]);
+  }
+  if (compact && data?.primary && Array.isArray(data.changes)) {
+    for (const key of ["created", "updated", "archived", "removed"])
+      data[key] = undefined;
+  }
   const trim = (v: unknown): unknown => {
     if (Array.isArray(v)) return v.map(trim);
     if (!v || typeof v !== "object") return v;
@@ -181,7 +207,7 @@ export function humanResult(value: unknown): string {
           dates.push(item.reasons.join(", ").replaceAll("_", " "));
         const subtitle = item.subtitle ? ` — ${item.subtitle}` : "";
         const tail = dates.length ? ` · ${dates.join(" · ")}` : "";
-        return `#${item.id ?? item.entityId ?? "?"} ${item.title ?? item.name ?? ""}${subtitle}${tail}${item.overdue ? " · OVERDUE" : ""}`.trim();
+        return `#${item.id ?? item.entityId ?? "?"} ${item.title ?? item.name ?? item.summary ?? ""}${subtitle}${tail}${item.overdue ? " · OVERDUE" : ""}`.trim();
       })
       .join("\n")}\n`;
   }

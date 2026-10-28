@@ -3,6 +3,7 @@ import type { LinkKind, LinkState } from "../../links/types.ts";
 /** Compact link row for lists — CONCEPT.md LinkListItem. */
 export interface LinkListItem {
   id: number;
+  counterpartyName?: string;
   fromContactId: number;
   toContactId: number;
   kind: LinkKind;

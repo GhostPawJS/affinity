@@ -10,7 +10,19 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 - Add `--version --short` for exact semver matching and `--version --json` for structured package and variant metadata, including `version` subcommand equivalents.
 
+### Changed
+
+- Slim tool review rows: compact named journal participants, one event/link id and summary, rounded radar scores, and upcoming link dates without radar metrics. Compact and default piped CLI mutation output retains ids and warnings rather than repeating full entities.
+- Keep the skill entry focused on the CLI cheat sheet and tool index; move parameter details and examples to the embedded `tools` guide.
+- Export whole-database events once at the top level, referenced by contact event/date ids; export stored flags as JSON booleans.
+
 ### Fixed
+
+- Match national phone queries by digit suffix, excluding short suffixes.
+- Name profile top-link counterparties and exclude date anchors from recent journal events.
+- Exclude dormant and lost counterparties from radar unless explicitly included; merged contacts remain excluded.
+- Explain that attribute values must be strings or null for numeric and boolean input across CLI and MCP.
+- Clarify latest-version installs and profile edits, and document pinned downloads without PATH changes.
 
 - Warn on near-name contact creation using duplicate review similarity scores.
 - Suggest CLI commands for bare verbs, plural nouns and misspellings; diagnose unknown leading flags.

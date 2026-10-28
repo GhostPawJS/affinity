@@ -2631,7 +2631,7 @@
   },
   ".:public.read.exportAffinity": {
     "kind": "value",
-    "type": "(db: AffinityDb) => { version: number; exportedAt: number; exportedAtIso: string; contacts: { contact: Record<string, unknown>; identities: Record<string, unknown>[]; attributes: Record<string, unknown>[]; links: Record<string, unknown>[]; events: (Record<string, unknown> & { participants: Record<string, unknown>[]; })[]; commitments: Record<string, unknown>[]; dates: Record<string, unknown>[]; mergeHistory: Record<string, unknown>[]; }[]; }"
+    "type": "(db: AffinityDb) => { version: number; exportedAt: number; exportedAtIso: string; events: (Record<string, unknown> & { participants: Record<string, unknown>[]; })[]; contacts: { eventIds: unknown[]; dateIds: unknown[]; contact: Record<string, unknown>; identities: Record<string, unknown>[]; attributes: Record<string, unknown>[]; links: Record<string, unknown>[]; commitments: Record<string, unknown>[]; mergeHistory: Record<string, unknown>[]; }[]; }"
   },
   ".:public.read.exportContact": {
     "kind": "value",
@@ -13607,6 +13607,10 @@
         "type": "number | null | undefined",
         "optional": true
       },
+      "counterpartyName": {
+        "type": "string | undefined",
+        "optional": true
+      },
       "fromContactId": {
         "type": "number",
         "optional": false
@@ -13640,7 +13644,7 @@
         "optional": true
       }
     },
-    "definition": "interface LinkListItem { id: number; fromContactId: number; toContactId: number; kind: LinkKind; role?: string | null; rank?: number | null; affinity?: number | null; trust?: number | null; state?: LinkState | null; cadenceDays?: number | null; bond?: string | null; }",
+    "definition": "interface LinkListItem { id: number; counterpartyName?: string; fromContactId: number; toContactId: number; kind: LinkKind; role?: string | null; rank?: number | null; affinity?: number | null; trust?: number | null; state?: LinkState | null; cadenceDays?: number | null; bond?: string | null; }",
     "references": {
       "LinkKind": ".:public.tools.AffinityToolDefinition.types.AffinityToolDefinition.types.ToolResult.types.ToolFailure.types.ToolBaseResult.types.ToolEntityRef.types.LinkKind",
       "LinkState": ".:public.tools.AffinityToolDefinition.types.AffinityToolDefinition.types.ToolResult.types.ToolFailure.types.ToolBaseResult.types.ToolEntityRef.types.LinkState"
@@ -16649,6 +16653,10 @@
         "type": "number | null | undefined",
         "optional": true
       },
+      "counterpartyName": {
+        "type": "string | undefined",
+        "optional": true
+      },
       "fromContactId": {
         "type": "number",
         "optional": false
@@ -16691,6 +16699,10 @@
     "kind": "type",
     "type": "LinkListReadFilters",
     "members": {
+      "includeLost": {
+        "type": "boolean | undefined",
+        "optional": true
+      },
       "kind": {
         "type": "LinkKind | undefined",
         "optional": true
@@ -16709,6 +16721,10 @@
     "kind": "type",
     "type": "LinkListReadFilters",
     "members": {
+      "includeLost": {
+        "type": "boolean | undefined",
+        "optional": true
+      },
       "kind": {
         "type": "LinkKind | undefined",
         "optional": true
@@ -16718,7 +16734,7 @@
         "optional": true
       }
     },
-    "definition": "interface LinkListReadFilters { kind?: LinkKind; state?: LinkState; }",
+    "definition": "interface LinkListReadFilters { includeLost?: boolean; kind?: LinkKind; state?: LinkState; }",
     "references": {
       "LinkKind": ".:public.tools.AffinityToolDefinition.types.AffinityToolDefinition.types.ToolResult.types.ToolFailure.types.ToolBaseResult.types.ToolEntityRef.types.LinkKind",
       "LinkState": ".:public.tools.AffinityToolDefinition.types.AffinityToolDefinition.types.ToolResult.types.ToolFailure.types.ToolBaseResult.types.ToolEntityRef.types.LinkState"

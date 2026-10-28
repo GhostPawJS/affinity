@@ -11,10 +11,7 @@ const affinitySurfaceTools: readonly SurfaceTool<AffinityDb>[] =
   affinityTools.map((tool) => ({
     name: tool.name,
     description: tool.description,
-    whenToUse: tool.whenToUse,
-    ...(tool.whenNotToUse === undefined
-      ? {}
-      : { whenNotToUse: tool.whenNotToUse }),
+
     readOnly: tool.readOnly,
     sideEffects: tool.sideEffects,
     inputSchema: {

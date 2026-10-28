@@ -1,35 +1,18 @@
 import type { AffinityDb } from "../database.ts";
 import { AffinityNotFoundError } from "../lib/errors/affinity_not_found_error.ts";
 
+import { exportRows } from "./export_rows.ts";
+
 /** Export all stored records belonging to a contact, including archived history. */
 export function exportContact(db: AffinityDb, id: number) {
   const query = (sql: string, ...params: number[]) =>
-    db
-      .prepare(sql)
-      .all(...params)
-      .map((row) => {
-        const result: Record<string, unknown> = {};
-        for (const [key, value] of Object.entries(row)) {
-          const name = key.replace(/_([a-z])/g, (_, letter: string) =>
-            letter.toUpperCase(),
-          );
-          result[name] = value;
-          if (
-            (name.endsWith("At") || name === "dueAt") &&
-            typeof value === "number"
-          )
-            result[`${name}Iso`] = new Date(value).toISOString();
-          if (key.endsWith("_json") && typeof value === "string")
-            result[name] = JSON.parse(value);
-        }
-        return result;
-      });
+    exportRows(db, sql, ...params);
   const contact = query("SELECT * FROM contacts WHERE id = ?", id)[0];
   if (!contact) throw new AffinityNotFoundError("contact not found");
   const events: Array<
     Record<string, unknown> & { participants: Record<string, unknown>[] }
   > = query(
-    "SELECT DISTINCT e.* FROM events e JOIN event_participants p ON p.event_id = e.id WHERE p.contact_id = ? ORDER BY e.id",
+    "SELECT DISTINCT e.* FROM events e JOIN event_participants p ON p.event_id = e.id WHERE p.contact_id = ? AND e.type != 'date_anchor' ORDER BY e.id",
     id,
   ).map((event) => ({
     ...event,

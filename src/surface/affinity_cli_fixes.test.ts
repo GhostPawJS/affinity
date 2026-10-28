@@ -131,7 +131,7 @@ test("stdin maps bare and wrapped objects to the sole object positional", async 
   assert.equal(revised.code, 0, revised.err);
   assert.deepEqual(revised.captured?.input.contact, { contactId: 2 });
   const created = await invoke(
-    ["contact", "create", "--db", ":memory:"],
+    ["contact", "create", "--db", ":memory:", "--json"],
     '{"name":"X","kind":"human"}',
     { real: true },
   );
@@ -309,8 +309,12 @@ test("embedded guides, help, list and suggestions are accessible without a datab
   assert.match(unknown.err, /Did you mean bootstrap-and-cold-start/);
   const skill = affinitySkillCommand([]);
   assert.ok(skill.indexOf("## CLI cheat sheet") < skill.indexOf("## Appendix"));
-  assert.match(skill, /\| input\.name \|/);
-  assert.match(skill, /\| entries\.name \|/);
+  assert.ok(Buffer.byteLength(skill) < 16000);
+  assert.doesNotMatch(skill, /\| input\.name \|/);
+  const toolsGuide = affinitySkillCommand(["tools"]);
+  assert.match(toolsGuide, /"name"/);
+  assert.match(toolsGuide, /ghostpaw-affinity contact create/);
+  assert.match(list, /tools\tTool parameters/);
   const beforeFallback = skill.split("## Without the binary")[0] ?? "";
   assert.doesNotMatch(beforeFallback, /npx|Node.js 24/);
   assert.match(skill, /From the binary: `ghostpaw-affinity skill <guide>`/);
@@ -703,5 +707,53 @@ test("CLI and MCP share explicit invalid-input and conflict errors", async () =>
     }
   } finally {
     db.close();
+  }
+});
+
+test("numeric and boolean attributes report text-only values in CLI and MCP validation", async () => {
+  for (const value of [300, true]) {
+    const result = await invoke([
+      "attribute",
+      "set",
+      "--target",
+      '{"kind":"contact","contact":{"contactId":1}}',
+      "--name",
+      "capacity",
+      "--value",
+      String(value),
+    ]);
+    assert.equal(result.code, 2);
+    assert.ok(
+      result.err.includes(
+        `attribute values are strings or null; pass "${value}" to store it as text`,
+      ),
+    );
+    const server = createMcpServer({
+      ...affinityMcpOptions(() => {
+        throw new Error("validation must precede database access");
+      }),
+    });
+    const response = await server.handleLine(
+      JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "tools/call",
+        params: {
+          name: "manage_attribute",
+          arguments: {
+            action: "set",
+            target: { kind: "contact", contact: { contactId: 1 } },
+            name: "capacity",
+            value,
+          },
+          _meta: {
+            "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+            "io.modelcontextprotocol/clientCapabilities": {},
+          },
+        },
+      }),
+    );
+    assert.ok(response?.includes("attribute values are strings or null"));
+    assert.ok(response?.includes("store it as text"));
   }
 });

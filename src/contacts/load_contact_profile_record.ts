@@ -52,7 +52,14 @@ export function loadContactProfileRecord(
        LIMIT ?`,
     )
     .all(contactId, contactId, topLinksLimit) as unknown as LinkRow[];
-  const topLinks = linkRows.map((l) => mapLinkRowToLinkListItem(l));
+  const topLinks = linkRows.map((l) => ({
+    ...mapLinkRowToLinkListItem(l),
+    counterpartyName:
+      getContactRowById(
+        db,
+        l.from_contact_id === contactId ? l.to_contact_id : l.from_contact_id,
+      )?.name ?? "",
+  }));
   const activeDates = loadActiveDatesForContact(db, contactId);
   const contactRollup = loadContactRollup(db, contactId);
   const winner =

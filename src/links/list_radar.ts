@@ -49,6 +49,10 @@ export function listRadar(
   if (options?.includeObserved === false) {
     clauses.push("l.kind != 'observed'");
   }
+  if (options?.includeDormant !== true)
+    clauses.push("c_to.lifecycle_state != 'dormant'");
+  if (filters?.includeLost !== true)
+    clauses.push("c_to.lifecycle_state != 'lost'");
   const where = clauses.join(" AND ");
   const rows = db
     .prepare(

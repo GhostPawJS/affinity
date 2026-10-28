@@ -5,6 +5,17 @@ export function validateInput(
   input: unknown,
   path = "$",
 ): string[] {
+  const branches = schema.oneOf ?? schema.anyOf;
+  if (
+    path.endsWith(".value") &&
+    branches?.some((b) => b.type === "string") &&
+    branches.some((b) => b.type === "null") &&
+    input !== null &&
+    typeof input !== "string"
+  )
+    return [
+      `attribute values are strings or null; pass "${String(input)}" to store it as text`,
+    ];
   const errors: string[] = [];
   const matchesType = (type: string) => {
     switch (type) {

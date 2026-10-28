@@ -69,7 +69,26 @@ test("contact and whole database exports include records, names, participants an
       significance: 4,
       now,
     });
+    const socialLink = (
+      db
+        .prepare("SELECT id FROM links WHERE is_structural = 0 LIMIT 1")
+        .get() as { id: number }
+    ).id;
+    const linkAnchor = write.addDateAnchor(db, {
+      target: { kind: "link", linkId: socialLink },
+      recurrenceKind: "anniversary",
+      anchorMonth: 10,
+      anchorDay: 27,
+      summary: "First call",
+      significance: 4,
+      now,
+    }).primary;
     const exported = exportContact(db, jana.id);
+    assert.equal(exported.events.length, 1);
+    assert.equal(
+      exported.dates.filter((date) => date.id === linkAnchor.id).length,
+      1,
+    );
     assert.equal(exported.contact.name, "Jana");
     assert.equal(exported.contact.createdAt, now);
     assert.equal(exported.contact.createdAtIso, "2026-10-27T12:00:00.000Z");
@@ -90,10 +109,36 @@ test("contact and whole database exports include records, names, participants an
     assert.equal(exported.events[0]?.participants.length, 2);
     assert.equal(exported.commitments[0]?.eventId, commitment.id);
     assert.equal(exported.commitments[0]?.dueAtIso, "2026-10-28T12:00:00.000Z");
-    assert.equal(exported.dates.length, 1);
+    assert.equal(exported.dates.length, 2);
     assert.deepEqual(JSON.parse(JSON.stringify(exported)), exported);
+    db.prepare(
+      "INSERT INTO events (type, occurred_at, summary, created_at, updated_at) VALUES ('observation', ?, 'Unassigned', ?, ?)",
+    ).run(now, now, now);
     const all = exportAffinity(db);
+    assert.equal(
+      all.events.find((event) => event.summary === "Unassigned")?.occurredAtIso,
+      "2026-10-27T12:00:00.000Z",
+    );
+    assert.equal(
+      all.events.filter((event) => event.id === linkAnchor.id).length,
+      1,
+    );
     assert.equal(all.version, 1);
+    assert.equal(all.contacts[0]?.contact.isOwner, true);
+    assert.equal(all.contacts[1]?.contact.isOwner, false);
+    assert.equal(
+      all.events.filter((event) => event.id === commitment.id).length,
+      1,
+    );
+    assert.ok(all.contacts[0]?.eventIds.includes(commitment.id));
+    assert.ok(all.contacts[1]?.eventIds.includes(commitment.id));
+    assert.equal("events" in (all.contacts[0] ?? {}), false);
+    assert.equal(
+      all.events.find((event) => event.id === commitment.id)?.participants[1]
+        ?.contactId,
+      jana.id,
+    );
+    assert.equal(all.contacts[1]?.dateIds.length, 2);
     assert.equal(all.contacts.length, 3);
     assert.equal(Date.parse(all.exportedAtIso), all.exportedAt);
     assert.throws(() => exportContact(db, 999), { code: "NOT_FOUND" });

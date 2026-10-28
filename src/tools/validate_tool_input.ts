@@ -9,6 +9,15 @@ export function validateToolInput(
   path = "input",
   injectedNow = Date.now(),
 ): string | null {
+  const branches = schema.oneOf ?? schema.anyOf;
+  if (
+    path.endsWith(".value") &&
+    branches?.some((b) => b.type === "string") &&
+    branches.some((b) => b.type === "null") &&
+    value !== null &&
+    typeof value !== "string"
+  )
+    return `attribute values are strings or null; pass "${String(value)}" to store it as text`;
   if (schema.anyOf || schema.oneOf) {
     const choices = schema.anyOf ?? schema.oneOf ?? [];
     return choices.some(

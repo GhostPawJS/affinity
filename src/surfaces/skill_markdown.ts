@@ -18,7 +18,10 @@ export interface SkillMarkdownSpec<TCtx> {
 }
 export function renderSkillMarkdown<TCtx>(
   spec: SkillMarkdownSpec<TCtx>,
-  { referencesBase = "references" }: { referencesBase?: string } = {},
+  {
+    referencesBase = "references",
+    details = false,
+  }: { referencesBase?: string; details?: boolean } = {},
 ): string {
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(spec.name) || spec.name.length > 64)
     throw new Error("Invalid skill name");
@@ -60,7 +63,18 @@ export function renderSkillMarkdown<TCtx>(
     `Inspect schemas with \`${spec.bin} describe <tool>\`. Use \`--db <path>\` to select a database.`,
     "",
   );
-  for (const tool of spec.tools) {
+  if (spec.cheatSheet && !details)
+    lines.push(
+      "## Tool index",
+      "",
+      ...spec.tools.map(
+        (tool) => `- **${tool.name}**: ${tool.description.split(". ")[0]}.`,
+      ),
+      "",
+      `Parameter details and examples: \`${spec.bin} skill tools\` or \`${spec.bin} describe <tool>\`.`,
+      "",
+    );
+  for (const tool of spec.cheatSheet && !details ? [] : spec.tools) {
     lines.push(
       `## ${tool.name}`,
       "",
@@ -116,7 +130,7 @@ export function renderSkillMarkdown<TCtx>(
     "",
   );
   const output = lines.join("\n");
-  if (!spec.cheatSheet) return output;
+  if (!spec.cheatSheet || details) return output;
   const title = `# ${spec.name}\n\n`;
   const start = output.indexOf(title) + title.length;
   const appendix = output

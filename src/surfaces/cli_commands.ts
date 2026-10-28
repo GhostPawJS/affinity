@@ -401,7 +401,7 @@ export async function runCliCommand<T>(
       if (!quiet)
         stdout.write(
           json || !(stdout as { isTTY?: boolean }).isTTY
-            ? `${JSON.stringify(plainJson(result, compact, options.formatError), null, compact ? undefined : 2)}\n`
+            ? `${JSON.stringify(plainJson(result, compact || (!json && !(stdout as { isTTY?: boolean }).isTTY), options.formatError), null, compact ? undefined : 2)}\n`
             : humanResult(result),
         );
       return code;

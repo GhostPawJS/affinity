@@ -45,9 +45,19 @@ cd "$(mktemp -d)" && T=darwin-x64 && V=$(curl -fsSLI -o /dev/null -w '%{url_effe
 $r='GhostPawJS/affinity'; $v=(irm "https://api.github.com/repos/$r/releases/latest").tag_name; $f="ghostpaw-affinity-$($v.TrimStart('v'))-windows-x64.zip"; $u="https://github.com/$r/releases/download/$v"; $t=(New-Item -ItemType Directory (Join-Path $env:TEMP ([guid]::NewGuid()))).FullName; iwr "$u/$f" -OutFile "$t\$f" -UseBasicParsing; iwr "$u/SHA256SUMS" -OutFile "$t\SHA256SUMS" -UseBasicParsing; $want=((Get-Content "$t\SHA256SUMS" | Where-Object { $_ -like "* $f" }) -split '\s+')[0]; if (-not $want -or (Get-FileHash "$t\$f" -Algorithm SHA256).Hash -ne $want) { throw "checksum mismatch for $f" }; $d=Join-Path $env:LOCALAPPDATA 'Programs\ghostpaw\bin'; Expand-Archive "$t\$f" $t -Force; New-Item -ItemType Directory -Force $d | Out-Null; Copy-Item "$t\ghostpaw-affinity.exe" $d -Force; $p=[Environment]::GetEnvironmentVariable('Path','User'); if (";$p;" -notlike "*;$d;*") { [Environment]::SetEnvironmentVariable('Path',"$p;$d",'User') }; $env:Path="$d;$env:Path"; ghostpaw-affinity --version
 ```
 
-Linux installs to `~/.local/bin` (added to `~/.profile` if missing), macOS to
-`/usr/local/bin` (asks for sudo), Windows to `%LOCALAPPDATA%\Programs\ghostpaw\bin`
-(added to the user `PATH`; open a new terminal afterwards).
+These commands install the latest release in `~/.local/bin` on Linux, `/usr/local/bin` on macOS (asks for sudo), or `%LOCALAPPDATA%\Programs\ghostpaw\bin` on Windows; Linux adds it to PATH via `~/.profile` only if missing, and Windows adds it to the user PATH (open a new terminal afterwards). To pin a version, set `V=0.6.0` instead of resolving latest (`$v='v0.6.0'` in PowerShell).
+
+For a pinned Linux/macOS download to the current directory with no profile or PATH edits, choose the matching `T` (`linux-x64`, `linux-arm64`, `darwin-arm64`, or `darwin-x64`):
+
+```sh
+V=0.6.0
+T=linux-x64
+F=ghostpaw-affinity-$V-$T.tar.gz
+U=https://github.com/GhostPawJS/affinity/releases/download/v$V
+curl -fsSL -O "$U/$F" -O "$U/SHA256SUMS" &&
+  { case "$T" in darwin-*) grep " $F\$" SHA256SUMS | shasum -a 256 -c - ;; *) grep " $F\$" SHA256SUMS | sha256sum -c - ;; esac; } &&
+  tar -xzf "$F" ghostpaw-affinity && ./ghostpaw-affinity --version
+```
 
 Then:
 
@@ -284,7 +294,11 @@ Global flags: `--db <path>`, `--json`, `--quiet`, `--compact`,
 `--help`/`-h`, `--version`/`-V`/`-v`, `--no-color`.
 `NO_COLOR` is accepted. In a terminal, commands print a readable summary with
 names and dates. With `--json` or piped stdout they print the tool result as
-JSON with ISO date siblings and floats rounded to three decimals; `--compact`
+JSON with ISO date siblings and floats rounded to three decimals. Journal review rows
+keep one summary and compact `{id,name,role}` participants. Radar rows keep one link
+id, counterparty name, reasons and rounded scores; upcoming link dates omit radar
+scores. Default piped writes and `--compact` keep primary and changed ids plus
+warnings; explicit `--json` retains full mutation detail. `--compact`
 removes indentation and empty receipt arrays. `--quiet` suppresses stdout.
 Writes list what changed in `data.changes`, and creates warn about likely
 duplicates. Kebab-case flags map to schema properties. `--` ends flags.
