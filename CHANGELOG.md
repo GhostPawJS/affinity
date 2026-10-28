@@ -8,53 +8,46 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ### Added
 
-- Add atomic identity-aware contact creation with an opt-in return-existing policy, normalized social handles and native DID locators compatible with legacy identities.
-- Add JSONL batch writes with chunk transactions, per-line rollback, failure reporting and idempotent external references.
-- Add a synthetic social import example and a repeat-import content audit.
-- Add compact `skill --short` output and command-based workflow guide references.
-
-- Support unique external event references with idempotent intake, exact event lookup, and event/all search scopes.
-- Store verbatim event content up to 1 MB, derive bounded summaries when omitted, and include content in journal/review rows only on request.
-- Add event attributes, channel filters, parent/root references and chronological thread reviews.
-- Add event revision and confirmed deletion through the library, tool facade, MCP and CLI, with surviving link effects replayed and rollups refreshed.
-- Upgrade existing databases in place for event metadata and effect replay baselines.
-
-- Add `--version --short` for exact semver matching and `--version --json` for structured package and variant metadata, including `version` subcommand equivalents.
+- Events take an optional `externalRef` (`{source, id}`), unique per source. Recording the same ref again returns `no_op` with the existing event id. Look an event up with `show event --ref-source <s> --ref-id <id>` or search event text with `search --scope events|all`.
+- Events store verbatim `content` up to 1 MB. A summary is derived only when none is given. Journal and review rows include content only with `--with-content` (`includeContent`).
+- Events take a `channel`, a `parentRef` or `parentEventId`, and a `threadRef`. Attributes can target an event. `review events.thread` lists a thread in order.
+- `event revise` and `event delete --confirm` (tool `manage_event`, library `reviseEvent` and `deleteEvent`) take an event id or an external ref. Link effects of the remaining events are replayed and rollups refreshed.
+- `contact create` accepts `identities`. An identity owned by another contact fails with exit 4 and `existingContactId`, and nothing is written. `--if-exists return` (`ifExists: "return"`) returns the existing contact as `no_op`.
+- Native `did` identity type (alias `atproto_did`). Handles are normalized: a leading `@` is dropped and case is folded. Invalid handles fail with exit 2. Locators still find legacy `custom:atproto-did` rows.
+- `batch` reads JSONL tool calls from stdin in one transaction, or in chunks with `--chunk N`. A failed line rolls back alone and is reported with its line number. `--stop-on-error` stops at the first failure.
+- `scripts/examples/import_social_jsonl.mjs` converts a social export into batch lines. `scripts/examples/import_dry_run.mjs` imports a synthetic 12-account fixture twice and checks that the second run creates 0 contacts and 0 events.
+- `skill --short` prints a 28-line cheat sheet.
+- `--version --short` prints the bare semver. `--version --json` prints package, version and variant.
+- Date-only values keep their calendar day in the new `occurredOn`, `dueOn` and `occursOn` fields. Existing databases are upgraded in place.
 
 ### Changed
 
-- CLI values are literal by default. Only the JSON payload arguments (`--input`, the positional `<input>`, `--patch` and the `call` argument) read `@path` files and `@-` stdin, `@@text` passes a literal `@text`, and an empty or unreadable path exits 2. Other values, such as names, notes, attribute values and search queries, no longer load a file when they start with `@`. Callers that passed `@path` to other flags must inline the value.
-- New database files are created with mode 0600, and a missing parent directory is created with mode 0700. Existing files and directories keep their modes.
-- Slim tool review rows: compact named journal participants, one event/link id and summary, rounded radar scores, and upcoming link dates without radar metrics. Compact and default piped CLI mutation output retains ids and warnings rather than repeating full entities.
-- Keep the skill entry focused on the CLI cheat sheet and tool index; move parameter details and examples to the embedded `tools` guide.
-- Export whole-database events once at the top level, referenced by contact event/date ids; export stored flags as JSON booleans.
+- CLI values are literal by default. Only the JSON payload arguments (`--input`, the positional `<input>`, `--patch` and the `call` argument) read files: `@path` reads the file, `@-` reads stdin and `@@text` passes a literal `@text`. An empty or unreadable path exits 2. Other values such as names, notes, attribute values and search queries no longer load a file when they start with `@`. Callers that passed `@path` to those flags must inline the value.
+- New database files are created with mode 0600. A missing parent directory is created with mode 0700. Existing files and directories keep their modes.
+- Unknown event and commitment fields fail with exit 2 and list the allowed fields. `momentKind` accepts only `breakthrough`, `rupture`, `reconciliation`, `milestone` and `turning_point`.
+- Smaller review output: a journal row went from 433 to 279 bytes, a radar row from 352 to 242 bytes, an upcoming-date row from 488 to 217 bytes and a compact receipt from 314 to 167 bytes.
+- The printed skill went from 33,151 to 9,988 bytes. Parameter details moved to the `tools` guide (`skill tools`), and guides are named by command instead of `references/*.md` links.
+- Whole-database export lists each event once (5,089 to 2,789 bytes on the test fixture) and stores flags as JSON booleans.
+- Array flags such as `--event-types` accept a JSON array, a comma list or repeated flags. JSON flags accept `-` for stdin.
+- `review links.owner` and other list views report `total` and `hasMore` for paging with `--limit` and `--offset`.
 
 ### Fixed
 
-- Keep ambient observations and unanswered outbound activity from inflating bond strength or triggering routine radar prompts; avoid automatic moments for observations and follow-like milestones.
-- Accept JSON arrays, comma lists and repeated array flags, JSON flag stdin, literal social handles and explicit `@@` escapes.
-- Accept SQLite UTC timestamps, round sub-millisecond precision, explain missing event timestamps, and report list review pagination totals and continuation state.
-
-- Reject unknown event/commitment fields and unsupported moment kinds with allowed-field/value diagnostics.
-- Preserve NUL-containing event content when reading through node:sqlite and avoid duplicating content in review entity references.
-
-- Match national phone queries by digit suffix, excluding short suffixes.
-- Name profile top-link counterparties and exclude date anchors from recent journal events.
-- Exclude dormant and lost counterparties from radar unless explicitly included; merged contacts remain excluded.
-- Explain that attribute values must be strings or null for numeric and boolean input across CLI and MCP.
-- Clarify latest-version installs and profile edits, and document pinned downloads without PATH changes.
-
-- Warn on near-name contact creation using duplicate review similarity scores.
-- Suggest CLI commands for bare verbs, plural nouns and misspellings; diagnose unknown leading flags.
-- Classify non-commitment resolution as invalid input, and owner deletion and re-merging as conflicts across CLI and MCP.
-- Correct merge guidance to name `merge_contacts` and `contact merge`.
-- Accept plain text for string-compatible JSON flags and normalize prefixed tag filters.
-- Show action-specific flags and requirements in command help.
-- Prevent read commands from creating missing databases; writes and MCP startup continue to create them.
-
-- Unify CLI and MCP date parsing, preserve calendar days in additive date fields, and upgrade existing databases in place.
-- Exclude future events, commitments and commitment resolutions from contact recency; warn when recording future events.
-- Explain radar reasons, identify cadence drift and prioritize entries with actionable reasons.
+- Replies, likes and follows from one side no longer raise affinity or trigger radar check-ins. A follow is no longer recorded as a breakthrough.
+- CLI and MCP share one date parser. A date-only value no longer shifts by a day in time zones west of UTC.
+- Future events, commitments and resolutions no longer count as recent contact. Recording a future event returns a `future_event` warning.
+- Radar entries explain their reason, flag cadence drift when the gap exceeds 1.5 times the cadence, and sort entries with a reason first. Dormant and lost contacts are hidden unless requested.
+- A missing `occurredAt` explains the accepted formats. SQLite UTC timestamps such as `2026-10-27 17:51:33` are accepted.
+- `search @handle` finds the contact. National phone numbers match by digit suffix.
+- Creating a contact with a near-duplicate name (for example Brand and Brandt) returns a duplicate warning.
+- Misspelled commands get a suggestion, and an unknown flag names itself (`Unknown flag: --bogus-flag`). Each command has its own `--help` with its flags.
+- Resolving a non-commitment exits 2. Deleting the owner and re-merging a merged contact exit 4.
+- Read commands on a missing database exit 3 and no longer create the file.
+- Plain text is accepted for string-valued JSON flags, and a `tag:` prefix is stripped from tag filters.
+- Numeric and boolean attribute values get a clear error naming the accepted types.
+- Profile top links name the counterparty, and date anchors no longer appear in recent events.
+- Writing to a closed pipe (`| head`) ends quietly instead of printing a stack trace.
+- The README explains latest and pinned installs and when `~/.profile` is edited.
 
 ## [0.5.0] - 2026-10-28
 
