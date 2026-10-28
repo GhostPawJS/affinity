@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "ghostpaw-affinity",
   "display_name": "GhostPaw Affinity",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Local relationship model and social CRM for contacts, relationships, evidence, and commitments.",
   "long_description": "Local relationship model and social CRM. Stores data in a local SQLite database.",
   "author": {
