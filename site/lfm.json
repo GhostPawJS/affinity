@@ -44,7 +44,7 @@
         "codeRepository": "{{.urls.github}}",
         "programmingLanguage": "TypeScript",
         "runtimePlatform": "Node.js 24",
-        "version": "0.5.0",
+        "version": "0.6.0",
         "license": "{{.urls.mit}}",
         "author": {
           "@type": "Organization",
