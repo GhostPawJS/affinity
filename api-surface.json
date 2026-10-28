@@ -19641,6 +19641,10 @@
     "kind": "type",
     "type": "JsonSchema",
     "members": {
+      "anyOf": {
+        "type": "readonly JsonSchema[] | undefined",
+        "optional": true
+      },
       "description": {
         "type": "string | undefined",
         "optional": true
@@ -19670,7 +19674,7 @@
         "optional": true
       }
     },
-    "definition": "interface JsonSchema { type?: string | readonly string[] | undefined; description?: string | undefined; properties?: Record<string, JsonSchema> | undefined; required?: readonly string[] | undefined; enum?: readonly unknown[] | undefined; items?: JsonSchema | undefined; oneOf?: readonly JsonSchema[] | undefined; }"
+    "definition": "interface JsonSchema { type?: string | readonly string[] | undefined; description?: string | undefined; properties?: Record<string, JsonSchema> | undefined; required?: readonly string[] | undefined; enum?: readonly unknown[] | undefined; items?: JsonSchema | undefined; oneOf?: readonly JsonSchema[] | undefined; anyOf?: readonly JsonSchema[] | undefined; }"
   },
   "./mcp:public.MCP_LATEST_PROTOCOL_VERSION": {
     "kind": "value",
@@ -19766,7 +19770,7 @@
     "type": "SurfaceTool<TCtx>",
     "members": {
       "cli": {
-        "type": "{ noun?: string; verb: string; positionals?: string[]; action?: { property: string; verbs?: Record<string, string>; positionals?: Record<string, string[]>; }; } | undefined",
+        "type": "{ noun?: string; verb: string; positionals?: string[]; action?: { property: string; fields?: Record<string, string[]>; required?: Record<string, string[]>; verbs?: Record<string, string>; positionals?: Record<string, string[]>; }; } | undefined",
         "optional": true
       },
       "description": {
@@ -19806,7 +19810,7 @@
         "optional": true
       }
     },
-    "definition": "interface SurfaceTool<TCtx> { name: string; cli?: { noun?: string; verb: string; positionals?: string[]; action?: { property: string; verbs?: Record<string, string>; positionals?: Record<string, string[]>; }; }; title?: string; description: string; inputSchema: JsonSchema & { type: \"object\"; }; whenToUse?: string; whenNotToUse?: string; readOnly?: boolean; sideEffects?: string; handler(ctx: TCtx, input: Record<string, unknown>): unknown | Promise<unknown>; }",
+    "definition": "interface SurfaceTool<TCtx> { name: string; cli?: { noun?: string; verb: string; positionals?: string[]; action?: { property: string; fields?: Record<string, string[]>; required?: Record<string, string[]>; verbs?: Record<string, string>; positionals?: Record<string, string[]>; }; }; title?: string; description: string; inputSchema: JsonSchema & { type: \"object\"; }; whenToUse?: string; whenNotToUse?: string; readOnly?: boolean; sideEffects?: string; handler(ctx: TCtx, input: Record<string, unknown>): unknown | Promise<unknown>; }",
     "references": {
       "JsonSchema": "./mcp:public.JsonSchema",
       "TCtx": "./mcp:public.SurfaceTool.types.TCtx"

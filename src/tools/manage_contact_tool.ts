@@ -148,6 +148,13 @@ export function manageContactToolHandler(
       return contact.result;
     }
     if (input.action === "delete") {
+      if (contact.value.is_owner)
+        return invalidToolInput(
+          "domain",
+          "conflict",
+          "Cannot delete owner.",
+          "The owner contact cannot be deleted",
+        );
       const deletion = deleteContact(db, contact.value.id, { confirm: true });
       return toolSuccess("Permanently deleted contact.", {
         action: "delete",

@@ -1,5 +1,6 @@
 import { createContact } from "../contacts/create_contact.ts";
 import { foldSearchText } from "../contacts/fold_search_text.ts";
+import { fuzzyNameScore } from "../contacts/list_duplicate_candidates.ts";
 import type { AffinityDb } from "../database.ts";
 import { addIdentity } from "../identities/add_identity.ts";
 import { normalizeIdentityKey } from "../identities/normalize.ts";
@@ -41,13 +42,13 @@ export function createContactToolResult(
         )
         .all(receipt.primary.id) as { id: number; name: string }[]
     ).flatMap((row) => {
-      // Existing duplicate scoring only exceeds 0.85 for equal normalized names.
+      // Use the same positive-score listing threshold as duplicate review.
       const score = identityOwners.has(row.id)
         ? 1
         : fold(row.name) === fold(input.name)
           ? 0.92
-          : undefined;
-      return score === undefined
+          : fuzzyNameScore(row.name, input.name);
+      return score <= 0
         ? []
         : [
             {

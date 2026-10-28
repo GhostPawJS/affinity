@@ -12,6 +12,12 @@ export interface ToolCliOptions<TCtx> {
   reportCreation?: boolean;
   describeDb?: (db?: string) => string;
   versionLine?: () => string;
+  versionInfo?: () => object;
+  contextError?: (
+    db: string | undefined,
+    tool: SurfaceTool<TCtx>,
+    input: unknown,
+  ) => string | undefined;
   bin: string;
   version: string;
   description: string;
@@ -32,14 +38,26 @@ async function runToolCliInternal<TCtx>(
 ): Promise<number> {
   let options = providedOptions;
   const end = argv.indexOf("--");
+  let firstCommand: string | undefined;
+  for (let i = 0; i < (end < 0 ? argv.length : end); i++) {
+    if (argv[i] === "--db") {
+      i++;
+      continue;
+    }
+    if (!argv[i]?.startsWith("-")) {
+      firstCommand = argv[i];
+      break;
+    }
+  }
   if (
     argv
       .slice(0, end < 0 ? argv.length : end)
-      .some((arg) => ["--version", "-V", "-v"].includes(arg))
+      .some((arg) => ["--version", "-V", "-v"].includes(arg)) ||
+    firstCommand === "version"
   ) {
     if (!argv.includes("--quiet"))
       (options.stdout ?? process.stdout).write(
-        `${options.versionLine?.() ?? options.version}\n`,
+        `${argv.includes("--short") ? options.version : argv.includes("--json") ? JSON.stringify(options.versionInfo?.() ?? { version: options.version }) : (options.versionLine?.() ?? options.version)}\n`,
       );
     return 0;
   }
@@ -180,15 +198,21 @@ async function runToolCliInternal<TCtx>(
         }
         if (schema.type === "object" || schema.type === "array")
           return JSON.parse(value);
-        if (schema.oneOf) {
-          for (const branch of schema.oneOf) {
-            try {
-              const converted = coerce(value, branch);
-              if (!validateInput(branch, converted).length) return converted;
-            } catch {
-              /* Try the next schema. */
-            }
+        if (schema.anyOf || schema.oneOf) {
+          const branches = schema.anyOf ?? schema.oneOf ?? [];
+          let converted: unknown;
+          try {
+            converted = JSON.parse(value);
+          } catch {
+            if (branches.some((branch) => branch.type === "string"))
+              return value;
+            throw new Error("Expected JSON");
           }
+          if (
+            branches.some((branch) => !validateInput(branch, converted).length)
+          )
+            return converted;
+          return converted;
         }
         return value;
       };
@@ -238,6 +262,8 @@ async function runToolCliInternal<TCtx>(
   }
   const errors = validateInput(tool.inputSchema, input);
   if (errors.length) return fail(errors.join("\n"), 2);
+  const contextError = options.contextError?.(db, tool, input);
+  if (contextError) return fail(contextError, 3);
   let context: TCtx;
   try {
     context = await options.openContext(

@@ -21,26 +21,52 @@ export function suggestCommand(
   input: string,
   names: string[],
 ): string | undefined {
-  let best: string | undefined;
-  let distance = 3;
-  for (const name of names) {
-    let row = Array.from({ length: name.length + 1 }, (_, i) => i);
-    for (let i = 0; i < input.length; i++) {
+  const normalize = (text: string) =>
+    text
+      .toLowerCase()
+      .replace(/identities/g, "identity")
+      .replace(/\b([a-z]+)s\b/g, "$1")
+      .replace(/[_-]/g, " ");
+  const distance = (left: string, right: string) => {
+    let row = Array.from({ length: right.length + 1 }, (_, i) => i);
+    for (let i = 0; i < left.length; i++) {
       const next = [i + 1];
-      for (let j = 0; j < name.length; j++)
+      for (let j = 0; j < right.length; j++)
         next.push(
           Math.min(
             (next[j] ?? 0) + 1,
             (row[j + 1] ?? 0) + 1,
-            (row[j] ?? 0) + (input[i] === name[j] ? 0 : 1),
+            (row[j] ?? 0) + (left[i] === right[j] ? 0 : 1),
           ),
         );
       row = next;
     }
-    const current = row[name.length] ?? 3;
-    if (current < distance) {
-      best = name;
-      distance = current;
+    return row[right.length] ?? Number.POSITIVE_INFINITY;
+  };
+  let best: string | undefined;
+  let bestScore = Number.POSITIVE_INFINITY;
+  const words = normalize(input).split(" ");
+  for (const name of names) {
+    const path = normalize(name);
+    const alternatives = [path];
+    if (words.length === 1) alternatives.push(path.split(" ").at(-1) ?? path);
+    for (const alternative of alternatives) {
+      const candidateInput =
+        !path.includes(" ") && words.length > 1
+          ? (words[0] ?? "")
+          : words.join(" ");
+      const current = distance(candidateInput, alternative);
+      const threshold = Math.max(
+        1,
+        Math.floor(Math.max(candidateInput.length, alternative.length) * 0.25),
+      );
+      const score =
+        current / Math.max(candidateInput.length, alternative.length, 1) +
+        (!path.includes(" ") && words.length > 1 ? 0.05 : 0);
+      if (current <= threshold && score < bestScore) {
+        best = name;
+        bestScore = score;
+      }
     }
   }
   return best;

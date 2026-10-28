@@ -15,7 +15,7 @@ export function assertValidLifecycleTransition(
   }
   if (to === "merged") {
     throw new AffinityInvariantError(
-      "use manage_contact merge (CLI: contact merge) to reach merged state",
+      "use merge_contacts (CLI: contact merge) to reach merged state",
     );
   }
   if (from === to) {

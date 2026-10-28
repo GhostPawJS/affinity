@@ -15,6 +15,11 @@ Windows: `irm https://raw.githubusercontent.com/GhostPawJS/affinity/main/install
 ```sh
 export GHOSTPAW_AFFINITY_DB=/abs/path/affinity.db
 # Or --db; default ~/.ghostpaw/affinity.db. Piped output is JSON; --compact omits empty receipt arrays.
+# Version: --version includes variant; scripts should use --version --short for exact semver matching.
+# --version --json (or version --json) returns name, version, variant, target (null outside a binary).
+# Missing DB reads exit 3 and create nothing; the first write creates it. MCP creates on startup.
+# String flags accept plain text: --value Hamburg; object/array flags require JSON.
+# Tag filters accept gastro-radar or tag:gastro-radar. Use per-command --help for action flags.
 # Exit: 0 ok/no_op, 1 tool error, 2 usage/invalid input, 3 not found/clarification, 4 conflict, 70 internal.
 # Dates: epoch ms, ISO with offset/Z, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, +3d, -2d.
 # CLI and MCP use the same grammar, including yesterday. Keywords use the local date.

@@ -6,6 +6,7 @@ export interface JsonSchema {
   enum?: readonly unknown[] | undefined;
   items?: JsonSchema | undefined;
   oneOf?: readonly JsonSchema[] | undefined;
+  anyOf?: readonly JsonSchema[] | undefined;
 }
 export interface SurfaceTool<TCtx> {
   name: string;
@@ -15,6 +16,8 @@ export interface SurfaceTool<TCtx> {
     positionals?: string[];
     action?: {
       property: string;
+      fields?: Record<string, string[]>;
+      required?: Record<string, string[]>;
       verbs?: Record<string, string>;
       positionals?: Record<string, string[]>;
     };

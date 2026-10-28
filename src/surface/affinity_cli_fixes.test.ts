@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { Readable, Writable } from "node:stream";
@@ -62,6 +62,7 @@ async function invoke(
               );
             },
           })),
+          contextError: () => undefined,
           openContext: () => ({}) as AffinityDb,
           closeContext: () => {},
         }),
@@ -247,9 +248,9 @@ test("array flags parse object items and spread a single JSON array", async () =
       "--entries",
       '{"name":"a","value":null}',
       "--entries",
-      '{"name":"b","value":1}',
+      '{"name":"b","value":"one"}',
     ],
-    ["--entries", '[{"name":"a","value":null},{"name":"b","value":1}]'],
+    ["--entries", '[{"name":"a","value":null},{"name":"b","value":"one"}]'],
   ]) {
     const result = await invoke([
       "attribute",
@@ -261,7 +262,7 @@ test("array flags parse object items and spread a single JSON array", async () =
     assert.equal(result.code, 0, result.err);
     assert.deepEqual(result.captured?.input.entries, [
       { name: "a", value: null },
-      { name: "b", value: 1 },
+      { name: "b", value: "one" },
     ]);
   }
   const invalid = await invoke(["attribute", "replace", "--entries", "{bad"]);
@@ -425,6 +426,280 @@ test("MCP accepts ISO timestamps and reports invalid calendar dates", async () =
           response.result.content[0]?.text ?? "",
           /Invalid timestamp/,
         );
+    }
+  } finally {
+    db.close();
+  }
+});
+
+test("command suggestions cover verbs, noun plurals, aliases and positional queries", async () => {
+  for (const [args, suggestion] of [
+    [["export"], "contact export"],
+    [["serch", "Jana"], "search"],
+    [["contacts", "list"], "review contacts.list"],
+    [["contact", "delet"], "contact delete"],
+  ] as const) {
+    const result = await invoke([...args]);
+    assert.equal(result.code, 2);
+    assert.ok(result.err.includes(`Did you mean ${suggestion}?`), result.err);
+  }
+});
+test("nullable string flags accept plain strings while structured flags require JSON", async () => {
+  for (const value of ["Hamburg", '"Hamburg"', "null", "300", "true"]) {
+    const result = await invoke([
+      "attribute",
+      "set",
+      "--target",
+      '{"kind":"contact","contact":{"contactId":1}}',
+      "--name",
+      "city",
+      "--value",
+      value,
+    ]);
+    assert.equal(
+      result.code,
+      ["300", "true"].includes(value) ? 2 : 0,
+      result.err,
+    );
+    if (result.code === 0)
+      assert.equal(
+        result.captured?.input.value,
+        value === "null" ? null : "Hamburg",
+      );
+  }
+  const legacy = await invoke([
+    "manage_attribute",
+    "--action",
+    "set",
+    "--target",
+    '{"kind":"contact","contact":{"contactId":1}}',
+    "--name",
+    "city",
+    "--value",
+    "Hamburg",
+  ]);
+  assert.equal(legacy.code, 0, legacy.err);
+  assert.equal(legacy.captured?.input.value, "Hamburg");
+  const bond = await invoke([
+    "relationship",
+    "bond",
+    "--link",
+    '{"linkId":1}',
+    "--bond",
+    "Warm lead",
+  ]);
+  assert.equal(bond.code, 0, bond.err);
+  assert.equal(bond.captured?.input.bond, "Warm lead");
+  const reason = await invoke([
+    "duplicate",
+    "dismiss",
+    "--left",
+    '{"contactId":1}',
+    "--right",
+    '{"contactId":2}',
+    "--reason=Different people",
+  ]);
+  assert.equal(reason.code, 0, reason.err);
+  assert.equal(reason.captured?.input.reason, "Different people");
+  const invalid = await invoke([
+    "contact",
+    "revise",
+    '{"contactId":1}',
+    "--patch",
+    "Hamburg",
+  ]);
+  assert.equal(invalid.code, 2);
+  assert.match(invalid.err, /Invalid JSON for patch/);
+});
+test("action help shows only consumed flags with command-specific requirements", async () => {
+  for (const action of ["export", "delete"]) {
+    const result = await invoke(["contact", action, "--help"]);
+    assert.equal(result.code, 0);
+    assert.doesNotMatch(
+      result.out,
+      /--input|--patch|--lifecycle-state|Required when action=/,
+    );
+    assert.match(result.out, /--contact/);
+    if (action === "delete") {
+      assert.match(result.out, /--contact.*required/);
+      assert.match(result.out, /--confirm.*required/);
+    } else {
+      assert.doesNotMatch(result.out, /--confirm|--contact.*required/);
+    }
+  }
+  const bond = await invoke(["relationship", "bond", "--help"]);
+  assert.match(bond.out, /--bond/);
+  assert.doesNotMatch(bond.out, /--from|--to|--state|--kind|--removed-at/);
+});
+test("unknown flags before a command are diagnosed before command matching", async () => {
+  const result = await invoke(["--bogus-flag", "search", "Jana"]);
+  assert.equal(result.code, 2);
+  assert.equal(result.err, "Unknown flag: --bogus-flag\n");
+  const close = await invoke(["--quie", "search", "Jana"]);
+  assert.equal(close.code, 2);
+  assert.match(close.err, /Unknown flag: --quie; did you mean --quiet/);
+});
+test("version short and JSON formats work with flag and subcommand", async () => {
+  const short = await invoke(["--version", "--short"]);
+  assert.match(short.out, /^\d+\.\d+\.\d+\n$/);
+  for (const command of ["--version", "version"]) {
+    assert.equal((await invoke([command, "--short"])).out, short.out);
+    assert.equal(
+      (await invoke(["--db", "/missing/version.db", command, "--short"])).out,
+      short.out,
+    );
+    const result = await invoke([command, "--json"]);
+    assert.equal(result.code, 0);
+    assert.deepEqual(JSON.parse(result.out), {
+      name: "@ghostpaw/affinity",
+      version: short.out.trim(),
+      variant: "library",
+      target: null,
+    });
+  }
+});
+test("missing database reads create no files, including legacy export and environment paths", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "affinity-missing-"));
+  const path = join(dir, "nested", "missing.db");
+  const previous = process.env.GHOSTPAW_AFFINITY_DB;
+  try {
+    const commands = [
+      ["search", "Jana"],
+      ["show", "owner_profile"],
+      ["review", "contacts.list"],
+      ["contact", "export"],
+      ["call", "search_affinity", '{"query":"Jana"}'],
+      ["manage_contact", "--action", "export"],
+    ];
+    for (const env of [false, true]) {
+      if (env) process.env.GHOSTPAW_AFFINITY_DB = path;
+      for (const command of commands) {
+        const result = await invoke(
+          [...command, ...(env ? [] : ["--db", path])],
+          "",
+          { real: true },
+        );
+        assert.equal(result.code, 3, result.err);
+        assert.equal(
+          result.err,
+          `Database not found: ${path} (it is created by the first write)\n`,
+        );
+        assert.equal(existsSync(join(dir, "nested")), false);
+      }
+    }
+  } finally {
+    if (previous === undefined)
+      Reflect.deleteProperty(process.env, "GHOSTPAW_AFFINITY_DB");
+    else process.env.GHOSTPAW_AFFINITY_DB = previous;
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("CLI and MCP share explicit invalid-input and conflict errors", async () => {
+  const db = await openAffinityDb(":memory:");
+  try {
+    const manage = affinitySurfaceTools.find(
+      (tool) => tool.name === "manage_contact",
+    );
+    const merge = affinitySurfaceTools.find(
+      (tool) => tool.name === "merge_contacts",
+    );
+    assert.ok(manage && merge);
+    for (const [name, bootstrapOwner] of [
+      ["Owner", true],
+      ["Winner", false],
+      ["Loser", false],
+    ] as const)
+      await manage.handler(db, {
+        action: "create",
+        input: { name, kind: "human", bootstrapOwner },
+      });
+    const merged = await merge.handler(db, {
+      winner: { contactId: 2 },
+      loser: { contactId: 3 },
+      reasonSummary: "Same person",
+    });
+    assert.equal((merged as { ok: boolean }).ok, true);
+    db.prepare(
+      "INSERT INTO events (type, occurred_at, summary, created_at, updated_at) VALUES ('observation', 1, 'An observation', 1, 1)",
+    ).run();
+    const server = createMcpServer(affinityMcpOptions(() => db));
+    await server.handleMessage({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "initialize",
+      params: {},
+    });
+    for (const [name, input, args, expectedCode, expectedError] of [
+      [
+        "manage_commitment",
+        { action: "resolve", commitmentEventId: 1, resolution: "kept" },
+        [
+          "commitment",
+          "resolve",
+          "--commitment-event-id",
+          "1",
+          "--resolution",
+          "kept",
+        ],
+        2,
+        "invalid_input",
+      ],
+      [
+        "manage_contact",
+        { action: "delete", contact: { contactId: 1 }, confirm: true },
+        ["contact", "delete", "--contact", '{"contactId":1}', "--confirm"],
+        4,
+        "conflict",
+      ],
+      [
+        "merge_contacts",
+        {
+          winner: { contactId: 2 },
+          loser: { contactId: 3 },
+          reasonSummary: "Same person",
+        },
+        [
+          "contact",
+          "merge",
+          "--winner",
+          '{"contactId":2}',
+          "--loser",
+          '{"contactId":3}',
+          "--reason-summary",
+          "Same person",
+        ],
+        4,
+        "conflict",
+      ],
+    ] as const) {
+      let output = "";
+      const code = await runToolCli([...args], {
+        ...affinityCliOptions,
+        contextError: () => undefined,
+        openContext: () => db,
+        closeContext: () => {},
+        stdout: sink((v) => {
+          output += v;
+        }),
+        stderr: sink(() => {}),
+        stdin: Readable.from([]),
+      });
+      assert.equal(code, expectedCode, output);
+      assert.equal(JSON.parse(output).error.code, expectedError);
+      const response = (await server.handleMessage({
+        jsonrpc: "2.0",
+        id: 2,
+        method: "tools/call",
+        params: { name, arguments: input },
+      })) as {
+        result: {
+          isError: boolean;
+          structuredContent: { error: { code: string } };
+        };
+      };
+      assert.equal(response.result.isError, true);
+      assert.equal(response.result.structuredContent.error.code, expectedError);
     }
   } finally {
     db.close();

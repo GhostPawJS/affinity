@@ -68,7 +68,7 @@ export function resolveContactLocator(
       const message = `Contact #${row.id} was merged into #${row.merged_into_contact_id} ${winner?.name ?? ""}; use contactId ${row.merged_into_contact_id}`;
       return {
         ok: false,
-        result: toolFailure("domain", "invalid_state", message, message),
+        result: toolFailure("domain", "conflict", message, message),
       };
     }
     return { ok: true, value: row };

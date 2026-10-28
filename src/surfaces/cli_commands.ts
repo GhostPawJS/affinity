@@ -38,6 +38,8 @@ export function cliCommands<T>(tools: readonly SurfaceTool<T>[]) {
       return {
         tool,
         path: [cli.noun, verb].filter(Boolean).join(" "),
+        fields: action?.fields?.[String(value)],
+        required: action?.required?.[String(value)],
         fixed:
           action && value !== undefined ? { [action.property]: value } : {},
         positionals:
@@ -64,7 +66,7 @@ export async function runCliCommand<T>(
     stderr.write(`${message}\n`);
     if (json && !quiet)
       stdout.write(
-        `${JSON.stringify({ ok: false, error: { code: code === 2 ? "usage_error" : "internal_error", message } })}\n`,
+        `${JSON.stringify({ ok: false, error: { code: code === 2 ? "usage_error" : code === 3 ? "not_found" : "internal_error", message } })}\n`,
       );
     return code;
   };
@@ -119,7 +121,23 @@ export async function runCliCommand<T>(
     const entry = tree.find((command) =>
       command.path.split(" ").every((part, i) => args[i] === part),
     );
-    const specFor = (command: (typeof tree)[number]): CliSpec => {
+    const isRequired = (command: (typeof tree)[number], name: string) => {
+      if (command.required) return command.required.includes(name);
+      if (command.tool.inputSchema.required?.includes(name)) return true;
+      const description =
+        command.tool.inputSchema.properties?.[name]?.description ?? "";
+      const actions = description
+        .match(/Required when action=([^.]+)/)?.[1]
+        ?.split(/[, ]+/)
+        .filter((word) => word !== "or");
+      return (
+        actions?.includes(String(Object.values(command.fixed)[0])) ?? false
+      );
+    };
+    const specFor = (
+      command: (typeof tree)[number],
+      forHelp = false,
+    ): CliSpec => {
       const argument = (name: string, schema: JsonSchema): CliArgument => ({
         name,
         type:
@@ -130,7 +148,9 @@ export async function runCliCommand<T>(
                   !schema.oneOf?.some((branch) => branch.type === "string"))
               ? "json"
               : ((schema.type ?? "string") as CliArgument["type"]),
-        description: schema.description,
+        description: forHelp
+          ? schema.description?.replace(/Required when action=[^.]+\. ?/g, "")
+          : schema.description,
         enum: schema.enum,
         ...(schema.items?.type
           ? {
@@ -147,6 +167,7 @@ export async function runCliCommand<T>(
         description: command.tool.description,
         positionals: command.positionals.map((name) => ({
           ...argument(name, properties[name] ?? {}),
+          required: forHelp && isRequired(command, name),
           ...(properties[name]?.type === "array"
             ? {
                 type:
@@ -157,14 +178,18 @@ export async function runCliCommand<T>(
             : {}),
         })),
         flags: Object.entries(properties)
-          .filter(([name]) => !(name in command.fixed))
+          .filter(
+            ([name]) =>
+              !(name in command.fixed) &&
+              (!forHelp || !command.fields || command.fields.includes(name)),
+          )
           .map(([name, schema]) => ({
             ...argument(
               name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`),
               schema,
             ),
-            required: false,
-            description: `${schema.description ?? ""}${command.tool.inputSchema.required?.includes(name) ? " (required)" : ""}`,
+            required: forHelp && isRequired(command, name),
+            description: `${forHelp ? (schema.description?.replace(/Required when action=[^.]+\. ?/g, "") ?? "") : (schema.description ?? "")}${command.tool.inputSchema.required?.includes(name) ? " (required)" : ""}`,
           })),
       };
     };
@@ -177,7 +202,7 @@ export async function runCliCommand<T>(
       if (!quiet)
         stdout.write(
           entry
-            ? renderCliHelp(specFor(entry))
+            ? renderCliHelp(specFor(entry, true))
             : `${options.versionLine?.() ?? `${options.bin} ${options.version}`}\n${options.description}\n\nCommands:\n${matches.map((command) => `  ${command.path}`).join("\n")}\n  mcp, skill, tools [--json], describe <tool>, call <tool> [JSON|-], completions <bash|zsh|fish>, version\nGlobal flags: --db <path>, --json, --quiet, --compact, --help/-h, --version/-V/-v, --no-color\n`,
         );
       if (options.describeDb && !quiet)
@@ -212,15 +237,43 @@ export async function runCliCommand<T>(
         throw new CliUsageError("Expected completion shell: bash, zsh or fish");
       return 0;
     }
+    // Diagnose flags before command matching, including flags before a command.
+    const leadingFlag = args.findIndex((arg) => arg.startsWith("-"));
+    if (leadingFlag === 0) {
+      const flag = args[0]?.split("=")[0] ?? "";
+      const suggestion = suggestCommand(flag, [
+        "--db",
+        "--json",
+        "--quiet",
+        "--compact",
+        "--help",
+        "--version",
+        "--no-color",
+      ]);
+      throw new CliUsageError(
+        `Unknown flag: ${flag}${suggestion ? `; did you mean ${suggestion}?` : ""}`,
+      );
+    }
     if (!entry) {
       const path = args
         .filter((x) => !x.startsWith("--"))
         .slice(0, 2)
         .join(" ");
-      const suggestion = suggestCommand(
-        path,
-        tree.map((c) => c.path),
+      const aliases = new Map(
+        tree.map((command) => [command.path, command.path]),
       );
+      for (const command of tree) {
+        if (!Object.keys(command.fixed).length)
+          aliases.set(command.tool.name, command.path);
+        if (command.path === "review")
+          for (const view of command.tool.inputSchema.properties?.view?.enum ??
+            []) {
+            aliases.set(String(view).replaceAll(".", " "), `review ${view}`);
+            aliases.set(`review ${view}`, `review ${view}`);
+          }
+      }
+      const suggested = suggestCommand(path, [...aliases.keys()]);
+      const suggestion = suggested ? aliases.get(suggested) : undefined;
       throw new CliUsageError(
         `Unknown command: ${path}.${suggestion ? ` Did you mean ${suggestion}?` : ""}`,
       );
@@ -271,6 +324,42 @@ export async function runCliCommand<T>(
       !((objectPositions[0] as string) in base)
     )
       base = { [objectPositions[0] as string]: base };
+    const acceptsString = (schema: JsonSchema): boolean =>
+      schema.type === "string" ||
+      (Array.isArray(schema.type) && schema.type.includes("string")) ||
+      [...(schema.oneOf ?? []), ...(schema.anyOf ?? [])].some(acceptsString);
+    for (let i = 0; i < rest.length; i++) {
+      const token = rest[i] as string;
+      if (token === "--") break;
+      if (!token.startsWith("--")) continue;
+      const equal = token.indexOf("=");
+      const name = (equal < 0 ? token.slice(2) : token.slice(2, equal)).replace(
+        /-([a-z])/g,
+        (_, c: string) => c.toUpperCase(),
+      );
+      const schema = entry.tool.inputSchema.properties?.[name];
+      const flag = spec.flags?.find(
+        (arg) =>
+          arg.name.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase()) ===
+          name,
+      );
+      if (!schema || !flag || flag.type === "boolean") continue;
+      const raw = equal < 0 ? rest[i + 1] : token.slice(equal + 1);
+      if (
+        raw !== undefined &&
+        flag.type === "json" &&
+        acceptsString(schema) &&
+        !raw.startsWith("@")
+      ) {
+        try {
+          JSON.parse(raw);
+        } catch {
+          if (equal < 0) rest[i + 1] = JSON.stringify(raw);
+          else rest[i] = `${token.slice(0, equal + 1)}${JSON.stringify(raw)}`;
+        }
+      }
+      if (equal < 0) i++;
+    }
     let input = {
       ...(base as object),
       ...parseCliArgs(rest, spec),
@@ -289,6 +378,8 @@ export async function runCliCommand<T>(
     input = (options.transformInput?.(input) ?? input) as typeof input;
     const errors = validateInput(entry.tool.inputSchema, input);
     if (errors.length) throw new CliUsageError(errors.join("\n"));
+    const contextError = options.contextError?.(db, entry.tool, input);
+    if (contextError) return fail(contextError, 3);
     const context = await options.openContext({
       ...(db === undefined ? {} : { db }),
       ...(options.reportCreation ? { stderr } : {}),

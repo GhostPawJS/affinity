@@ -453,8 +453,7 @@ export function applyEventEffectToLink(
     .prepare(
       `SELECT occurred_at
        FROM link_event_effects
-       WHERE link_id = ? AND counts_for_recency = 1 AND occurred_at <= ?
-         AND event_id IN (SELECT id FROM events WHERE deleted_at IS NULL AND (occurred_on IS NULL OR occurred_on <= ?))
+       WHERE link_id = ? AND counts_for_recency = 1 AND event_id IN (SELECT id FROM events WHERE deleted_at IS NULL AND (occurred_at <= ? OR occurred_on <= ?))
        ORDER BY occurred_at DESC, event_id DESC
        LIMIT 1`,
     )
@@ -477,8 +476,8 @@ export function applyEventEffectToLink(
     commitmentResolution != null ||
     params.eventType === "promise" ||
     params.eventType === "agreement" ||
-    params.occurredAt > params.now ||
-    (eventDay != null && eventDay > localCalendarDate(params.now))
+    (params.occurredAt > params.now &&
+      (eventDay == null || eventDay > localCalendarDate(params.now)))
       ? cadenceBefore
       : nextCadenceDays({
           kind: linkKind,

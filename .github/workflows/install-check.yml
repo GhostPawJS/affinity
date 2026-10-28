@@ -38,6 +38,7 @@ jobs:
           curl -fsSL https://raw.githubusercontent.com/GhostPawJS/affinity/main/install.sh | sh -s -- --version "$version"
           target=${{ matrix.os == 'ubuntu-24.04' && 'linux-x64' || 'darwin-arm64' }}
           test "$(ghostpaw-affinity --version)" = "affinity $version (binary, $target)"
+          test "$(ghostpaw-affinity --version --short)" = "$version"
           echo "Version: $version verified on $RUNNER_OS" >> "$GITHUB_STEP_SUMMARY"
           ghostpaw-affinity contact create '{"name":"Install check marker","kind":"human"}'  --db "$RUNNER_TEMP/affinity.db" --json | jq -e '.ok == true'
           echo 'Contact create: passed' >> "$GITHUB_STEP_SUMMARY"
@@ -71,6 +72,7 @@ jobs:
           $env:GHOSTPAW_INSTALL_DIR = Join-Path $env:RUNNER_TEMP 'affinity-bin'
           irm https://raw.githubusercontent.com/GhostPawJS/affinity/main/install.ps1 | iex
           if ((ghostpaw-affinity --version) -ne "affinity $version (binary, windows-x64)") { throw 'Version mismatch' }
+          if ((ghostpaw-affinity --version --short) -ne $version) { throw 'Short version mismatch' }
           "Version: $version verified on Windows" >> $env:GITHUB_STEP_SUMMARY
           $db = Join-Path $env:RUNNER_TEMP 'affinity.db'
           $added = ghostpaw-affinity contact create '{"name":"Install check marker","kind":"human"}'  --db $db --json | ConvertFrom-Json

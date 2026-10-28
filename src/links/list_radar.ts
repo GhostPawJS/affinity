@@ -1,6 +1,6 @@
 import { findOwnerContactId } from "../contacts/queries.ts";
 import type { AffinityDb } from "../database.ts";
-import { localCalendarDate } from "../lib/parse_calendar_time.ts";
+import { OVERDUE_SQL, localCalendarDate } from "../lib/parse_calendar_time.ts";
 import { assertDefaultOrdering } from "../lib/read/assert_default_ordering.ts";
 import { resolveListLimitOffset } from "../lib/read/resolve_list_limit_offset.ts";
 import type { LinkListReadFilters } from "../lib/types/link_list_read_filters.ts";
@@ -21,10 +21,10 @@ export function listRadar(
   }
   const now = resolveNow(options?.now);
   const today = localCalendarDate(now);
-  const lastContact = `(SELECT MAX(le.occurred_at) FROM link_event_effects le JOIN events ev ON ev.id = le.event_id WHERE le.link_id = l.id AND le.counts_for_recency = 1 AND le.occurred_at <= ${now} AND ev.deleted_at IS NULL AND (ev.occurred_on IS NULL OR ev.occurred_on <= '${today}'))`;
+  const lastContact = `(SELECT MAX(le.occurred_at) FROM link_event_effects le JOIN events ev ON ev.id = le.event_id WHERE le.link_id = l.id AND le.counts_for_recency = 1 AND ev.deleted_at IS NULL AND (le.occurred_at <= ${now} OR ev.occurred_on <= '${today}'))`;
   // A gap exceeding 1.5 cadences warrants an explicit drift reason.
   const drift = `(${lastContact} IS NOT NULL AND (${now} - ${lastContact}) > 1.5 * COALESCE(l.cadence_days, 1) * 86400000)`;
-  const overdue = `EXISTS (SELECT 1 FROM open_commitments oc JOIN events e ON e.id = oc.event_id JOIN event_participants ep ON ep.event_id = e.id WHERE ep.contact_id = CASE WHEN l.from_contact_id = ${ownerId} THEN l.to_contact_id ELSE l.from_contact_id END AND e.deleted_at IS NULL AND oc.resolved_at IS NULL AND (CASE WHEN oc.due_on IS NOT NULL THEN oc.due_on < '${today}' ELSE oc.due_at < ${now} END))`;
+  const overdue = `EXISTS (SELECT 1 FROM open_commitments oc JOIN events e ON e.id = oc.event_id JOIN event_participants ep ON ep.event_id = e.id WHERE ep.contact_id = CASE WHEN l.from_contact_id = ${ownerId} THEN l.to_contact_id ELSE l.from_contact_id END AND e.deleted_at IS NULL AND oc.resolved_at IS NULL AND (CASE WHEN oc.due_on IS NOT NULL AND oc.due_at = CAST(strftime('%s', oc.due_on) AS INTEGER) * 1000 + 86399999 THEN oc.due_on < '${today}' ELSE oc.due_at < ${now} END))`;
   const { limit, offset } = resolveListLimitOffset(options);
   const clauses: string[] = [
     "l.removed_at IS NULL",
@@ -93,7 +93,7 @@ export function listRadar(
     const promise = row.overdue_commitment
       ? (db
           .prepare(
-            "SELECT e.summary, oc.due_at, oc.due_on FROM open_commitments oc JOIN events e ON e.id = oc.event_id JOIN event_participants ep ON ep.event_id = e.id WHERE ep.contact_id = ? AND e.deleted_at IS NULL AND oc.resolved_at IS NULL AND (CASE WHEN oc.due_on IS NOT NULL THEN oc.due_on < ? ELSE oc.due_at < ? END) ORDER BY oc.due_at LIMIT 1",
+            `SELECT e.summary, oc.due_at, oc.due_on FROM open_commitments oc JOIN events e ON e.id = oc.event_id JOIN event_participants ep ON ep.event_id = e.id WHERE ep.contact_id = ? AND e.deleted_at IS NULL AND oc.resolved_at IS NULL AND ${OVERDUE_SQL} ORDER BY oc.due_at LIMIT 1`,
           )
           .get(contactId, today, now) as
           | { summary: string; due_at: number; due_on: string | null }

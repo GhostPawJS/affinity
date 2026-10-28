@@ -33,6 +33,19 @@ if (version !== `affinity ${pkg.version} (binary, ${target})`)
   fail(
     `--version printed ${version}, expected affinity ${pkg.version} (binary, ${target})`,
   );
+if (run(["--version", "--short"]).trim() !== pkg.version)
+  fail("--version --short must print the bare package version");
+const info = JSON.parse(run(["--version", "--json"]));
+if (
+  JSON.stringify(info) !==
+  JSON.stringify({
+    name: pkg.name,
+    version: pkg.version,
+    variant: "binary",
+    target,
+  })
+)
+  fail(`Unexpected version metadata: ${JSON.stringify(info)}`);
 run(["--help"]);
 const added = JSON.parse(
   run([

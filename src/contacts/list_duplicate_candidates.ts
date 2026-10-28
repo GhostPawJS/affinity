@@ -15,7 +15,9 @@ function normalizeName(name: string): string {
   return name.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
-function fuzzyNameScore(left: string, right: string): number {
+export function fuzzyNameScore(leftInput: string, rightInput: string): number {
+  const left = normalizeName(leftInput);
+  const right = normalizeName(rightInput);
   if (left === right) {
     return 0.92;
   }

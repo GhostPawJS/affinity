@@ -1,6 +1,6 @@
 import type { AffinityDb } from "../database.ts";
 import { AffinityValidationError } from "../lib/errors/affinity_validation_error.ts";
-import { localCalendarDate } from "../lib/parse_calendar_time.ts";
+import { isCommitmentOverdue } from "../lib/parse_calendar_time.ts";
 import { assertDefaultOrdering } from "../lib/read/assert_default_ordering.ts";
 import { resolveListLimitOffset } from "../lib/read/resolve_list_limit_offset.ts";
 import type { CommitmentRecord } from "../lib/types/commitment_record.ts";
@@ -112,9 +112,7 @@ export function listOpenCommitments(
       (r.due_at === null
         ? null
         : new Date(r.due_at).toISOString().slice(0, 10)),
-    overdue: r.due_on
-      ? localCalendarDate(now) > r.due_on
-      : r.due_at !== null && r.due_at < now,
+    overdue: isCommitmentOverdue(r.due_at, r.due_on, now),
     resolutionState: mapResolution(r.resolved_at, r.resolution),
   }));
 }

@@ -61,7 +61,7 @@ export function recordInteraction(
     });
     return buildEventMutationReceipt(loadEventRecord(db, eventId), {
       warnings:
-        input.occurredAt > now ||
+        input.occurredAt > now &&
         (input.occurredOn ??
           new Date(input.occurredAt).toISOString().slice(0, 10)) >
           localCalendarDate(now)

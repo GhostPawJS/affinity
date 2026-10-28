@@ -6,7 +6,19 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ## [Unreleased]
 
+### Added
+
+- Add `--version --short` for exact semver matching and `--version --json` for structured package and variant metadata, including `version` subcommand equivalents.
+
 ### Fixed
+
+- Warn on near-name contact creation using duplicate review similarity scores.
+- Suggest CLI commands for bare verbs, plural nouns and misspellings; diagnose unknown leading flags.
+- Classify non-commitment resolution as invalid input, and owner deletion and re-merging as conflicts across CLI and MCP.
+- Correct merge guidance to name `merge_contacts` and `contact merge`.
+- Accept plain text for string-compatible JSON flags and normalize prefixed tag filters.
+- Show action-specific flags and requirements in command help.
+- Prevent read commands from creating missing databases; writes and MCP startup continue to create them.
 
 - Unify CLI and MCP date parsing, preserve calendar days in additive date fields, and upgrade existing databases in place.
 - Exclude future events, commitments and commitment resolutions from contact recency; warn when recording future events.

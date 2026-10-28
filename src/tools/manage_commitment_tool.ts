@@ -111,6 +111,23 @@ export function manageCommitmentToolHandler(
         "commitment",
       );
     }
+    if (!Number.isInteger(input.commitmentEventId))
+      return invalidToolInput(
+        "protocol",
+        "invalid_input",
+        "Missing commitment.",
+        "commitmentEventId is required for resolve.",
+      );
+    const event = db
+      .prepare("SELECT type FROM events WHERE id = ? AND deleted_at IS NULL")
+      .get(input.commitmentEventId) as { type: string } | undefined;
+    if (event && !["promise", "agreement"].includes(event.type))
+      return invalidToolInput(
+        "domain",
+        "invalid_input",
+        "Invalid commitment.",
+        "not a commitment event",
+      );
     return mutationToolResult(
       "resolve",
       resolveCommitment(

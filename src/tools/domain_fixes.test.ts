@@ -307,7 +307,7 @@ test("export/delete handle empty and partial locators without system errors", as
         confirm: true,
       }),
       /owner/,
-      "invalid_state",
+      "conflict",
     );
     assert.ok(db.prepare("SELECT id FROM contacts WHERE id = ?").get(jana.id));
     const removed = manageContactToolHandler(db, {
@@ -431,6 +431,56 @@ test("inspection rounds scores while stored mechanics retain their precision", a
     });
     assert.ok(undismiss.ok);
     assert.equal(undismiss.data.changes[0]?.action, "removed");
+  } finally {
+    db.close();
+  }
+});
+
+test("near-name create warning uses the duplicate review score", async () => {
+  const db = await createInitializedAffinityDb();
+  try {
+    const existing = createContact(db, {
+      name: "Lukas Brandt",
+      kind: "human",
+    }).primary;
+    const result = manageContactToolHandler(db, {
+      action: "create",
+      input: { name: "Lukas Brand", kind: "human" },
+    });
+    assert.ok(result.ok);
+    assert.deepEqual(result.warnings, [
+      {
+        code: "possible_duplicate",
+        message: `Possible duplicate of #${existing.id} Lukas Brandt (score 0.72)`,
+        contactId: existing.id,
+        score: 0.72,
+      },
+    ]);
+    const review = reviewAffinityToolHandler(db, {
+      view: "contacts.duplicates",
+    });
+    assert.ok(review.ok);
+    assert.equal(review.data.items[0]?.matchScore, result.warnings?.[0]?.score);
+  } finally {
+    db.close();
+  }
+});
+test("tag filters accept a tag prefix through review and search tools", async () => {
+  const db = await createInitializedAffinityDb();
+  try {
+    const contact = createContact(db, { name: "Jana", kind: "human" }).primary;
+    db.prepare(
+      "INSERT INTO attributes (contact_id, name, value, created_at, updated_at) VALUES (?, 'tag:gastro-radar', 'null', 1, 1)",
+    ).run(contact.id);
+    for (const tag of ["gastro-radar", "tag:gastro-radar"]) {
+      const review = reviewAffinityToolHandler(db, {
+        view: "contacts.list",
+        tag,
+      });
+      assert.ok(review.ok);
+      assert.equal(review.data.items.length, 1);
+      assert.equal(review.data.items[0]?.id, contact.id);
+    }
   } finally {
     db.close();
   }

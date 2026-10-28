@@ -192,6 +192,13 @@ try {
   );
   const bin = join(modules, ".bin", binName);
   assert.equal(run(bin, ["--version"]).trim(), `affinity ${pkg.version} (npm)`);
+  assert.equal(run(bin, ["--version", "--short"]).trim(), pkg.version);
+  assert.deepEqual(JSON.parse(run(bin, ["--version", "--json"])), {
+    name: pkg.name,
+    version: pkg.version,
+    variant: "npm",
+    target: null,
+  });
   const db = join(temp, "smoke.db");
   const remembered = JSON.parse(run(bin, ["--db", db, ...cliRemember]));
   const searched = JSON.parse(run(bin, ["--db", db, ...cliSearch]));

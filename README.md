@@ -307,7 +307,24 @@ stderr. These commands work offline.
 
 Errors go to stderr. With `--json`, errors also print to stdout.
 `--version` names the variant: `affinity 0.5.0 (binary, linux-x64)`,
-`(npm)` or `(library)`. Legacy `tools [--json]`, `describe <tool>`,
+`(npm)` or `(library)`. Use `--version --short` in scripts for exact semver
+matching. `--version --json` returns `name`, `version`, `variant` and `target`
+(the target is null outside a binary). `version --short` and `version --json`
+are equivalent.
+
+Read commands (search, show, review and contact export, including direct tool
+calls) exit 3 on a missing database without creating files:
+`Database not found: <path> (it is created by the first write)`.
+The first write creates the database and reports `created <path>` on stderr.
+The MCP server continues to create its database on startup.
+
+String-valued flags such as `--value Hamburg`, `--bond 'Warm lead'` and
+`--reason 'Different people'` accept plain strings or JSON strings/null.
+Object and array flags still require JSON. Tag filters accept both
+`--tag gastro-radar` and `--tag tag:gastro-radar`.
+Per-command `--help` lists the fields used by that action.
+
+Legacy `tools [--json]`, `describe <tool>`,
 `call <tool> [JSON|-]` and `<tool_name> --parameter value` remain available.
 `completions bash|zsh|fish` prints shell scripts.
 

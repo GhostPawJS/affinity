@@ -3,6 +3,7 @@ import { CliUsageError } from "../surfaces/cli_args.ts";
 import type { SurfaceTool } from "../surfaces/surface_types.ts";
 import { affinityTools } from "../tools/tool_registry.ts";
 import { toolFailure } from "../tools/tool_types.ts";
+import { cliActionFields } from "./cli_action_fields.ts";
 import { normalizeTimeInputs } from "./plain_dates.ts";
 import { timestampSchema } from "./timestamp_schema.ts";
 
@@ -46,6 +47,19 @@ const mapping: Record<string, NonNullable<SurfaceTool<AffinityDb>["cli"]>> = {
     action: {
       property: "action",
       verbs: { set_lifecycle: "lifecycle" },
+      fields: {
+        create: ["input"],
+        revise: ["contact", "patch"],
+        set_lifecycle: ["contact", "lifecycleState", "options"],
+        export: ["contact"],
+        delete: ["contact", "confirm"],
+      },
+      required: {
+        create: ["input"],
+        revise: ["contact", "patch"],
+        set_lifecycle: ["contact", "lifecycleState"],
+        delete: ["contact", "confirm"],
+      },
       positionals: {
         create: ["input"],
         revise: ["contact"],
@@ -94,15 +108,34 @@ const mapping: Record<string, NonNullable<SurfaceTool<AffinityDb>["cli"]>> = {
   manage_attribute: { noun: "attribute", verb: "manage" },
 };
 const affinityCliSurfaceTools: readonly SurfaceTool<AffinityDb>[] =
-  /* @__PURE__ */ affinitySurfaceTools.map((tool) => ({
-    ...tool,
-    inputSchema: {
-      ...affinityTools.find((original) => original.name === tool.name)
-        ?.inputSchema,
-      type: "object",
-    },
-    ...(mapping[tool.name] ? { cli: mapping[tool.name] } : {}),
-  }));
+  /* @__PURE__ */ affinitySurfaceTools.map((tool) => {
+    const cli = mapping[tool.name];
+    const fields = cliActionFields[tool.name];
+    return {
+      ...tool,
+      inputSchema: {
+        ...affinityTools.find((original) => original.name === tool.name)
+          ?.inputSchema,
+        type: "object",
+      },
+      ...(cli
+        ? {
+            cli: {
+              ...cli,
+              ...(fields
+                ? {
+                    action: {
+                      property: "action",
+                      ...cli.action,
+                      fields,
+                    },
+                  }
+                : {}),
+            },
+          }
+        : {}),
+    };
+  });
 
 export {
   affinitySurfaceTools as affinityMcpSurfaceTools,

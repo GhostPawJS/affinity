@@ -10,7 +10,10 @@ export function contactAttributeClauses(filters?: ListContactsFilters): {
   const attributes =
     filters?.attribute === undefined ? [] : [filters.attribute].flat();
   const tags = filters?.tag === undefined ? [] : [filters.tag].flat();
-  for (const filter of [...attributes, ...tags.map((tag) => `tag:${tag}`)]) {
+  for (const filter of [
+    ...attributes,
+    ...tags.map((tag) => `tag:${tag.replace(/^tag:/i, "")}`),
+  ]) {
     const separator = filter.indexOf("=");
     const name = separator < 0 ? filter : filter.slice(0, separator);
     clauses.push(`EXISTS (SELECT 1 FROM attributes a WHERE a.contact_id = contacts.id

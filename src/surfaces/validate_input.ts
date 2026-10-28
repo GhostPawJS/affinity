@@ -47,6 +47,13 @@ export function validateInput(
     )
   )
     errors.push(`${path}: must match at least one schema branch`);
+  if (
+    schema.anyOf &&
+    !schema.anyOf.some(
+      (branch) => validateInput(branch, input, path).length === 0,
+    )
+  )
+    errors.push(`${path}: must match at least one schema branch`);
   if (typeof input === "object" && input !== null && !Array.isArray(input)) {
     const record = input as Record<string, unknown>;
     for (const name of schema.required ?? [])
