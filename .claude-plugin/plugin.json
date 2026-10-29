@@ -1,6 +1,6 @@
 {
   "name": "ghostpaw-affinity",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Local relationship model and social CRM for contacts, relationships, evidence, and commitments.",
   "author": {
     "name": "Anonyfox",
@@ -41,7 +41,7 @@
       "command": "npx",
       "args": [
         "-y",
-        "@ghostpaw/affinity@0.6.0",
+        "@ghostpaw/affinity@0.6.1",
         "mcp"
       ]
     }

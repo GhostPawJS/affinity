@@ -6,7 +6,7 @@
       "command": "npx",
       "args": [
         "-y",
-        "@ghostpaw/affinity@0.6.0",
+        "@ghostpaw/affinity@0.6.1",
         "mcp"
       ]
     }
