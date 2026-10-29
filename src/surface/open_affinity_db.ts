@@ -2,6 +2,7 @@ import { closeSync, existsSync, mkdirSync, openSync } from "node:fs";
 import { dirname } from "node:path";
 import type { AffinityDb } from "../database.ts";
 import { initAffinityTables } from "../init_affinity_tables.ts";
+import { withTransaction } from "../with_transaction.ts";
 
 export async function openAffinityDb(path: string): Promise<AffinityDb> {
   const original = process.emitWarning;
@@ -35,9 +36,9 @@ export async function openAffinityDb(path: string): Promise<AffinityDb> {
   }
   const db = new sqlite.DatabaseSync(path);
   try {
-    db.exec("PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;");
+    db.exec("PRAGMA busy_timeout=5000; PRAGMA journal_mode=WAL;");
     const context = db as unknown as AffinityDb;
-    initAffinityTables(context);
+    withTransaction(context, () => initAffinityTables(context));
     return context;
   } catch (error) {
     db.close();

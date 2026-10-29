@@ -36,7 +36,7 @@ export const affinityCheatSheet =
 export const affinityShortCheatSheet = [
   "## CLI cheat sheet",
   "",
-  "Install: npm install -g @ghostpaw/affinity (Node 24+)",
+  "Install binary: curl -fsSL https://raw.githubusercontent.com/GhostPawJS/affinity/main/install.sh | sh (npm alternative: npm install -g @ghostpaw/affinity; Node 24+)",
   "DB: --db <path>, GHOSTPAW_AFFINITY_DB, ~/.ghostpaw/affinity.db (in order).",
   "Dates: epoch ms, ISO Z/offset, SQLite UTC, YYYY-MM-DD, DD.MM.YYYY, today, yesterday, tomorrow, +3d, -2d.",
   "Exit: 0 success/no_op, 1 failure, 2 invalid input, 3 missing/clarification, 4 conflict, 70 internal.",

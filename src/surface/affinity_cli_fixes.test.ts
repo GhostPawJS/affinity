@@ -757,3 +757,44 @@ test("numeric and boolean attributes report text-only values in CLI and MCP vali
     assert.ok(response?.includes("store it as text"));
   }
 });
+
+test("retest CLI nits: binary install, batch help and the content alias remain discoverable", async () => {
+  assert.match(
+    affinitySkillCommand(["--short"]).split("\n")[0] ?? "",
+    /^Install binary: curl/,
+  );
+  const help = await invoke(["--help"]);
+  assert.match(help.out, /batch \[--chunk N\]/);
+  const reviewHelp = await invoke(["review", "--help"]);
+  assert.match(
+    reviewHelp.out,
+    /--include-content.*Deprecated alias for --with-content/,
+  );
+  for (const flag of ["--include-content", "--with-content"]) {
+    const result = await invoke([
+      "review",
+      "events.contact_journal",
+      "--contact",
+      '{"contactId":2}',
+      flag,
+    ]);
+    assert.equal(result.code, 0, result.err);
+    assert.equal(
+      result.captured?.input.includeContent ??
+        result.captured?.input.withContent,
+      true,
+    );
+  }
+});
+
+test("high precision intake truncates and preserves the raw timestamp alongside provenance", () => {
+  const occurredAt = "2026-10-27T17:51:33.869560Z";
+  const value = normalizeTimeInputs({
+    input: { occurredAt, provenance: { source: "archive" } },
+  }) as { input: { occurredAt: number; provenance: unknown } };
+  assert.equal(value.input.occurredAt, Date.parse("2026-10-27T17:51:33.869Z"));
+  assert.deepEqual(value.input.provenance, {
+    source: "archive",
+    rawOccurredAt: occurredAt,
+  });
+});

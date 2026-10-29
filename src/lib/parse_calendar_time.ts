@@ -60,14 +60,9 @@ export function parseCalendarTime(
     text = text.replace(" ", "T");
     if (!/(?:Z|[+-]\d{2}:\d{2})$/.test(text)) text += "Z";
   }
-  let rounding = 0;
   text = text.replace(
     /\.(\d{4,})(?=Z|[+-]\d{2}:\d{2}$)/,
-    (_, digits: string) => {
-      const ms = Math.round(Number(`0.${digits}`) * 1000);
-      rounding = ms === 1000 ? 1 : 0;
-      return `.${String(ms === 1000 ? 999 : ms).padStart(3, "0")}`;
-    },
+    (_, digits: string) => `.${digits.slice(0, 3)}`,
   );
   if (/^(today|yesterday|tomorrow|[+-]\d+d)$/.test(text)) {
     const offset =
@@ -102,7 +97,7 @@ export function parseCalendarTime(
     return fail();
   const timestamp = dateOnly
     ? midnight + (field.split(".").at(-1) === "dueAt" ? 86399999 : 0)
-    : Date.parse(text) + rounding;
+    : Date.parse(text);
   if (!Number.isFinite(timestamp)) return fail();
   return { timestamp, day };
 }

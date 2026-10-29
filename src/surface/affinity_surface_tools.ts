@@ -17,6 +17,15 @@ function surfaceProperties(tool: {
 }) {
   return {
     ...tool.inputSchema.properties,
+    ...(tool.name === "review_affinity"
+      ? {
+          includeContent: {
+            type: "boolean" as const,
+            description:
+              "Deprecated alias for --with-content; includes verbatim event content.",
+          },
+        }
+      : {}),
     ...(["inspect_affinity_item", "review_affinity", "manage_event"].includes(
       tool.name,
     )

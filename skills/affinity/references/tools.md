@@ -58,7 +58,7 @@ Read-only.
 | Parameter | Type | Required | Values / description |
 | --- | --- | --- | --- |
 | ref | object | no |  |
-| includeContent | boolean | no | Include verbatim content in event rows; defaults to false. |
+| includeContent | boolean | no | Deprecated alias for --with-content; includes verbatim event content. |
 | channel | string | no | Filter events by channel. |
 | view | string | yes | contacts.list, contacts.duplicates, events.thread, events.contact_journal, events.link_timeline, events.moments, commitments.open, links.owner, links.observed, links.progression_readiness, links.radar, dates.upcoming, graph.chart, merges.history, merges.dismissed. Which review surface to return. |
 | now | integer / string | no | Optional current timestamp for overdue calculations. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
@@ -81,11 +81,11 @@ Read-only.
 | recurrenceKind | string | no | birthday, anniversary, renewal, memorial, custom_yearly. Optional recurrence-kind filter. |
 | horizonDays | integer | no | Optional horizon-days filter. |
 | exactOnly | boolean | no | Whether duplicate review is exact-only. |
-| minScore | number | no | Optional duplicate minimum score. |
+| minScore | number | no | Optional duplicate minimum score (default 0.5; use 0 for all candidates). |
 | includeDismissed | boolean | no | Whether dismissed pairs are included in duplicate review (marked with dismissed flag). |
 | since | integer / string | no | Optional lower timestamp bound. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | until | integer / string | no | Optional upper timestamp bound. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
-| limit | integer | no | Optional result limit. |
+| limit | integer | no | Optional result limit, 1..10000 (default 50); use offset for paging. |
 | offset | integer | no | Optional result offset. |
 | refSource | string | no | External reference source. |
 | refId | string | no | External reference id. |
@@ -302,7 +302,7 @@ Writes: writes_state.
 | kind | string | yes | interaction, observation, milestone, transaction. Event kind. |
 | input | object | yes | Event payload. Always required. Interaction events also require `type`. |
 | input.type | string | no | Interaction subtype. Required when kind=interaction, omit otherwise. |
-| input.affectsBond | boolean | no | Whether evidence affects the relationship; defaults false for observations with significance <=2. |
+| input.affectsBond | boolean | no | Whether evidence affects the relationship; defaults false for like/follow/repost labels and observations with significance <=2; explicit true opts in. |
 | input.content | string | no | Verbatim text, including empty text; at most 1 MB UTF-8. Summary may be omitted when content is supplied. |
 | input.externalRef | object | no |  |
 | input.channel | string | no | Free-text channel, trimmed and lowercased, at most 40 characters. |
@@ -340,7 +340,7 @@ Writes: writes_state.
 | resolution | string | no | kept, cancelled, broken. How the commitment was resolved. Required when action=resolve. |
 | options | object | no | Optional metadata. |
 | input.commitmentType | string | yes | Promise or agreement. |
-| input.affectsBond | boolean | no | Whether evidence affects the relationship; defaults false for observations with significance <=2. |
+| input.affectsBond | boolean | no | Whether evidence affects the relationship; defaults false for like/follow/repost labels and observations with significance <=2; explicit true opts in. |
 | input.content | string | no | Verbatim text, including empty text; at most 1 MB UTF-8. Summary may be omitted when content is supplied. |
 | input.externalRef | object | no |  |
 | input.channel | string | no | Free-text channel, trimmed and lowercased, at most 40 characters. |
@@ -421,7 +421,8 @@ Writes: writes_state.
 | entries | array | no | Key-value map to replace all attributes. Required when action=replace. |
 | removedAt | integer / string | no | Removal timestamp. Optional for action=unset. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | target.kind | string | yes | Target kind. |
-| target.eventId | integer | no | Target event id. |
+| target.eventId | integer | no | Target event id; provide eventId or ref. |
+| target.ref | object | no |  |
 | target.contact | object | no | Contact locator. Required when kind=contact. Provide contactId or identity. |
 | target.link | object | no | Link locator. Required when kind=link. Provide linkId or endpoints. |
 | entries.name | string | yes | Attribute name. |

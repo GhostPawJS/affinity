@@ -12,7 +12,7 @@ Use ghostpaw-affinity batch [--chunk 500] with JSONL {tool,args}, or
 Use externalRef {source:"bluesky",id:recordUri}, verbatim content and channel.
 Participant contact locators may use identities, including did, instead of ids.
 Read JSON flags from stdin with --input - or from @file for large payloads (E2BIG).
-SQLite date-times without offsets mean UTC; microseconds round to milliseconds.
+SQLite date-times without offsets mean UTC; microseconds truncate to milliseconds; raw timestamps remain in provenance.
 Missing inbound-follow timestamps should use a known first_seen or be counted as skipped.
 The synthetic scripts/examples/import_social_jsonl.mjs and import_dry_run.mjs
 show the mapping and verify an idempotent retry and byte-identical text.

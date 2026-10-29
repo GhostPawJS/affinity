@@ -29,6 +29,11 @@ export function setAttribute(
     const stored = normalizeAttributeValue(value);
     const now = resolveNow();
     const existing = getLiveAttributeRow(db, target, key);
+    if (existing?.value === stored)
+      return buildAttributeMutationReceipt(
+        mapAttributeRowToAttributeRecord(existing),
+        {},
+      );
     if (existing) {
       db.prepare(
         "UPDATE attributes SET value = ?, updated_at = ? WHERE id = ?",

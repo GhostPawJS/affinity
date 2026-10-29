@@ -12,7 +12,7 @@ export function exportContact(db: AffinityDb, id: number) {
   const events: Array<
     Record<string, unknown> & { participants: Record<string, unknown>[] }
   > = query(
-    "SELECT DISTINCT e.*, CAST(e.content AS BLOB) AS content, CAST(e.summary AS BLOB) AS summary FROM events e JOIN event_participants p ON p.event_id = e.id WHERE p.contact_id = ? AND e.type != 'date_anchor' ORDER BY e.id",
+    "SELECT DISTINCT e.*, COALESCE(e.parent_event_id, (SELECT parent.id FROM events parent WHERE parent.external_source=e.parent_source AND parent.external_id=e.parent_ref_id AND parent.deleted_at IS NULL)) AS parent_event_id, CAST(e.content AS BLOB) AS content, CAST(e.summary AS BLOB) AS summary FROM events e JOIN event_participants p ON p.event_id = e.id WHERE p.contact_id = ? AND e.type != 'date_anchor' ORDER BY e.id",
     id,
   ).map((event) => ({
     ...event,

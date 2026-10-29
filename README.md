@@ -663,13 +663,15 @@ ghostpaw-affinity review events.contact_journal --contact '{"contactId":2}' --ev
 Array flags accept JSON arrays, comma lists, or repeated flags. Unknown event
 types fail with exit 2 and allowed values. SQLite timestamps such as
 `2026-10-27 17:51:33` use UTC; explicit offsets are honored. Sub-millisecond
-fractions are rounded silently to milliseconds, including carry into the next
-second. Keep the original timestamp in the source archive if finer precision
-matters. Null `occurredAt` is invalid.
+fractions are truncated to milliseconds. CLI/MCP and tool intake preserve
+high-precision occurredAt/dueAt strings in provenance.rawOccurredAt/rawDueAt.
+Inspect an event to read its provenance. Null `occurredAt` is invalid.
 
 Record likes, reposts and follows as observations with `affectsBond: false`.
-Observations with significance <= 2 default to false; other events default to
-true. These ambient records stay in the journal without changing affinity or
+Labels beginning with like/liked, follow/followed/following or repost/reposted
+(case insensitive, followed by a word boundary, hyphen or underscore) default to
+false for activity, milestone and observation events (except “follow up”). Observations with significance <= 2 also default to
+false; other events default to true. Explicit affectsBond:true opts in. These ambient records stay in the journal without changing affinity or
 recency. `provenance.ambient: true` also suppresses bond effects. Explicitly
 outbound-only evidence contributes much less and does not reset radar recency;
 without reciprocal contact it generates no routine check-in or drift prompt.
@@ -678,9 +680,20 @@ Include the owner explicitly with the correct actor/recipient role and use
 follow-like milestones never derive breakthroughs; low-significance milestones
 do not derive moments. An explicit `momentKind` is honored.
 
-List reviews default to 50 rows, accept `--limit` (up to 250) and `--offset`,
+List reviews default to 50 rows, accept `--limit` (up to 10,000) and `--offset`,
 and include `total` and `hasMore`. Follow `hasMore` rather than assuming the
 first page is complete.
+
+Thread reviews honor `--event-types` before paging. `--with-content` includes
+verbatim text once in CLI JSON; `--include-content` remains a deprecated alias.
+Duplicate reviews default to `--min-score 0.5`; pass `--min-score 0` for weaker
+candidates. Library duplicate candidate reads retain their existing default.
+
+Event attribute tool targets accept `{kind:"event",ref:{source:"bsky",id:"uri"}}`
+as an alternative to `{kind:"event",eventId:1}`. Setting an unchanged attribute
+returns `no_op` without changing its timestamp; batch retries count as `noOp`.
+Exports resolve parent references to `parentEventId`, including parents imported
+later. Existing stored IDs and external-reference fields remain available.
 
 `batch` reads one tool invocation per JSONL line, with one transaction for the
 whole input by default, or one per `--chunk N` lines. Each line has its own

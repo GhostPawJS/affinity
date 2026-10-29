@@ -14,7 +14,7 @@ export const externalRefSchema = objectSchema(
 );
 export const eventMetadataSchema = {
   affectsBond: booleanSchema(
-    "Whether evidence affects the relationship; defaults false for observations with significance <=2.",
+    "Whether evidence affects the relationship; defaults false for like/follow/repost labels and observations with significance <=2; explicit true opts in.",
   ),
   content: stringSchema(
     "Verbatim text, including empty text; at most 1 MB UTF-8. Summary may be omitted when content is supplied.",

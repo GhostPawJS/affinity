@@ -11,7 +11,7 @@ arrive. Commitments and resolutions never reset contact recency or cadence.
 Imported text and event maintenance:
 - Use externalRef: {source, id} for idempotent intake; retries return no_op and the existing id.
 - Store verbatim text in content (up to 1,048,576 UTF-8 bytes, empty allowed). Summary is optional when content exists; its derived label is at most 140 characters.
-- Use channel for the medium, parentRef or parentEventId for replies, and threadRef for the root. Event attributes use target {kind: "event", eventId}.
+- Use channel for the medium, parentRef or parentEventId for replies, and threadRef for the root. Event attributes use target {kind: "event", eventId} or {kind: "event", ref: {source, id}}. Unchanged values return no_op.
 - Inspect kind "event" by eventId or ref. Search scope "events" or "all" discovers event ids; default scope remains contacts.
 - Review journals/timelines with includeContent: true only when needed; CLI uses --with-content. Filter with channel. Review events.thread by ref for chronological context.
 - Use manage_event revise with patch: summary, content, occurredAt, significance, channel, type within the same kind, or externalRef only when absent. Unknown keys fail validation.

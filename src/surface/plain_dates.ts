@@ -43,10 +43,27 @@ export function normalizeTimeInputs(
           `Invalid timestamp "${item}". ${(error as Error).message}`,
         );
       }
+      if (
+        !inPatch &&
+        ["occurredAt", "dueAt"].includes(key) &&
+        typeof item === "string" &&
+        /\.\d{4,}/.test(item as string)
+      ) {
+        const provenance =
+          result.provenance ?? (value as Record<string, unknown>).provenance;
+        result.provenance = {
+          ...(provenance && typeof provenance === "object" ? provenance : {}),
+          [`raw${key[0]?.toUpperCase()}${key.slice(1)}`]: item,
+        };
+      }
       result[key] = parsed.timestamp;
       if (!inPatch && ["occurredAt", "dueAt"].includes(key))
         result[key.replace(/At$/, "On")] = parsed.day;
-    } else result[key] = normalizeTimeInputs(item, now, key === "patch");
+    } else if (key !== "provenance" || result.provenance === undefined)
+      result[key] =
+        key === "provenance"
+          ? item
+          : normalizeTimeInputs(item, now, key === "patch");
   }
   return result;
 }

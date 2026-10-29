@@ -93,6 +93,8 @@ test("event intake, discovery, content, metadata, thread, revise and delete roun
       });
       assert.equal(invalid.code, 2, invalid.err);
       assert.match(invalid.err, /allowed keys/);
+      assert.match(invalid.err, /input\.externalId/);
+      assert.doesNotMatch(invalid.err, /input\.input\./);
       const moment = await invoke(args, {
         kind: "interaction",
         input: { ...input, momentKind: "follow" },
@@ -131,7 +133,15 @@ test("event intake, discovery, content, metadata, thread, revise and delete roun
     ]);
     assert.equal(full.code, 0, full.err);
     assert.equal(full.result.data.items[0].content, input.content);
-    assert.equal(full.result.entities[0].content, undefined);
+    assert.equal(Object.hasOwn(full.result, "entities"), false);
+    const legacyContent = await invoke([
+      ...journal,
+      "--include-content",
+      "--compact",
+    ]);
+    assert.equal(legacyContent.code, 0, legacyContent.err);
+    assert.equal(legacyContent.result.data.items[0].content, input.content);
+    assert.equal(Object.hasOwn(legacyContent.result, "entities"), false);
     assert.equal(
       (await invoke([...journal, "--channel", "phone"])).result.data.count,
       0,

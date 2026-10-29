@@ -83,6 +83,7 @@ export function getEventThread(
   source: string,
   id: string,
   options?: {
+    eventTypes?: readonly import("./types.ts").EventType[];
     includeContent?: boolean;
     channel?: string;
     limit?: number;
@@ -96,13 +97,19 @@ export function getEventThread(
     .prepare(`WITH RECURSIVE thread(id) AS (
     SELECT ? UNION SELECT e.id FROM events e JOIN thread t JOIN events p ON p.id=t.id
     WHERE e.deleted_at IS NULL AND (e.parent_event_id=p.id OR (e.parent_source=p.external_source AND e.parent_ref_id=p.external_id) OR (e.thread_source=? AND e.thread_id=?))
-  ) SELECT e.id FROM events e JOIN thread t ON e.id=t.id WHERE e.deleted_at IS NULL AND (? IS NULL OR e.channel=?) ORDER BY e.occurred_at,e.id LIMIT ? OFFSET ?`)
+  ) SELECT e.id FROM events e JOIN thread t ON e.id=t.id WHERE e.deleted_at IS NULL AND (? IS NULL OR e.channel=?) AND (? IS NULL OR e.type IN (SELECT value FROM json_each(?))) ORDER BY e.occurred_at,e.id LIMIT ? OFFSET ?`)
     .all(
       root.id,
       root.externalRef?.source ?? null,
       root.externalRef?.id ?? null,
       options?.channel ?? null,
       options?.channel?.trim().toLowerCase() ?? null,
+      options?.eventTypes === undefined
+        ? null
+        : JSON.stringify(options.eventTypes),
+      options?.eventTypes === undefined
+        ? null
+        : JSON.stringify(options.eventTypes),
       limit,
       offset,
     ) as { id: number }[];

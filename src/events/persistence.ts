@@ -50,7 +50,12 @@ export function insertJournalEvent(
   const eventId = Number(result.lastInsertRowid);
   db.prepare("UPDATE events SET affects_bond=? WHERE id=?").run(
     params.affectsBond === undefined
-      ? params.type === "observation" && params.significance <= 2
+      ? (params.type === "observation" && params.significance <= 2) ||
+        (["activity", "milestone", "observation"].includes(params.type) &&
+          /^(?:follow(?:ed|ing)?|like(?:d)?|repost(?:ed)?)(?:\b|[-_])/i.test(
+            summary,
+          ) &&
+          !/^follow[ -]up\b/i.test(summary))
         ? 0
         : 1
       : Number(params.affectsBond),

@@ -7,6 +7,7 @@ import type { RecordInteractionInput } from "../lib/types/record_interaction_inp
 import { refreshLinkRollup } from "../links/rollups.ts";
 import * as read from "../read.ts";
 import { inspectAffinityItemToolHandler } from "../tools/inspect_affinity_item_tool.ts";
+import { manageAttributeToolHandler } from "../tools/manage_attribute_tool.ts";
 import { manageCommitmentToolHandler } from "../tools/manage_commitment_tool.ts";
 import { manageEventToolHandler } from "../tools/manage_event_tool.ts";
 import { recordEventToolHandler } from "../tools/record_event_tool.ts";
@@ -553,6 +554,206 @@ test("four megabytes of journal content appear once while default rows stay smal
     assert.ok(compact.length < 8000);
     assert.ok(full.length >= 4 * content.length);
     assert.ok(full.length < 4 * content.length + 8000);
+  } finally {
+    db.close();
+  }
+});
+
+test("retest: provenance, external attribute targets, thread filtering, export parents and larger pages", () => {
+  const db = fixture();
+  try {
+    const root = write.recordInteraction(
+      db,
+      evidence({
+        externalRef: { source: "bsky", id: "root" },
+        provenance: { origin: "archive" },
+      }),
+    ).primary;
+    const child = write.recordInteraction(
+      db,
+      evidence({
+        type: "activity",
+        externalRef: { source: "bsky", id: "child" },
+        parentRef: { source: "bsky", id: "root" },
+      }),
+    ).primary;
+    const inspected = inspectAffinityItemToolHandler(db, {
+      kind: "event",
+      eventId: root.id,
+    });
+    assert.ok(inspected.ok && inspected.data.kind === "event");
+    assert.deepEqual(inspected.data.detail.provenance, { origin: "archive" });
+    const target = {
+      kind: "event" as const,
+      ref: { source: " BSKY ", id: "child" },
+    };
+    const first = manageAttributeToolHandler(db, {
+      action: "set",
+      target,
+      name: "k",
+      value: "v",
+    });
+    assert.equal(first.outcome, "success");
+    const updatedAt = db
+      .prepare("SELECT updated_at FROM attributes WHERE event_id=?")
+      .get(child.id)?.updated_at;
+    const repeat = manageAttributeToolHandler(db, {
+      action: "set",
+      target,
+      name: "k",
+      value: "v",
+    });
+    assert.equal(repeat.outcome, "no_op");
+    assert.ok(repeat.ok);
+    assert.deepEqual(repeat.data.changes, []);
+    assert.equal(
+      db
+        .prepare("SELECT updated_at FROM attributes WHERE event_id=?")
+        .get(child.id)?.updated_at,
+      updatedAt,
+    );
+    assert.equal(
+      manageAttributeToolHandler(db, {
+        action: "set",
+        target: { kind: "event", ref: { source: "bsky", id: "missing" } },
+        name: "k",
+        value: "v",
+      }).outcome,
+      "error",
+    );
+    const thread = reviewAffinityToolHandler(db, {
+      view: "events.thread",
+      ref: { source: "bsky", id: "root" },
+      eventTypes: ["conversation"],
+      limit: 500,
+    });
+    assert.ok(thread.ok);
+    assert.deepEqual(
+      thread.data.items.map((x) => x.id),
+      [root.id],
+    );
+    const filteredChild = reviewAffinityToolHandler(db, {
+      view: "events.thread",
+      ref: { source: "bsky", id: "root" },
+      eventTypes: ["activity"],
+      limit: 1,
+    });
+    assert.ok(filteredChild.ok);
+    assert.equal(filteredChild.data.total, 1);
+    assert.deepEqual(
+      filteredChild.data.items.map((item) => item.id),
+      [child.id],
+    );
+    const exported = read.exportContact(db, 2);
+    assert.equal(
+      exported.events.find((e) => e.id === child.id)?.parentEventId,
+      root.id,
+    );
+    for (let i = 0; i < 251; i++) write.recordInteraction(db, evidence());
+    const page = reviewAffinityToolHandler(db, {
+      view: "events.contact_journal",
+      contact: { contactId: 2 },
+      limit: 500,
+    });
+    assert.ok(page.ok);
+    assert.equal(page.data.count, 253);
+    const next = reviewAffinityToolHandler(db, {
+      view: "events.contact_journal",
+      contact: { contactId: 2 },
+      limit: 500,
+      offset: 250,
+    });
+    assert.ok(next.ok);
+    assert.equal(next.data.count, 3);
+    assert.equal(next.data.hasMore, false);
+    const invalid = reviewAffinityToolHandler(db, {
+      view: "events.contact_journal",
+      contact: { contactId: 2 },
+      limit: 10001,
+    });
+    assert.ok(!invalid.ok && invalid.outcome === "error");
+    assert.match(invalid.error.message, /10000.*offset/);
+  } finally {
+    db.close();
+  }
+});
+
+test("like and follow labels default to ambient effects across event families, with explicit opt-in", () => {
+  const db = fixture();
+  try {
+    for (const summary of ["Liked a post", "Followed Sam", "repost: a post"]) {
+      const receipt = write.recordInteraction(
+        db,
+        evidence({ type: "activity", summary }),
+      );
+      assert.equal(receipt.primary.affectsBond, false);
+      assert.deepEqual(receipt.derivedEffects, []);
+      assert.deepEqual(receipt.affectedLinks, []);
+    }
+    const milestone = write.recordMilestone(
+      db,
+      evidence({ summary: "Follow Sam" }),
+    );
+    assert.equal(milestone.primary.affectsBond, false);
+    assert.deepEqual(milestone.derivedEffects, []);
+    const explicit = write.recordInteraction(
+      db,
+      evidence({ summary: "Like Sam", affectsBond: true }),
+    );
+    assert.equal(explicit.primary.affectsBond, true);
+    assert.ok(explicit.derivedEffects.length > 0);
+  } finally {
+    db.close();
+  }
+});
+
+test("high precision direct tool intake preserves raw timestamp and caller provenance", () => {
+  const db = fixture();
+  try {
+    const occurredAt = "2026-10-27T11:00:00.869560Z";
+    const result = recordEventToolHandler(db, {
+      kind: "interaction",
+      input: { ...evidence(), occurredAt, provenance: { source: "archive" } },
+    });
+    assert.ok(result.ok);
+    assert.equal(
+      result.data.primary.occurredAt,
+      Date.parse("2026-10-27T11:00:00.869Z"),
+    );
+    assert.deepEqual(result.data.primary.provenance, {
+      source: "archive",
+      rawOccurredAt: occurredAt,
+    });
+    assert.deepEqual(
+      read.getEventById(db, result.data.primary.id)?.provenance,
+      result.data.primary.provenance,
+    );
+  } finally {
+    db.close();
+  }
+});
+
+test("duplicate review defaults to 0.5 and explicit minScore still exposes weak candidates", () => {
+  const db = fixture();
+  try {
+    createContact(db, { name: "Sam Other", kind: "human" });
+    createContact(db, { name: "Alex Other", kind: "human" });
+    createContact(db, { name: "Sam", kind: "human" });
+    const all = reviewAffinityToolHandler(db, {
+      view: "contacts.duplicates",
+      minScore: 0,
+    });
+    const defaults = reviewAffinityToolHandler(db, {
+      view: "contacts.duplicates",
+    });
+    assert.ok(all.ok && defaults.ok);
+    assert.ok(all.data.items.length > defaults.data.items.length);
+    assert.ok(defaults.data.items.length > 0);
+    assert.ok(
+      defaults.data.items.every(
+        (item) => Number(item.matchScore ?? item.score) >= 0.5,
+      ),
+    );
   } finally {
     db.close();
   }

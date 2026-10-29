@@ -44,7 +44,10 @@ describe("reconcile_duplicates_and_merge_safely skill scenario", () => {
     );
 
     const duplicates = expectSuccess(
-      reviewAffinityToolHandler(db, { view: "contacts.duplicates" }),
+      reviewAffinityToolHandler(db, {
+        view: "contacts.duplicates",
+        minScore: 0,
+      }),
     );
     strictEqual(duplicates.data.count >= 1, true);
 

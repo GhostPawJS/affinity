@@ -460,7 +460,7 @@ function reviewPage(
       if (
         !Number.isInteger(limit) ||
         limit < 1 ||
-        limit > 250 ||
+        limit > 10_000 ||
         !Number.isInteger(offset) ||
         offset < 0
       )
@@ -468,7 +468,7 @@ function reviewPage(
           "protocol",
           "invalid_input",
           "Invalid pagination.",
-          "limit must be 1..250; offset must be non-negative",
+          "limit must be 1..10000; use offset to page through larger results; offset must be non-negative",
         );
       const all: ToolListItem[] = [];
       let page: ReviewAffinityToolResult;
@@ -538,7 +538,7 @@ function reviewPage(
               ? {}
               : { exactOnly: input.exactOnly }),
             ...(input.minScore === undefined
-              ? {}
+              ? { minScore: 0.5 }
               : { minScore: input.minScore }),
             ...(input.includeDismissed === undefined
               ? {}
@@ -555,9 +555,12 @@ function reviewPage(
             "Missing thread reference.",
             "ref is required for events.thread.",
           );
-        items = getEventThread(db, input.ref.source, input.ref.id, options).map(
-          toEventListToolItem,
-        );
+        items = getEventThread(db, input.ref.source, input.ref.id, {
+          ...options,
+          ...(input.eventTypes === undefined
+            ? {}
+            : { eventTypes: input.eventTypes }),
+        }).map(toEventListToolItem);
         break;
       }
       case "events.contact_journal": {
@@ -868,7 +871,8 @@ export const reviewAffinityTool = defineAffinityTool<
       "Whether dismissed pairs should be included in duplicate review (marked with dismissed flag).",
     since: "Optional lower timestamp bound for time-based views.",
     until: "Optional upper timestamp bound for time-based views.",
-    limit: "Optional result limit.",
+    limit:
+      "Optional result limit, 1..10000 (default 50); use offset for paging.",
     offset: "Optional result offset.",
   },
   outputDescription:
@@ -974,13 +978,17 @@ export const reviewAffinityTool = defineAffinityTool<
       ]),
       horizonDays: integerSchema("Optional horizon-days filter."),
       exactOnly: booleanSchema("Whether duplicate review is exact-only."),
-      minScore: numberSchema("Optional duplicate minimum score."),
+      minScore: numberSchema(
+        "Optional duplicate minimum score (default 0.5; use 0 for all candidates).",
+      ),
       includeDismissed: booleanSchema(
         "Whether dismissed pairs are included in duplicate review (marked with dismissed flag).",
       ),
       since: integerSchema("Optional lower timestamp bound."),
       until: integerSchema("Optional upper timestamp bound."),
-      limit: integerSchema("Optional result limit."),
+      limit: integerSchema(
+        "Optional result limit, 1..10000 (default 50); use offset for paging.",
+      ),
       offset: integerSchema("Optional result offset."),
     },
     ["view"],

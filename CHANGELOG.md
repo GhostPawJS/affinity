@@ -6,6 +6,24 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-10-29
+
+### Fixed
+
+- CLI content reviews print each row once, omitting redundant entities.
+- Event inspection and library event reads expose stored provenance.
+- Attribute tools accept event external references; unchanged values return no_op without updating timestamps, including in batch counts.
+- CLI/MCP startup installs the busy timeout before WAL setup and serializes schema initialization to avoid parallel-reader lock races.
+- Thread reviews apply event-type filters before pagination.
+- Contact and full exports resolve parent references consistently with event inspection.
+- Review limits now accept 1..10000, with an explicit offset paging hint on invalid limits.
+- Sub-millisecond timestamps truncate rather than round; tool/CLI/MCP intake retains raw high-precision occurredAt/dueAt strings in provenance.
+- CLI nits: binary-first short skill instructions, batch in top-level help, clean input error paths, documented deprecated --include-content alias, and a 0.5 default duplicate review score (explicit 0 retains weak matches).
+
+### Changed
+
+- Like/follow/repost event labels default to affectsBond:false across event families. Explicit true remains supported; low-significance observations retain their ambient default.
+
 ## [0.6.0] - 2026-10-28
 
 ### Added

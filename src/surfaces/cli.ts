@@ -119,7 +119,7 @@ async function runToolCliInternal<TCtx>(
   const normalize = (name: string) => name.replace(/[-_]/g, "").toLowerCase();
   if (["help", "--help", "-h"].includes(command)) {
     stdout.write(
-      `${options.versionLine?.() ?? `${options.bin} ${options.version}`}\n${options.description}\n\nUsage: ${options.bin} [--db path] <command>\nCommands: tools [--json], describe <tool>, call <tool> [JSON|-], <tool> --parameter value, mcp, skill\nOptions: --help, --version, --compact\n\n${options.tools.map((tool) => `${tool.name}  ${tool.description}`).join("\n")}\n`,
+      `${options.versionLine?.() ?? `${options.bin} ${options.version}`}\n${options.description}\n\nUsage: ${options.bin} [--db path] <command>\nCommands: tools [--json], describe <tool>, call <tool> [JSON|-], <tool> --parameter value, mcp, skill, batch [--chunk N] [--stop-on-error]\nOptions: --help, --version, --compact\n\n${options.tools.map((tool) => `${tool.name}  ${tool.description}`).join("\n")}\n`,
     );
     return 0;
   }

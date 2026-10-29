@@ -412,18 +412,18 @@ test("review pages expose total and hasMore across the default cap", () => {
     db.close();
   }
 });
-test("SQLite timestamps are UTC, offsets apply, fractions round including carry and null has a clear error", () => {
+test("SQLite timestamps are UTC, offsets apply, fractions truncate without carry and null has a clear error", () => {
   assert.equal(
     parseTimeInput("2026-10-27 17:51:33"),
     Date.parse("2026-10-27T17:51:33Z"),
   );
   assert.equal(
     parseTimeInput("2026-10-27 17:51:33.477800+02:00"),
-    Date.parse("2026-10-27T15:51:33.478Z"),
+    Date.parse("2026-10-27T15:51:33.477Z"),
   );
   assert.equal(
     parseTimeInput("2026-10-27T17:51:33.999600Z"),
-    Date.parse("2026-10-27T17:51:34Z"),
+    Date.parse("2026-10-27T17:51:33.999Z"),
   );
   const db = fixture();
   try {
@@ -600,6 +600,24 @@ test("batch supports chunking, failure isolation, invalid JSON, stop, and idempo
       });
       assert.equal(rows[1].id, 1);
     }
+    const attribute = {
+      tool: "manage_attribute",
+      args: {
+        action: "set",
+        target: { kind: "event", ref: { source: "bluesky", id: "at://one" } },
+        name: "k",
+        value: "v",
+      },
+    };
+    const attributes = await cli(
+      ["--db", db, "batch"],
+      [attribute, attribute].map((line) => JSON.stringify(line)).join("\n"),
+    );
+    assert.equal(attributes.code, 0, attributes.err);
+    assert.deepEqual(
+      JSON.parse(attributes.out.trim().split("\n").at(-1) ?? ""),
+      { done: 2, created: 1, noOp: 1, failed: 0 },
+    );
     const failed = await cli(
       ["--db", db, "batch"],
       `oops\n${JSON.stringify(event)}\n{"tool":"bogus","args":{}}`,

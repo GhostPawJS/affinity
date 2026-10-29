@@ -114,7 +114,13 @@ export function plainJson(
   const data = result.data as Record<string, unknown> | undefined;
   if (
     data?.items &&
-    JSON.stringify(result.entities) === JSON.stringify(data.items)
+    (JSON.stringify(result.entities) === JSON.stringify(data.items) ||
+      JSON.stringify(result.entities) ===
+        JSON.stringify(
+          (data.items as Record<string, unknown>[]).map(
+            ({ content: _content, ...item }) => item,
+          ),
+        ))
   )
     result.entities = undefined;
   if (compact && data?.primary) {

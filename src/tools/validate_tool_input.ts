@@ -80,6 +80,20 @@ export function validateToolInput(
             `${path}.${key}`,
             referenceNow,
           );
+          if (
+            !path.endsWith(".patch") &&
+            ["occurredAt", "dueAt"].includes(key) &&
+            typeof object[key] === "string" &&
+            /\.\d{4,}/.test(object[key] as string)
+          ) {
+            const provenance = object.provenance;
+            object.provenance = {
+              ...(provenance && typeof provenance === "object"
+                ? provenance
+                : {}),
+              [`raw${key[0]?.toUpperCase()}${key.slice(1)}`]: object[key],
+            };
+          }
           object[key] = parsed.timestamp;
           if (!path.endsWith(".patch") && ["occurredAt", "dueAt"].includes(key))
             object[key.replace(/At$/, "On")] ??= parsed.day;
@@ -97,7 +111,7 @@ export function validateToolInput(
       const error = validateToolInput(
         child,
         object[key],
-        `${path}.${key}`,
+        key === "input" && path === "input" ? path : `${path}.${key}`,
         referenceNow,
         strict,
       );

@@ -220,7 +220,7 @@ export async function runCliCommand<T>(
         stdout.write(
           entry
             ? renderCliHelp(specFor(entry, true))
-            : `${options.versionLine?.() ?? `${options.bin} ${options.version}`}\n${options.description}\n\nCommands:\n${matches.map((command) => `  ${command.path}`).join("\n")}\n  mcp, skill, tools [--json], describe <tool>, call <tool> [JSON|-], completions <bash|zsh|fish>, version\nGlobal flags: --db <path>, --json, --quiet, --compact, --help/-h, --version/-V/-v, --no-color\n`,
+            : `${options.versionLine?.() ?? `${options.bin} ${options.version}`}\n${options.description}\n\nCommands:\n${matches.map((command) => `  ${command.path}`).join("\n")}\n  batch [--chunk N] [--stop-on-error], mcp, skill, tools [--json], describe <tool>, call <tool> [JSON|-], completions <bash|zsh|fish>, version\nGlobal flags: --db <path>, --json, --quiet, --compact, --help/-h, --version/-V/-v, --no-color\n`,
         );
       if (options.describeDb && !quiet)
         stdout.write(`Database: ${options.describeDb(db)}\n`);

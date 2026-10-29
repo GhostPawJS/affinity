@@ -25,6 +25,8 @@ export function mapEventRowToEventRecord(
     momentKind: row.moment_kind as EventMomentKind | null,
     participants,
   };
+  if (row.provenance_json != null)
+    base.provenance = JSON.parse(row.provenance_json);
   if (row.content != null) base.content = decodeEventText(row.content);
   if (row.channel != null) base.channel = row.channel;
   if (row.external_source != null && row.external_id != null)

@@ -2,9 +2,12 @@ import { replaceAttributes } from "../attributes/replace_attributes.ts";
 import { setAttribute } from "../attributes/set_attribute.ts";
 import { unsetAttribute } from "../attributes/unset_attribute.ts";
 import type { AffinityDb } from "../database.ts";
+import { getEventByExternalRef } from "../events/event_metadata.ts";
 import type { AttributeEntry } from "../lib/types/attribute_entry.ts";
 import type { AttributeRecord } from "../lib/types/attribute_record.ts";
 import type { AttributeTarget } from "../lib/types/attribute_target.ts";
+import type { ExternalRef } from "../lib/types/social_event_input.ts";
+import { externalRefSchema } from "./event_metadata_schema.ts";
 import type { TimeInputs } from "./parse_time_input.ts";
 import {
   arraySchema,
@@ -35,7 +38,8 @@ import { validateToolInput } from "./validate_tool_input.ts";
 type AttributeTargetInput =
   | { kind: "contact"; contact: ContactLocator }
   | { kind: "link"; link: LinkLocator }
-  | { kind: "event"; eventId: number };
+  | { kind: "event"; eventId: number; ref?: never }
+  | { kind: "event"; ref: ExternalRef; eventId?: never };
 
 export type ManageAttributeToolInput =
   | {
@@ -105,7 +109,33 @@ function resolveAttributeTarget(
       kind: "error";
       result: ToolFailure | ToolNeedsClarification;
     } {
-  if (target.kind === "event") return { kind: "ok", target };
+  if (target.kind === "event") {
+    if ((target.eventId === undefined) === (target.ref === undefined))
+      return {
+        kind: "error",
+        result: invalidToolInput(
+          "protocol",
+          "invalid_input",
+          "Invalid event target.",
+          "Provide exactly one of target.eventId or target.ref.",
+        ),
+      };
+    const eventId =
+      target.eventId ??
+      (target.ref &&
+        getEventByExternalRef(db, target.ref.source, target.ref.id)?.id);
+    if (eventId === undefined)
+      return {
+        kind: "error",
+        result: invalidToolInput(
+          "domain",
+          "not_found",
+          "Event not found.",
+          "No event matches target.ref.",
+        ),
+      };
+    return { kind: "ok", target: { kind: "event", eventId } };
+  }
   if (target.kind === "contact") {
     const contact = resolveContactLocator(db, target.contact, "target.contact");
     if (!contact.ok) {
@@ -199,7 +229,8 @@ export const manageAttributeTool = defineAffinityTool<
       target: objectSchema(
         {
           kind: enumSchema("Target kind.", ["contact", "link", "event"]),
-          eventId: integerSchema("Target event id."),
+          eventId: integerSchema("Target event id; provide eventId or ref."),
+          ref: externalRefSchema,
           contact: contactLocatorSchema(
             "Contact locator. Required when kind=contact. Provide contactId or identity.",
           ),

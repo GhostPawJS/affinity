@@ -137,3 +137,12 @@ There is no dedicated attribute read surface. Attributes are surfaced through:
 Internally, `pref.*` attributes are consumed by the preference match formula
 during evidence processing. This is transparent to callers — the system reads
 preferences as part of mechanics, not as a query API.
+
+
+Event attributes can be addressed through `manage_attribute` by either
+`target: {kind:"event",eventId:1}` or
+`target: {kind:"event",ref:{source:"bsky",id:"at://record"}}`.
+Provide exactly one event locator. Missing references return not_found.
+Setting the same normalized value returns no_op and preserves updated_at;
+batch retries increment noOp rather than created. Library calls keep using
+`write.setAttribute(db, {kind:"event",eventId}, name, value)`.

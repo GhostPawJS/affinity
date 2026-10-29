@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
+  closeSync,
   mkdirSync,
   mkdtempSync,
+  openSync,
+  readFileSync,
   rmSync,
   statSync,
   writeFileSync,
@@ -214,28 +217,42 @@ test("CLI keeps free text literal and reads files only for JSON payloads", async
 test("@- reads a JSON payload from stdin", () => {
   const dir = mkdtempSync(join(tmpdir(), "affinity-file-stdin-"));
   try {
-    const child = spawnSync(
-      process.execPath,
-      [
-        "--experimental-strip-types",
-        "--no-warnings",
-        "src/cli.ts",
-        "--db",
-        join(dir, "a.db"),
-        "contact",
-        "create",
-        "--input",
-        "@-",
-        "--json",
-      ],
-      {
-        cwd: root,
-        input: '{"name":"Owner","kind":"human","bootstrapOwner":true}',
-        encoding: "utf8",
-      },
+    const input = join(dir, "stdin.json");
+    const output = join(dir, "stdout.json");
+    const error = join(dir, "stderr.txt");
+    writeFileSync(
+      input,
+      '{"name":"Owner","kind":"human","bootstrapOwner":true}',
     );
-    assert.equal(child.status, 0, child.stderr);
-    assert.equal(JSON.parse(child.stdout).ok, true);
+    // File-backed stdio supports runners that prohibit socketpair-backed child pipes.
+    const descriptors = [
+      openSync(input, "r"),
+      openSync(output, "w"),
+      openSync(error, "w"),
+    ];
+    try {
+      const child = spawnSync(
+        process.execPath,
+        [
+          "--experimental-strip-types",
+          "--no-warnings",
+          "src/cli.ts",
+          "--db",
+          join(dir, "a.db"),
+          "contact",
+          "create",
+          "--input",
+          "@-",
+          "--json",
+        ],
+        { cwd: root, stdio: descriptors, timeout: 10000 },
+      );
+      assert.ifError(child.error);
+      assert.equal(child.status, 0, readFileSync(error, "utf8"));
+      assert.equal(JSON.parse(readFileSync(output, "utf8")).ok, true);
+    } finally {
+      for (const fd of descriptors) closeSync(fd);
+    }
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

@@ -4,10 +4,10 @@
 // node_modules inside the packed tarball, or a packed JS file importing a bare specifier
 // that is not a Node.js built-in. Run after `npm run build`.
 // Usage: node scripts/check-zero-deps.mjs [--allow name1,name2]
-import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { builtinModules } from "node:module";
 import { join } from "node:path";
+import { run } from "./guard/process.mjs";
 
 const argIndex = process.argv.indexOf("--allow");
 const allowed = new Set(
@@ -36,10 +36,7 @@ for (const field of ["bundleDependencies", "bundledDependencies"]) {
 
 const npm = process.platform === "win32" ? "npm.cmd" : "npm";
 const [packed] = JSON.parse(
-  execFileSync(npm, ["pack", "--dry-run", "--json", "--ignore-scripts"], {
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "ignore"],
-  }),
+  run(npm, ["pack", "--dry-run", "--json", "--ignore-scripts"]),
 );
 const builtins = new Set(builtinModules.flatMap((m) => [m, `node:${m}`]));
 const packageName =

@@ -1,7 +1,8 @@
 # Record Observations And Referrals
 
 Likes, reposts and follows are ambient observations, not milestones. Record them
-with affectsBond:false; observations with significance <=2 default to false.
+with affectsBond:false. Like/follow/repost labels default to false across families;
+explicit true opts in. Observations with significance <=2 also default to false.
 They stay in journals but do not change affinity or meaningful-contact recency.
 provenance.ambient:true also suppresses effects. Use explicit owner and other
 participants, actor/recipient roles, and the correct directionality.
