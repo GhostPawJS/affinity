@@ -6,6 +6,8 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-11-04
+
 ### Changed
 
 - Remove landing page sources and the automated site deployment workflow; retain the demo build tooling. Demo fonts can be supplied through `DOCS_FONT_DIR`. Move install one-liners to `docs/install.json`.
@@ -271,7 +273,8 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 - Public read and write namespaces, tool facade, skills, and relationship guidance.
 - Validation, tests, API documentation, lifecycle examples, and release workflows.
 
-[Unreleased]: https://github.com/GhostPawJS/affinity/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/GhostPawJS/affinity/compare/v0.6.2...HEAD
+[0.6.2]: https://github.com/GhostPawJS/affinity/compare/v0.6.1...v0.6.2
 [0.6.0]: https://github.com/GhostPawJS/affinity/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/GhostPawJS/affinity/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/GhostPawJS/affinity/compare/v0.4.0...v0.4.1
