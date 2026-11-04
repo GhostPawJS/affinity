@@ -345,9 +345,10 @@ Every time field accepts epoch milliseconds, ISO 8601 with `Z` or an offset,
 such as `+3d` or `-2d`, with the same grammar in CLI, MCP and direct tool calls.
 Date-only values preserve their calendar day: timestamps use UTC midnight, or
 23:59:59.999Z for `dueAt`. Keywords first resolve against the process local
-calendar date; this is the only time-zone-dependent parsing step. `occurredOn`
-and `dueOn` retain the input day (the written offset day for ISO inputs; UTC day
-for epoch inputs). Existing rows derive these fields from their UTC timestamps.
+calendar date. Without TZ or an explicit zone, `occurredOn` and `dueOn`
+retain the input day (the written offset day for ISO inputs; UTC day for epoch
+inputs). An explicit zone or TZ selects the calendar day for timestamp dueAt
+values; date-only values keep their written day. Existing rows derive these fields from their UTC timestamps.
 Review rows for dates include `occursOn`, the anchor occurrence day; the library
 keeps its numeric `occursOn` sorting key and adds `occursOnDate`.
 The existing `*Iso` fields remain UTC. Overdue commitments compare the local
@@ -356,7 +357,7 @@ as contact until their timestamp and day arrive. Commitments and their
 resolutions do not reset recency or cadence. Radar marks `drift` after a gap
 exceeds 1.5 times the expected cadence and explains its reasons in the snippet.
 
-Global flags: `--db <path>`, `--json`, `--quiet`, `--compact`,
+Global flags: `--db <path>`, `--tz <IANA zone>`, `--json`, `--quiet`, `--compact`,
 `--help`/`-h`, `--version`/`-V`/`-v`, `--no-color`.
 `NO_COLOR` is accepted. In a terminal, commands print a readable summary with
 names and dates. With `--json` or piped stdout they print the tool result as
@@ -394,3 +395,29 @@ ghostpaw-affinity review contacts.list --db /tmp/affinity-example.db --json
 ```
 
 See [installation instructions](../README.md#install).
+
+### CLI review and output options
+
+`review graph.chart --include-structural` adds structural ties as edges marked
+`kind: "structural"`, with `tieId` and `tieType`; each tie appears once. The
+facade uses `includeStructural: true`; chart defaults remain unchanged.
+
+`review events.timeline --since 2026-11-01 --until 2026-11-05 --limit 20`
+shows events across all contacts, newest first (event id breaks timestamp ties).
+Bounds are inclusive and accept ISO dates, datetimes with offsets, or epoch ms;
+a date bound means UTC midnight. Use `--json` for structured output. The facade
+uses `view: "events.timeline"` with `since`, `until`, `limit`, and `offset`.
+
+Global `--tz Europe/Berlin` overrides `TZ` for local calendar calculations and
+timestamp-derived `dueOn`. Tools accept top-level `tz`; list read options accept
+`tz` for open commitments, radar, and upcoming dates. Explicit date-only inputs
+and explicit `dueOn` retain their day. With neither zone setting, existing
+calendar behavior remains unchanged. Invalid zones are rejected (CLI exit 2).
+For example, `2026-11-04T23:02:00Z` has `dueOn: "2026-11-05"` in Europe/Berlin;
+without a zone override it retains the written day, `2026-11-04`.
+
+Set `GHOSTPAW_OUTPUT=json` to request the same output as `--json`, including on
+a terminal. Other values leave output selection unchanged.
+
+Batch JSONL summaries retain `done`, `created`, `noOp`, and `failed` and add
+`revised`. Successful updates count as revised; per-line receipts are unchanged.

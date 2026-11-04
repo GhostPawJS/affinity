@@ -13,6 +13,16 @@ local date. Read occurredOn/dueOn and review occursOn for calendar dates;
 time and day arrive. Commitments and resolutions never reset recency/cadence.
 Radar explains overdue promises and drift (gap > 1.5 times cadence).
 
+Review events.timeline spans all contacts, newest first; --since/--until accept
+ISO dates, datetimes, or epoch ms (inclusive); --limit controls page size.
+Use graph.chart --include-structural (includeStructural: true) to add marked,
+deduplicated structural edges with tieId and tieType.
+Use global --tz Europe/Berlin or tool tz to override TZ for local days and dueOn;
+explicit calendar dates retain their day. Invalid zones report CLI exit 2.
+GHOSTPAW_OUTPUT=json selects --json output; other values preserve defaults.
+Batch summaries count successful updates as revised and creations as created;
+per-line receipts stay unchanged.
+
 Primary tools:
 - `review_affinity`
 - `inspect_affinity_item`

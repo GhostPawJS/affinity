@@ -595,6 +595,7 @@ test("batch supports chunking, failure isolation, invalid JSON, stop, and idempo
       assert.deepEqual(rows.at(-1), {
         done: 2,
         created: run ? 0 : 2,
+        revised: 0,
         noOp: run ? 2 : 0,
         failed: 0,
       });
@@ -616,7 +617,7 @@ test("batch supports chunking, failure isolation, invalid JSON, stop, and idempo
     assert.equal(attributes.code, 0, attributes.err);
     assert.deepEqual(
       JSON.parse(attributes.out.trim().split("\n").at(-1) ?? ""),
-      { done: 2, created: 1, noOp: 1, failed: 0 },
+      { done: 2, created: 1, revised: 0, noOp: 1, failed: 0 },
     );
     const failed = await cli(
       ["--db", db, "batch"],
@@ -626,6 +627,7 @@ test("batch supports chunking, failure isolation, invalid JSON, stop, and idempo
     assert.deepEqual(JSON.parse(failed.out.trim().split("\n").at(-1) ?? ""), {
       done: 3,
       created: 0,
+      revised: 0,
       noOp: 1,
       failed: 2,
     });

@@ -116,7 +116,7 @@ export function listOpenCommitments(
       (r.due_at === null
         ? null
         : new Date(r.due_at).toISOString().slice(0, 10)),
-    overdue: isCommitmentOverdue(r.due_at, r.due_on, now),
+    overdue: isCommitmentOverdue(r.due_at, r.due_on, now, options?.tz),
     resolutionState: mapResolution(r.resolved_at, r.resolution),
   }));
 }

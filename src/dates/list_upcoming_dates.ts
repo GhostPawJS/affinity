@@ -53,7 +53,9 @@ export function listUpcomingDates(
 
   const since =
     options?.since ??
-    Date.parse(`${localCalendarDate(options?.now ?? Date.now())}T00:00:00Z`);
+    Date.parse(
+      `${localCalendarDate(options?.now ?? Date.now(), options?.tz)}T00:00:00Z`,
+    );
   clauses.push("uo.occurs_on >= ?");
   params.push(since);
 

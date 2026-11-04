@@ -20,7 +20,7 @@ export function listRadar(
     return [];
   }
   const now = resolveNow(options?.now);
-  const today = localCalendarDate(now);
+  const today = localCalendarDate(now, options?.tz);
   const lastContact = `(SELECT MAX(le.occurred_at) FROM link_event_effects le JOIN events ev ON ev.id = le.event_id WHERE le.link_id = l.id AND le.counts_for_recency = 1 AND ev.deleted_at IS NULL AND (le.occurred_at <= ${now} OR ev.occurred_on <= '${today}'))`;
   // A gap exceeding 1.5 cadences warrants an explicit drift reason.
   const drift = `(${lastContact} IS NOT NULL AND (${now} - ${lastContact}) > 1.5 * COALESCE(l.cadence_days, 1) * 86400000)`;

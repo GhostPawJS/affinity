@@ -33,7 +33,7 @@ export function getAffinityChart(
 
   const linkClauses: string[] = [
     "l.removed_at IS NULL",
-    "l.is_structural = 0",
+    ...(options?.includeStructural ? [] : ["l.is_structural = 0"]),
     "cf.deleted_at IS NULL",
     "cf.lifecycle_state NOT IN ('merged', 'lost')",
     "ct.deleted_at IS NULL",
@@ -41,7 +41,7 @@ export function getAffinityChart(
   ];
   const linkParams: (string | number)[] = [];
   if (options?.includeArchived !== true) {
-    linkClauses.push("l.state != 'archived'");
+    linkClauses.push("(l.state IS NULL OR l.state != 'archived')");
   }
   if (options?.includeObserved === false) {
     linkClauses.push("l.kind != 'observed'");
@@ -57,7 +57,7 @@ export function getAffinityChart(
   const linkRows = db
     .prepare(
       `SELECT
-         l.id,
+         l.id, l.is_structural, l.kind,
          l.from_contact_id,
          l.to_contact_id,
          lr.edge_weight,
@@ -70,6 +70,8 @@ export function getAffinityChart(
     )
     .all(...linkParams) as {
     id: number;
+    is_structural: number;
+    kind: string;
     from_contact_id: number;
     to_contact_id: number;
     edge_weight: number | null;
@@ -80,6 +82,9 @@ export function getAffinityChart(
     if (nodeIds.has(l.from_contact_id) && nodeIds.has(l.to_contact_id)) {
       edges.push({
         linkId: l.id,
+        ...(l.is_structural
+          ? { kind: "structural" as const, tieId: l.id, tieType: l.kind }
+          : {}),
         fromContactId: l.from_contact_id,
         toContactId: l.to_contact_id,
         weight: l.edge_weight ?? 0,

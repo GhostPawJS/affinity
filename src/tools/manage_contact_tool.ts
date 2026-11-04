@@ -29,6 +29,7 @@ import {
   resolveContactLocator,
   withToolHandling,
 } from "./tool_resolvers.ts";
+import { withToolTimeZone } from "./tool_time_zone.ts";
 import { toolSuccess } from "./tool_types.ts";
 import { toolFailure as invalidToolInput } from "./tool_types.ts";
 import type { ToolResult } from "./tool_types.ts";
@@ -93,6 +94,15 @@ export function manageContactToolHandler(
   input: TimeInputs<ManageContactToolInput>,
 ): ManageContactToolResult;
 export function manageContactToolHandler(
+  db: AffinityDb,
+  rawInput: TimeInputs<ManageContactToolInput>,
+): ManageContactToolResult {
+  return withToolTimeZone(rawInput, () =>
+    manageContactToolHandlerInZone(db, rawInput),
+  );
+}
+
+function manageContactToolHandlerInZone(
   db: AffinityDb,
   rawInput: TimeInputs<ManageContactToolInput>,
 ): ManageContactToolResult {

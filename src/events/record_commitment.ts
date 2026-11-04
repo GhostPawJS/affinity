@@ -10,6 +10,7 @@ import {
   validateSocialEventInput,
 } from "../events/validators.ts";
 import { AffinityValidationError } from "../lib/errors/affinity_validation_error.ts";
+import { parseCalendarTime } from "../lib/parse_calendar_time.ts";
 import type { EventMutationReceipt } from "../lib/types/mutation_receipt.ts";
 import type { RecordCommitmentInput } from "../lib/types/record_commitment_input.ts";
 import { resolveNow } from "../resolve_now.ts";
@@ -59,7 +60,7 @@ export function recordCommitment(
     db.prepare("UPDATE open_commitments SET due_on = ? WHERE event_id = ?").run(
       input.dueAt == null
         ? null
-        : (input.dueOn ?? new Date(input.dueAt).toISOString().slice(0, 10)),
+        : (input.dueOn ?? parseCalendarTime(input.dueAt, "dueAt").day),
       eventId,
     );
     const mechanics = applyJournalEventMechanics(db, {

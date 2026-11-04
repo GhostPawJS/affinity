@@ -8,6 +8,7 @@ import { getEventById } from "../events/event_metadata.ts";
 import { getContactJournal } from "../events/get_contact_journal.ts";
 import { listMoments } from "../events/list_moments.ts";
 import { listOpenCommitments } from "../events/list_open_commitments.ts";
+import { batchLoadEventRecords } from "../events/loaders.ts";
 import type {
   EventMomentKind,
   EventRecurrenceKind,
@@ -53,6 +54,7 @@ import {
   withToolHandling,
 } from "./tool_resolvers.ts";
 import { summarizeCount } from "./tool_summary.ts";
+import { withToolTimeZone } from "./tool_time_zone.ts";
 import { toolFailure as invalidToolInput } from "./tool_types.ts";
 import type { ToolListItem, ToolResult } from "./tool_types.ts";
 import {
@@ -66,6 +68,7 @@ import { validateToolInput } from "./validate_tool_input.ts";
 export type ReviewAffinityToolView =
   | "contacts.list"
   | "contacts.duplicates"
+  | "events.timeline"
   | "events.thread"
   | "events.contact_journal"
   | "events.link_timeline"
@@ -99,6 +102,7 @@ export interface ReviewAffinityToolInput {
   includeDormant?: boolean;
   includeArchived?: boolean;
   includeObserved?: boolean;
+  includeStructural?: boolean;
   eventTypes?: EventType[];
   momentKind?: EventMomentKind;
   commitmentType?: "promise" | "agreement";
@@ -150,6 +154,9 @@ function buildReadOptions(input: ReviewAffinityToolInput) {
 
 function buildChartOptions(input: ReviewAffinityToolInput) {
   return {
+    ...(input.includeStructural === undefined
+      ? {}
+      : { includeStructural: input.includeStructural }),
     ...(input.includeArchived === undefined
       ? {}
       : { includeArchived: input.includeArchived }),
@@ -432,6 +439,15 @@ export function reviewAffinityToolHandler(
   db: AffinityDb,
   rawInput: TimeInputs<ReviewAffinityToolInput>,
 ): ReviewAffinityToolResult {
+  return withToolTimeZone(rawInput, () =>
+    reviewAffinityToolHandlerInZone(db, rawInput),
+  );
+}
+
+function reviewAffinityToolHandlerInZone(
+  db: AffinityDb,
+  rawInput: TimeInputs<ReviewAffinityToolInput>,
+): ReviewAffinityToolResult {
   return reviewPage(db, rawInput, false);
 }
 function reviewPage(
@@ -547,6 +563,32 @@ function reviewPage(
           options,
         ).map(duplicateCandidateItem);
         break;
+      case "events.timeline": {
+        const rows = db
+          .prepare(`SELECT id FROM events WHERE deleted_at IS NULL
+          AND (? IS NULL OR occurred_at >= ?) AND (? IS NULL OR occurred_at <= ?)
+          AND (? IS NULL OR channel = ?)
+          AND (? IS NULL OR type IN (SELECT value FROM json_each(?)))
+          ORDER BY occurred_at DESC, id DESC LIMIT ? OFFSET ?`)
+          .all(
+            input.since ?? null,
+            input.since ?? null,
+            input.until ?? null,
+            input.until ?? null,
+            input.channel ?? null,
+            input.channel ?? null,
+            input.eventTypes ? JSON.stringify(input.eventTypes) : null,
+            input.eventTypes ? JSON.stringify(input.eventTypes) : null,
+            input.limit ?? 50,
+            input.offset ?? 0,
+          ) as { id: number }[];
+        items = batchLoadEventRecords(
+          db,
+          rows.map((row) => row.id),
+          input.includeContent,
+        ).map(toEventListToolItem);
+        break;
+      }
       case "events.thread": {
         if (!input.ref)
           return toolFailure(
@@ -887,6 +929,7 @@ export const reviewAffinityTool = defineAffinityTool<
       view: enumSchema("Which review surface to return.", [
         "contacts.list",
         "contacts.duplicates",
+        "events.timeline",
         "events.thread",
         "events.contact_journal",
         "events.link_timeline",
@@ -940,6 +983,9 @@ export const reviewAffinityTool = defineAffinityTool<
       includeOwner: booleanSchema("Whether owner contacts are included."),
       includeDormant: booleanSchema("Whether dormant rows are included."),
       includeArchived: booleanSchema("Whether archived links are included."),
+      includeStructural: booleanSchema(
+        "Include structural ties as marked chart edges.",
+      ),
       includeObserved: booleanSchema("Whether observed links are included."),
       eventTypes: arraySchema(
         enumSchema("Event type.", [

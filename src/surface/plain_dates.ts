@@ -1,4 +1,5 @@
 import { parseCalendarTime } from "../lib/parse_calendar_time.ts";
+import { withTimeZone } from "../lib/time_zone.ts";
 import { CliUsageError } from "../surfaces/cli_args.ts";
 export function parsePlainDue(
   raw: string,
@@ -22,6 +23,22 @@ export function normalizeTimeInputs(
   now = Date.now(),
   inPatch = false,
 ): unknown {
+  if (
+    value &&
+    typeof value === "object" &&
+    "tz" in value &&
+    value.tz !== undefined
+  ) {
+    const { tz, ...rest } = value as Record<string, unknown>;
+    try {
+      return withTimeZone(tz as string, () => ({
+        ...(normalizeTimeInputs(rest, now, inPatch) as object),
+        tz,
+      }));
+    } catch (error) {
+      throw new CliUsageError((error as Error).message);
+    }
+  }
   if (Array.isArray(value))
     return value.map((item) => normalizeTimeInputs(item, now));
   if (!value || typeof value !== "object") return value;

@@ -3,7 +3,7 @@ export { timeInputForms } from "../lib/parse_calendar_time.ts";
 export type TimeInputs<T> = T extends readonly (infer U)[]
   ? readonly TimeInputs<U>[]
   : T extends object
-    ? {
+    ? { tz?: string } & {
         [K in keyof T]: K extends
           | `${string}At`
           | "now"

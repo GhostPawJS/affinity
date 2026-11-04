@@ -28,6 +28,7 @@ import {
   resolveLinkLocator,
   withToolHandling,
 } from "./tool_resolvers.ts";
+import { withToolTimeZone } from "./tool_time_zone.ts";
 import { toolFailure as invalidToolInput } from "./tool_types.ts";
 import type { ToolResult } from "./tool_types.ts";
 import { toolFailure, toolSuccess } from "./tool_types.ts";
@@ -94,6 +95,15 @@ function linkLocatorSchema(description: string) {
 }
 
 export function inspectAffinityItemToolHandler(
+  db: AffinityDb,
+  rawInput: TimeInputs<InspectAffinityItemToolInput>,
+): InspectAffinityItemToolResult {
+  return withToolTimeZone(rawInput, () =>
+    inspectAffinityItemToolHandlerInZone(db, rawInput),
+  );
+}
+
+function inspectAffinityItemToolHandlerInZone(
   db: AffinityDb,
   rawInput: TimeInputs<InspectAffinityItemToolInput>,
 ): InspectAffinityItemToolResult {

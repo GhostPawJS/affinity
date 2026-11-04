@@ -17,6 +17,7 @@ import { searchAffinityToolName } from "./tool_names.ts";
 import { toContactListToolItem } from "./tool_ref.ts";
 import { withToolHandling } from "./tool_resolvers.ts";
 import { summarizeCount } from "./tool_summary.ts";
+import { withToolTimeZone } from "./tool_time_zone.ts";
 import { toolFailure as invalidToolInput } from "./tool_types.ts";
 import type { ToolResult } from "./tool_types.ts";
 import { toolSuccess } from "./tool_types.ts";
@@ -47,6 +48,15 @@ export interface SearchAffinityToolData {
 export type SearchAffinityToolResult = ToolResult<SearchAffinityToolData>;
 
 export function searchAffinityToolHandler(
+  db: AffinityDb,
+  rawInput: TimeInputs<SearchAffinityToolInput>,
+): SearchAffinityToolResult {
+  return withToolTimeZone(rawInput, () =>
+    searchAffinityToolHandlerInZone(db, rawInput),
+  );
+}
+
+function searchAffinityToolHandlerInZone(
   db: AffinityDb,
   rawInput: TimeInputs<SearchAffinityToolInput>,
 ): SearchAffinityToolResult {

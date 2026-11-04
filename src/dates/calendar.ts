@@ -45,9 +45,10 @@ export function computeNextAnchorOccursOn(params: {
   anchorMonth: number;
   anchorDay: number;
   referenceMs: number;
+  tz?: string;
 }): number {
   const refStart = Date.parse(
-    `${localCalendarDate(params.referenceMs)}T00:00:00Z`,
+    `${localCalendarDate(params.referenceMs, params.tz)}T00:00:00Z`,
   );
   const refYear = new Date(refStart).getUTCFullYear();
   for (let year = refYear; year <= refYear + 2; year += 1) {

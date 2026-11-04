@@ -27,6 +27,7 @@ import {
   resolveLinkLocator,
   withToolHandling,
 } from "./tool_resolvers.ts";
+import { withToolTimeZone } from "./tool_time_zone.ts";
 import { toolFailure as invalidToolInput } from "./tool_types.ts";
 import type {
   ToolFailure,
@@ -151,6 +152,15 @@ function resolveAttributeTarget(
 }
 
 export function manageAttributeToolHandler(
+  db: AffinityDb,
+  rawInput: TimeInputs<ManageAttributeToolInput>,
+): ManageAttributeToolResult {
+  return withToolTimeZone(rawInput, () =>
+    manageAttributeToolHandlerInZone(db, rawInput),
+  );
+}
+
+function manageAttributeToolHandlerInZone(
   db: AffinityDb,
   rawInput: TimeInputs<ManageAttributeToolInput>,
 ): ManageAttributeToolResult {

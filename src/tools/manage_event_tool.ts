@@ -19,6 +19,7 @@ import {
 import { type MutationToolData, mutationToolResult } from "./tool_mutation.ts";
 import { manageEventToolName } from "./tool_names.ts";
 import { withToolHandling } from "./tool_resolvers.ts";
+import { withToolTimeZone } from "./tool_time_zone.ts";
 import { type ToolResult, toolFailure } from "./tool_types.ts";
 import { validateToolInput } from "./validate_tool_input.ts";
 export interface ManageEventToolInput {
@@ -30,6 +31,12 @@ export interface ManageEventToolInput {
 }
 export type ManageEventToolResult = ToolResult<MutationToolData<EventRecord>>;
 export function manageEventToolHandler(
+  db: AffinityDb,
+  raw: TimeInputs<ManageEventToolInput>,
+): ManageEventToolResult {
+  return withToolTimeZone(raw, () => manageEventInZone(db, raw));
+}
+function manageEventInZone(
   db: AffinityDb,
   raw: TimeInputs<ManageEventToolInput>,
 ): ManageEventToolResult {

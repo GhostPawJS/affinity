@@ -18,6 +18,7 @@ import {
   resolveContactLocator,
   withToolHandling,
 } from "./tool_resolvers.ts";
+import { withToolTimeZone } from "./tool_time_zone.ts";
 import { toolFailure as invalidToolInput } from "./tool_types.ts";
 import { type ToolResult, toolSuccess } from "./tool_types.ts";
 import { validateToolInput } from "./validate_tool_input.ts";
@@ -62,6 +63,15 @@ function contactLocatorSchema(description: string) {
 }
 
 export function manageDuplicateDismissalToolHandler(
+  db: AffinityDb,
+  rawInput: TimeInputs<ManageDuplicateDismissalToolInput>,
+): ManageDuplicateDismissalToolResult {
+  return withToolTimeZone(rawInput, () =>
+    manageDuplicateDismissalToolHandlerInZone(db, rawInput),
+  );
+}
+
+function manageDuplicateDismissalToolHandlerInZone(
   db: AffinityDb,
   rawInput: TimeInputs<ManageDuplicateDismissalToolInput>,
 ): ManageDuplicateDismissalToolResult {

@@ -15,6 +15,7 @@ import {
   resolveContactLocator,
   withToolHandling,
 } from "./tool_resolvers.ts";
+import { withToolTimeZone } from "./tool_time_zone.ts";
 import { toolFailure as invalidToolInput } from "./tool_types.ts";
 import type { ToolResult } from "./tool_types.ts";
 import { validateToolInput } from "./validate_tool_input.ts";
@@ -49,6 +50,15 @@ function contactLocatorSchema(description: string) {
 }
 
 export function mergeContactsToolHandler(
+  db: AffinityDb,
+  rawInput: TimeInputs<MergeContactsToolInput>,
+): MergeContactsToolResult {
+  return withToolTimeZone(rawInput, () =>
+    mergeContactsToolHandlerInZone(db, rawInput),
+  );
+}
+
+function mergeContactsToolHandlerInZone(
   db: AffinityDb,
   rawInput: TimeInputs<MergeContactsToolInput>,
 ): MergeContactsToolResult {

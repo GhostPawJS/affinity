@@ -8,14 +8,19 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ### Added
 
-- Agent contacts and the operate-agent-relationships workflow guide.
-- Pinned relationship cadence and link revision; null cadence restores derivation.
-- Nested field details in tool descriptions and generated cheat sheets.
+- Contact kind `agent` and the `operate_agent_relationships` workflow guide.
+- Pinned relationship cadence (`cadenceDays`; null unpins); radar uses it and link output shows `cadencePinned`.
+- `describe` lists nested field details.
+- `review graph.chart --include-structural` (tool: `includeStructural`) adds structural ties as edges.
+- `review events.timeline` lists events across all contacts with `--since` / `--until`.
+- `--tz <zone>` and the `TZ` environment variable set the zone for `dueOn` and local-day calculations; the default is unchanged.
+- `GHOSTPAW_OUTPUT=json` makes JSON the CLI output format.
 
 ### Fixed
 
-- Invalid CLI writes leave missing database files and directories absent.
-- Profile commitments render inline with due dates and overdue status.
+- A failed CLI write no longer creates the database file or its directory.
+- Contact profiles show open commitments inline with due dates and overdue status.
+- The `batch` summary counts revise operations as `revised` instead of `created`.
 
 ## [0.6.2] - 2026-11-04
 

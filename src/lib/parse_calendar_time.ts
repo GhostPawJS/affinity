@@ -1,9 +1,10 @@
 import { AffinityValidationError } from "./errors/affinity_validation_error.ts";
+import { currentTimeZone, validateTimeZone } from "./time_zone.ts";
 
 export const timeInputForms =
   "epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d";
 
-/** Only keyword resolution uses the process local calendar. Stored day boundaries are UTC. */
+/** Calendar inputs retain UTC boundaries; explicit zones also select due days. */
 /**
  * A due value entered as a calendar day is stored at 23:59:59.999Z of that day.
  * Such values become overdue when the local calendar date passes the day;
@@ -13,10 +14,11 @@ export function isCommitmentOverdue(
   dueAt: number | null,
   dueOn: string | null | undefined,
   now: number,
+  tz?: string,
 ): boolean {
   if (dueAt === null) return false;
   if (dueOn && dueAt === Date.parse(`${dueOn}T23:59:59.999Z`)) {
-    return localCalendarDate(now) > dueOn;
+    return localCalendarDate(now, tz) > dueOn;
   }
   return dueAt < now;
 }
@@ -25,7 +27,16 @@ export function isCommitmentOverdue(
 export const OVERDUE_SQL =
   "(CASE WHEN oc.due_on IS NOT NULL AND oc.due_at = CAST(strftime('%s', oc.due_on) AS INTEGER) * 1000 + 86399999 THEN oc.due_on < ? ELSE oc.due_at < ? END)";
 
-export function localCalendarDate(now: number): string {
+export function localCalendarDate(now: number, tz?: string): string {
+  const zone = tz ?? currentTimeZone();
+  if (zone !== undefined) validateTimeZone(zone);
+  if (zone)
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: zone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(now);
   const d = new Date(now);
   return `${String(d.getFullYear()).padStart(4, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
@@ -35,6 +46,7 @@ export function parseCalendarTime(
   field = "time",
   now = Date.now(),
 ): { timestamp: number; day: string } {
+  const zone = currentTimeZone();
   if (value == null && field.endsWith("occurredAt"))
     throw new AffinityValidationError(
       "occurredAt is required (ISO, YYYY-MM-DD, epoch ms, today, +3d …)",
@@ -52,7 +64,13 @@ export function parseCalendarTime(
       !Number.isFinite(new Date(timestamp).getTime())
     )
       return fail();
-    return { timestamp, day: new Date(timestamp).toISOString().slice(0, 10) };
+    return {
+      timestamp,
+      day:
+        zone && field.split(".").at(-1) === "dueAt"
+          ? localCalendarDate(timestamp)
+          : new Date(timestamp).toISOString().slice(0, 10),
+    };
   }
   if (typeof value !== "string") return fail();
   let text = value.trim();
@@ -99,5 +117,11 @@ export function parseCalendarTime(
     ? midnight + (field.split(".").at(-1) === "dueAt" ? 86399999 : 0)
     : Date.parse(text);
   if (!Number.isFinite(timestamp)) return fail();
-  return { timestamp, day };
+  return {
+    timestamp,
+    day:
+      zone && !dateOnly && field.split(".").at(-1) === "dueAt"
+        ? localCalendarDate(timestamp)
+        : day,
+  };
 }

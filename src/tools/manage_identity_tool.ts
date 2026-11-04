@@ -23,6 +23,7 @@ import {
   resolveContactLocator,
   withToolHandling,
 } from "./tool_resolvers.ts";
+import { withToolTimeZone } from "./tool_time_zone.ts";
 import { toolFailure as invalidToolInput } from "./tool_types.ts";
 import type { ToolResult } from "./tool_types.ts";
 import { validateToolInput } from "./validate_tool_input.ts";
@@ -62,6 +63,15 @@ function contactLocatorSchema(description: string) {
 }
 
 export function manageIdentityToolHandler(
+  db: AffinityDb,
+  rawInput: TimeInputs<ManageIdentityToolInput>,
+): ManageIdentityToolResult {
+  return withToolTimeZone(rawInput, () =>
+    manageIdentityToolHandlerInZone(db, rawInput),
+  );
+}
+
+function manageIdentityToolHandlerInZone(
   db: AffinityDb,
   rawInput: TimeInputs<ManageIdentityToolInput>,
 ): ManageIdentityToolResult {

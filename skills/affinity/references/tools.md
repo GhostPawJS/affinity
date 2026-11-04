@@ -40,6 +40,7 @@ Read-only.
 | includeDormant | boolean | no | Whether dormant contacts are included. |
 | limit | integer | no | Optional result limit. |
 | offset | integer | no | Optional result offset. |
+| tz | string | no | IANA time zone for due days and local calendar calculations; defaults to TZ or the process local zone. |
 
 ```sh
 ghostpaw-affinity search "Jana"
@@ -60,7 +61,7 @@ Read-only.
 | ref | object | no |  |
 | includeContent | boolean | no | Deprecated alias for --with-content; includes verbatim event content. |
 | channel | string | no | Filter events by channel. |
-| view | string | yes | contacts.list, contacts.duplicates, events.thread, events.contact_journal, events.link_timeline, events.moments, commitments.open, links.owner, links.observed, links.progression_readiness, links.radar, dates.upcoming, graph.chart, merges.history, merges.dismissed. Which review surface to return. |
+| view | string | yes | contacts.list, contacts.duplicates, events.timeline, events.thread, events.contact_journal, events.link_timeline, events.moments, commitments.open, links.owner, links.observed, links.progression_readiness, links.radar, dates.upcoming, graph.chart, merges.history, merges.dismissed. Which review surface to return. |
 | now | integer / string | no | Optional current timestamp for overdue calculations. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | contact | object | no | Optional target contact locator. |
 | link | object | no | Optional target link locator. |
@@ -74,6 +75,7 @@ Read-only.
 | includeOwner | boolean | no | Whether owner contacts are included. |
 | includeDormant | boolean | no | Whether dormant rows are included. |
 | includeArchived | boolean | no | Whether archived links are included. |
+| includeStructural | boolean | no | Include structural ties as marked chart edges. |
 | includeObserved | boolean | no | Whether observed links are included. |
 | eventTypes | array | no | Optional event-type filter. |
 | momentKind | string | no | breakthrough, rupture, reconciliation, milestone, turning_point. Optional moment kind filter. |
@@ -87,6 +89,7 @@ Read-only.
 | until | integer / string | no | Optional upper timestamp bound. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | limit | integer | no | Optional result limit, 1..10000 (default 50); use offset for paging. |
 | offset | integer | no | Optional result offset. |
+| tz | string | no | IANA time zone for due days and local calendar calculations; defaults to TZ or the process local zone. |
 | refSource | string | no | External reference source. |
 | refId | string | no | External reference id. |
 | withContent | boolean | no | Include verbatim event content. |
@@ -120,6 +123,7 @@ Read-only.
 | link | object | no | Target link. Required when kind=link. Provide linkId or endpoints. |
 | topLinksLimit | integer | no | Optional top-links cap. |
 | recentEventsLimit | integer | no | Optional recent-events cap. |
+| tz | string | no | IANA time zone for due days and local calendar calculations; defaults to TZ or the process local zone. |
 | refSource | string | no | External reference source. |
 | refId | string | no | External reference id. |
 | ref.source | string | yes | External source; trimmed and lowercased. |
@@ -152,6 +156,7 @@ Writes: writes_state.
 | patch | object | no | Allowed contact patch. Required when action=revise. |
 | lifecycleState | string | no | active, dormant, merged, lost. Target lifecycle state. Required when action=set_lifecycle. |
 | options | object | no | Optional lifecycle metadata. |
+| tz | string | no | IANA time zone for due days and local calendar calculations; defaults to TZ or the process local zone. |
 | input.identities | array | no | Optional identities to attach. An identity owned by another live contact causes a conflict, or returns that contact when ifExists=return. |
 | input.ifExists | string | no | Identity collision policy; return attaches nothing. |
 | input.name | string | yes | Contact name. |
@@ -183,6 +188,7 @@ Writes: writes_state.
 | loser | object | yes | Loser contact. Provide contactId or identity. |
 | reasonSummary | string | no | Optional merge reason. |
 | now | integer / string | no | Optional merge timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| tz | string | no | IANA time zone for due days and local calendar calculations; defaults to TZ or the process local zone. |
 | winner.contactId | integer | no | Exact contact id. |
 | winner.identity | object | no | Contact identity locator. |
 | loser.contactId | integer | no | Exact contact id. |
@@ -208,6 +214,7 @@ Writes: writes_state.
 | left | object | yes | Left contact. Provide contactId or identity. |
 | right | object | yes | Right contact. Provide contactId or identity. |
 | reason | any | no | Optional reason for the dismissal. |
+| tz | string | no | IANA time zone for due days and local calendar calculations; defaults to TZ or the process local zone. |
 | left.contactId | integer | no | Exact contact id. |
 | left.identity | object | no | Contact identity locator. |
 | right.contactId | integer | no | Exact contact id. |
@@ -236,6 +243,7 @@ Writes: writes_state.
 | patch | object | no | Identity patch. Required when action=revise. |
 | verifiedAt | integer / string | no | Verification timestamp. Optional for action=verify. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | removedAt | integer / string | no | Removal timestamp. Optional for action=remove. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| tz | string | no | IANA time zone for due days and local calendar calculations; defaults to TZ or the process local zone. |
 | contact.contactId | integer | no | Exact contact id. |
 | contact.identity | object | no | Contact identity locator. |
 | input.ifExists | string | no | Return an existing identity on this contact without changes. |
@@ -276,6 +284,7 @@ Writes: writes_state.
 | state | string | no | active, dormant, strained, broken, archived. Link state. Required when action=override_state. |
 | options | object | no | Optional metadata. |
 | removedAt | integer / string | no | Removal timestamp. Optional for action=remove_structural_tie. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| tz | string | no | IANA time zone for due days and local calendar calculations; defaults to TZ or the process local zone. |
 | from.contactId | integer | no | Exact contact id. |
 | from.identity | object | no | Contact identity locator. |
 | to.contactId | integer | no | Exact contact id. |
@@ -318,6 +327,7 @@ Writes: writes_state.
 | --- | --- | --- | --- |
 | kind | string | yes | interaction, observation, milestone, transaction. Event kind. |
 | input | object | yes | Event payload. Always required. Interaction events also require `type`. |
+| tz | string | no | IANA time zone for due days and local calendar calculations; defaults to TZ or the process local zone. |
 | input.type | string | no | Interaction subtype. Required when kind=interaction, omit otherwise. |
 | input.affectsBond | boolean | no | Whether evidence affects the relationship; defaults false for like/follow/repost labels and observations with significance <=2; explicit true opts in. |
 | input.content | string | no | Verbatim text, including empty text; at most 1 MB UTF-8. Summary may be omitted when content is supplied. |
@@ -356,6 +366,7 @@ Writes: writes_state.
 | commitmentEventId | integer | no | Commitment event id. Required when action=resolve. |
 | resolution | string | no | kept, cancelled, broken. How the commitment was resolved. Required when action=resolve. |
 | options | object | no | Optional metadata. |
+| tz | string | no | IANA time zone for due days and local calendar calculations; defaults to TZ or the process local zone. |
 | input.commitmentType | string | yes | Promise or agreement. |
 | input.affectsBond | boolean | no | Whether evidence affects the relationship; defaults false for like/follow/repost labels and observations with significance <=2; explicit true opts in. |
 | input.content | string | no | Verbatim text, including empty text; at most 1 MB UTF-8. Summary may be omitted when content is supplied. |
@@ -399,6 +410,7 @@ Writes: writes_state.
 | patch | object | no | Anchor patch. Required when action=revise. |
 | options | object | no | Optional metadata. |
 | removedAt | integer / string | no | Removal timestamp. Optional for action=remove. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| tz | string | no | IANA time zone for due days and local calendar calculations; defaults to TZ or the process local zone. |
 | input.target | object | yes | Date-anchor target. |
 | input.recurrenceKind | string | yes | Recurrence kind. |
 | input.anchorMonth | integer | yes | Anchor month, 1–12. |
@@ -437,6 +449,7 @@ Writes: writes_state.
 | value | any | no | Attribute value. Required when action=set. Null for presence/tag semantics. |
 | entries | array | no | Key-value map to replace all attributes. Required when action=replace. |
 | removedAt | integer / string | no | Removal timestamp. Optional for action=unset. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
+| tz | string | no | IANA time zone for due days and local calendar calculations; defaults to TZ or the process local zone. |
 | target.kind | string | yes | Target kind. |
 | target.eventId | integer | no | Target event id; provide eventId or ref. |
 | target.ref | object | no |  |
@@ -466,6 +479,7 @@ Writes: writes_state.
 | ref | object | no |  |
 | confirm | boolean | no | Must be true to delete. |
 | patch | object | no | Fields to revise; externalRef may only be added when absent. |
+| tz | string | no | IANA time zone for due days and local calendar calculations; defaults to TZ or the process local zone. |
 | refSource | string | no | External reference source. |
 | refId | string | no | External reference id. |
 | ref.source | string | yes | External source; trimmed and lowercased. |

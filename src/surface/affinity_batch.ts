@@ -18,7 +18,7 @@ export async function runAffinityBatch(
 ): Promise<number> {
   if (args.includes("--help")) {
     options.stdout.write(
-      'Usage: ghostpaw-affinity batch [--chunk N] [--stop-on-error] < input.jsonl\nEach line: {tool,args} or {op:"event",kind,input}. Default: one transaction for all lines.\n',
+      'Usage: ghostpaw-affinity batch [--chunk N] [--stop-on-error] < input.jsonl\nEach line: {tool,args} or {op:"event",kind,input}. Default: one transaction for all lines. Summary: created, revised, noOp, failed; updates are revised.\n',
     );
     return 0;
   }
@@ -37,6 +37,7 @@ export async function runAffinityBatch(
   );
   let line = 0;
   let created = 0;
+  let revised = 0;
   let noOp = 0;
   let failed = 0;
   let invalidJson = false;
@@ -51,6 +52,7 @@ export async function runAffinityBatch(
           id?: number;
           error?: unknown;
         };
+        let updatesExisting = false;
         try {
           let input: {
             tool?: string;
@@ -81,7 +83,15 @@ export async function runAffinityBatch(
             if (!response.ok) throw response;
             return response;
           });
-          const data = value.data as { primary?: { id?: number } };
+          const data = value.data as {
+            primary?: { id?: number };
+            action?: string;
+            created?: unknown[];
+            updated?: unknown[];
+          };
+          updatesExisting =
+            data.action === "revise" ||
+            (!data.created?.length && !!data.updated?.length);
           result = {
             ok: true,
             outcome: value.outcome,
@@ -101,6 +111,7 @@ export async function runAffinityBatch(
         }
         if (!result.ok) failed++;
         else if (result.outcome === "no_op") noOp++;
+        else if (updatesExisting) revised++;
         else created++;
         output.push({ line: entry.line, ...result });
         if (!result.ok && stop) break;
@@ -125,7 +136,7 @@ export async function runAffinityBatch(
     }
     if (pending.length) emit();
     options.stdout.write(
-      `${JSON.stringify({ done: created + noOp + failed, created, noOp, failed })}\n`,
+      `${JSON.stringify({ done: created + revised + noOp + failed, created, revised, noOp, failed })}\n`,
     );
     return invalidJson ? 2 : failed ? 1 : 0;
   } finally {

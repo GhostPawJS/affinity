@@ -20,6 +20,7 @@ import {
 import { type MutationToolData, mutationToolResult } from "./tool_mutation.ts";
 import { manageCommitmentToolName } from "./tool_names.ts";
 import { withToolHandling } from "./tool_resolvers.ts";
+import { withToolTimeZone } from "./tool_time_zone.ts";
 import { toolFailure as invalidToolInput } from "./tool_types.ts";
 import type { ToolResult } from "./tool_types.ts";
 import { validateToolInput } from "./validate_tool_input.ts";
@@ -75,6 +76,15 @@ function prepareParticipants(
 }
 
 export function manageCommitmentToolHandler(
+  db: AffinityDb,
+  rawInput: TimeInputs<ManageCommitmentToolInput>,
+): ManageCommitmentToolResult {
+  return withToolTimeZone(rawInput, () =>
+    manageCommitmentToolHandlerInZone(db, rawInput),
+  );
+}
+
+function manageCommitmentToolHandlerInZone(
   db: AffinityDb,
   rawInput: TimeInputs<ManageCommitmentToolInput>,
 ): ManageCommitmentToolResult {

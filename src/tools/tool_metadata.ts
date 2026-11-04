@@ -71,6 +71,14 @@ export function defineAffinityTool<TInput, TResult extends ToolResult<unknown>>(
     if (schema.items) visit(schema.items);
     for (const child of schema.oneOf ?? schema.anyOf ?? []) visit(child);
   };
+  definition.inputSchema.properties = {
+    ...definition.inputSchema.properties,
+    tz: {
+      type: "string",
+      description:
+        "IANA time zone for due days and local calendar calculations; defaults to TZ or the process local zone.",
+    },
+  };
   visit(definition.inputSchema);
   return definition;
 }

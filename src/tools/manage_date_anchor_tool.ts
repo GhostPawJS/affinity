@@ -27,6 +27,7 @@ import {
   resolveLinkLocator,
   withToolHandling,
 } from "./tool_resolvers.ts";
+import { withToolTimeZone } from "./tool_time_zone.ts";
 import { toolFailure as invalidToolInput } from "./tool_types.ts";
 import type {
   ToolFailure,
@@ -124,6 +125,15 @@ function resolveDateAnchorTarget(
 }
 
 export function manageDateAnchorToolHandler(
+  db: AffinityDb,
+  rawInput: TimeInputs<ManageDateAnchorToolInput>,
+): ManageDateAnchorToolResult {
+  return withToolTimeZone(rawInput, () =>
+    manageDateAnchorToolHandlerInZone(db, rawInput),
+  );
+}
+
+function manageDateAnchorToolHandlerInZone(
   db: AffinityDb,
   rawInput: TimeInputs<ManageDateAnchorToolInput>,
 ): ManageDateAnchorToolResult {

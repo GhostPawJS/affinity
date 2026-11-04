@@ -6,6 +6,10 @@ import type { JsonSchema, SurfaceTool } from "./surface_types.ts";
 import { validateInput } from "./validate_input.ts";
 
 export interface ToolCliOptions<TCtx> {
+  withTimeZone?: (
+    zone: string,
+    operation: () => Promise<number>,
+  ) => Promise<number>;
   preflight?: (
     tool: SurfaceTool<TCtx>,
     input: unknown,
@@ -124,7 +128,7 @@ async function runToolCliInternal<TCtx>(
   const normalize = (name: string) => name.replace(/[-_]/g, "").toLowerCase();
   if (["help", "--help", "-h"].includes(command)) {
     stdout.write(
-      `${options.versionLine?.() ?? `${options.bin} ${options.version}`}\n${options.description}\n\nUsage: ${options.bin} [--db path] <command>\nCommands: tools [--json], describe <tool>, call <tool> [JSON|-], <tool> --parameter value, mcp, skill, batch [--chunk N] [--stop-on-error]\nOptions: --help, --version, --compact\n\n${options.tools.map((tool) => `${tool.name}  ${tool.description}`).join("\n")}\n`,
+      `${options.versionLine?.() ?? `${options.bin} ${options.version}`}\n${options.description}\n\nUsage: ${options.bin} [--db path] <command>\nCommands: tools [--json], describe <tool>, call <tool> [JSON|-], <tool> --parameter value, mcp, skill, batch [--chunk N] [--stop-on-error]\nOptions: --help, --version, --compact, --tz <IANA zone>, --json (or GHOSTPAW_OUTPUT=json)\n\n${options.tools.map((tool) => `${tool.name}  ${tool.description}`).join("\n")}\n`,
     );
     return 0;
   }
@@ -336,13 +340,40 @@ export async function runToolCli<TCtx>(
   argv: string[],
   options: ToolCliOptions<TCtx>,
 ): Promise<number> {
+  const outputArgs =
+    process.env.GHOSTPAW_OUTPUT === "json" && !argv.includes("--json")
+      ? [...argv, "--json"]
+      : argv;
   try {
-    return await runToolCliInternal(argv, options);
+    const args = [...outputArgs];
+    let zone: string | undefined;
+    for (let i = 0; i < args.length && args[i] !== "--"; i++) {
+      const arg = args[i];
+      if (arg === "--tz" || arg?.startsWith("--tz=")) {
+        zone = arg === "--tz" ? args.splice(i + 1, 1)[0] : arg.slice(5);
+        if (!zone || zone.startsWith("--"))
+          throw new CliUsageError("--tz requires an IANA time zone");
+        args.splice(i--, 1);
+      }
+    }
+    if (zone !== undefined) {
+      if (!options.withTimeZone) throw new CliUsageError("--tz is unavailable");
+      try {
+        return await options.withTimeZone(zone, () =>
+          runToolCliInternal(args, options),
+        );
+      } catch (error) {
+        throw new CliUsageError(
+          error instanceof Error ? error.message : String(error),
+        );
+      }
+    }
+    return await runToolCliInternal(args, options);
   } catch (error) {
     const code = error instanceof CliUsageError ? 2 : 70;
     const message = `${code === 70 ? "internal error: " : ""}${error instanceof Error ? error.message : String(error)}`;
     (options.stderr ?? process.stderr).write(`${message}\n`);
-    if (argv.includes("--json") && !argv.includes("--quiet"))
+    if (outputArgs.includes("--json") && !outputArgs.includes("--quiet"))
       (options.stdout ?? process.stdout).write(
         `${JSON.stringify({ ok: false, error: { code: "internal_error", message } })}\n`,
       );

@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 import type { AffinityDb } from "../database.ts";
+import { withTimeZone } from "../lib/time_zone.ts";
 import type { ToolCliOptions } from "../surfaces/cli.ts";
 import { affinityVersion } from "../version.ts";
 import { affinityCliError } from "./affinity_cli_errors.ts";
@@ -9,6 +10,7 @@ import { normalizeTimeInputs } from "./plain_dates.ts";
 import { resolveAffinityDbPath } from "./resolve_affinity_db_path.ts";
 
 export const affinityCliOptions: ToolCliOptions<AffinityDb> = {
+  withTimeZone,
   reportCreation: true,
   preflight: async (tool, input, dbPath) => {
     const path = resolveAffinityDbPath(
