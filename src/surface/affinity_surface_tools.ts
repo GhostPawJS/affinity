@@ -144,6 +144,7 @@ const mapping: Record<string, NonNullable<SurfaceTool<AffinityDb>["cli"]>> = {
       property: "action",
       verbs: {
         seed_social_link: "add",
+        revise: "revise",
         revise_bond: "bond",
         override_state: "state",
         set_structural_tie: "tie",

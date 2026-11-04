@@ -59,10 +59,10 @@ export function seedSocialLink(
       input.cadenceDays === undefined ? null : input.cadenceDays;
     if (
       cadenceDays !== null &&
-      (!Number.isInteger(cadenceDays) || cadenceDays < 1)
+      (!Number.isFinite(cadenceDays) || cadenceDays <= 0)
     ) {
       throw new AffinityValidationError(
-        "cadenceDays must be a positive integer",
+        "cadenceDays must be a positive number",
       );
     }
     const bondRaw = input.bond?.trim() ?? "";
@@ -91,6 +91,10 @@ export function seedSocialLink(
         now,
       );
     const id = Number(result.lastInsertRowid);
+    db.prepare("UPDATE links SET pinned_cadence_days=? WHERE id=?").run(
+      cadenceDays,
+      id,
+    );
     const row = getLinkRowById(db, id);
     if (!row) {
       throw new AffinityInvariantError("inserted relational link not found");

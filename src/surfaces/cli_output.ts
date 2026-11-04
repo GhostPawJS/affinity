@@ -130,7 +130,17 @@ export function plainJson(
         ? value.map(ids)
         : value && typeof value === "object"
           ? "id" in value
-            ? { id: (value as { id: unknown }).id }
+            ? {
+                id: (value as { id: unknown }).id,
+                ...("cadencePinned" in value
+                  ? {
+                      cadenceDays: (value as { cadenceDays?: unknown })
+                        .cadenceDays,
+                      cadencePinned: (value as { cadencePinned: unknown })
+                        .cadencePinned,
+                    }
+                  : {}),
+              }
             : Object.fromEntries(
                 Object.entries(value).map(([key, entry]) => [key, ids(entry)]),
               )
@@ -211,15 +221,21 @@ export function humanResult(value: unknown): string {
           );
         if (Array.isArray(item.reasons) && item.reasons.length)
           dates.push(item.reasons.join(", ").replaceAll("_", " "));
+        if (item.cadenceDays !== undefined)
+          dates.push(
+            `cadence ${item.cadenceDays} days · cadencePinned: ${item.cadencePinned ?? false}`,
+          );
         const subtitle = item.subtitle ? ` — ${item.subtitle}` : "";
         const tail = dates.length ? ` · ${dates.join(" · ")}` : "";
         return `#${item.id ?? item.entityId ?? "?"} ${item.title ?? item.name ?? item.summary ?? ""}${subtitle}${tail}${item.overdue ? " · OVERDUE" : ""}`.trim();
       })
       .join("\n")}\n`;
   }
-  const primary = r.data?.primary as { id?: number } | undefined;
+  const primary = r.data?.primary as
+    | { id?: number; cadenceDays?: number | null; cadencePinned?: boolean }
+    | undefined;
   if (primary)
-    return `${r.summary ?? "Done"}${primary.id === undefined ? "" : ` (id ${primary.id})`}\n`;
+    return `${r.summary ?? "Done"}${primary.id === undefined ? "" : ` (id ${primary.id})`}${primary.cadenceDays === undefined ? "" : ` · cadence ${primary.cadenceDays} days · cadencePinned: ${primary.cadencePinned ?? false}`}\n`;
   if (r.data) {
     const fields: [string, string][] = [];
     const display = (entry: unknown): string => {
@@ -241,7 +257,13 @@ export function humanResult(value: unknown): string {
       if (!value || typeof value !== "object") return;
       for (const [key, entry] of Object.entries(value)) {
         const label = `${prefix}${key}`;
-        if (entry && typeof entry === "object" && !Array.isArray(entry))
+        if (key === "openCommitments" && Array.isArray(entry)) {
+          for (const item of entry)
+            fields.push([
+              "commitment",
+              `#${item.eventId} ${item.type} · ${item.summary} · due ${item.dueOn ?? item.dueAtIso ?? "—"}${item.overdue ? " · OVERDUE" : ""}`,
+            ]);
+        } else if (entry && typeof entry === "object" && !Array.isArray(entry))
           flatten(entry, `${label}.`);
         else fields.push([label, display(entry)]);
       }

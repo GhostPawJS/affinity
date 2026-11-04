@@ -1,6 +1,7 @@
 /** Visible contact kind — see CONCEPT.md `contacts.kind`. */
 export type ContactKind =
   | "human"
+  | "agent"
   | "group"
   | "company"
   | "team"

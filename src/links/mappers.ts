@@ -23,7 +23,8 @@ export function mapLinkRowToLinkListItem(row: LinkRow): LinkListItem {
     affinity: row.affinity,
     trust: row.trust,
     state: row.state as LinkState,
-    cadenceDays: row.cadence_days,
+    cadenceDays: row.pinned_cadence_days ?? row.cadence_days,
+    cadencePinned: row.pinned_cadence_days != null,
     bond: row.bond,
   };
 }

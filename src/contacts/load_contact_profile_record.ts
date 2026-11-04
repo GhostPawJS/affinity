@@ -42,7 +42,7 @@ export function loadContactProfileRecord(
   const linkRows = db
     .prepare(
       `SELECT l.id, l.from_contact_id, l.to_contact_id, l.kind, l.role, l.is_structural,
-              rank, affinity, trust, state, cadence_days, bond,
+              rank, affinity, trust, state, cadence_days, pinned_cadence_days, bond,
               created_at, l.updated_at, removed_at
        FROM links l
        LEFT JOIN link_rollups lr ON lr.link_id = l.id

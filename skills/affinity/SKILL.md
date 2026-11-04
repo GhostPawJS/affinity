@@ -9,6 +9,10 @@ compatibility: "The release binary needs no runtime. MCP stdio or ghostpaw-affin
 
 ## CLI cheat sheet
 
+Contact kind agent represents a non-human operator or bot; see skill operate-agent-relationships.
+manage_relationship seed input: kind, role, rank, affinity, trust, cadenceDays, bond, state, ifExists, now.
+revise patch: rank, affinity, trust, cadenceDays, bond, state; cadenceDays null unpins.
+
 Install: `curl -fsSL https://raw.githubusercontent.com/GhostPawJS/affinity/main/install.sh | sh`
 Windows: `irm https://raw.githubusercontent.com/GhostPawJS/affinity/main/install.ps1 | iex`
 
@@ -96,6 +100,7 @@ Parameter details and examples: `ghostpaw-affinity skill tools` or `ghostpaw-aff
 ### Workflow guides
 
 - `ghostpaw-affinity skill bootstrap-and-cold-start`: Establish a clean Affinity baseline with one owner, one verified identity, and the minimum structure needed for later evidence and review work.
+- `ghostpaw-affinity skill operate-agent-relationships`: Coach multiple agent contacts with explicit commitments, verified outcomes, and fixed relationship rhythms.
 - `ghostpaw-affinity skill identify-and-locate-contacts`: Find the right contact reliably, prefer stable natural keys when possible, and avoid creating duplicates through weak lookup discipline.
 - `ghostpaw-affinity skill import-history-without-faking-evidence`: Import pre-existing relationship state honestly, using seeded links for known history instead of inventing fake journal evidence.
 - `ghostpaw-affinity skill model-structure-orgs-and-households`: Model factual structure such as employment, membership, hierarchy, and household ties without confusing it with live relational mechanics.

@@ -5,6 +5,7 @@ import { importHistoryWithoutFakingEvidenceSkill } from "./import_history_withou
 import { managePromisesAndAgreementsSkill } from "./manage_promises_and_agreements.ts";
 import { manageRecurringDatesAndRemindersSkill } from "./manage_recurring_dates_and_reminders.ts";
 import { modelStructureOrgsAndHouseholdsSkill } from "./model_structure_orgs_and_households.ts";
+import { operateAgentRelationshipsSkill } from "./operate_agent_relationships.ts";
 import { reconcileDuplicatesAndMergeSafelySkill } from "./reconcile_duplicates_and_merge_safely.ts";
 import { recordDirectEvidenceWellSkill } from "./record_direct_evidence_well.ts";
 import { recordObservationsAndReferralsSkill } from "./record_observations_and_referrals.ts";
@@ -13,6 +14,7 @@ import type { AffinitySkillRegistry } from "./skill_types.ts";
 
 export const affinitySkills = [
   bootstrapAndColdStartSkill,
+  operateAgentRelationshipsSkill,
   identifyAndLocateContactsSkill,
   importHistoryWithoutFakingEvidenceSkill,
   modelStructureOrgsAndHouseholdsSkill,

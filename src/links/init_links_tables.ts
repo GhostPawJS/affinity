@@ -44,6 +44,13 @@ export function initLinksTables(db: AffinityDb): void {
       )
     )
   `);
+  if (
+    !(db.prepare("PRAGMA table_info(links)").all() as { name: string }[]).some(
+      (column) => column.name === "pinned_cadence_days",
+    )
+  ) {
+    db.exec("ALTER TABLE links ADD COLUMN pinned_cadence_days REAL");
+  }
   db.exec(
     "CREATE INDEX IF NOT EXISTS idx_links_from ON links(from_contact_id) WHERE removed_at IS NULL",
   );

@@ -31,7 +31,7 @@ Read-only.
 | --- | --- | --- | --- |
 | scope | string | no | contacts, events, all. Search scope; defaults to contacts. |
 | query | string | yes | Free-text or natural-key query. |
-| kind | string | no | human, group, company, team, pet, service, other. Optional contact kind filter. |
+| kind | string | no | human, agent, group, company, team, pet, service, other. Optional contact kind filter. |
 | lifecycleState | string | no | active, dormant, merged, lost. Optional lifecycle state filter. |
 | attribute | string / array | no |  |
 | tag | string / array | no |  |
@@ -264,11 +264,12 @@ Writes: writes_state.
 
 | Parameter | Type | Required | Values / description |
 | --- | --- | --- | --- |
-| action | string | yes | seed_social_link, revise_bond, override_state, set_structural_tie, remove_structural_tie. Operation to perform. |
+| action | string | yes | revise, seed_social_link, revise_bond, override_state, set_structural_tie, remove_structural_tie. Operation to perform. |
 | from | object | no | Source contact. Required when action=seed_social_link or set_structural_tie. Provide contactId or identity. |
 | to | object | no | Target contact. Required when action=seed_social_link or set_structural_tie. Provide contactId or identity. |
 | kind | string | no | Link kind. Required for seed_social_link and set_structural_tie. Can be passed here or inside input. For seed_social_link: personal, family, professional, romantic, care, service, observed, other_relational. For set_structural_tie: works_at, manages, member_of, married_to, partner_of, parent_of, child_of, sibling_of, friend_of, client_of, vendor_of, reports_to, belongs_to, other_structural. |
 | role | string | no | Optional role for seed_social_link or set_structural_tie. Can be passed here or inside input. |
+| patch | object | no | Replacement link fields; cadenceDays null unpins. |
 | input | object | no | Full payload for seed_social_link or set_structural_tie. Alternative to top-level kind/role. |
 | link | object | no | Target link. Required when action=revise_bond, override_state, or remove_structural_tie. Provide linkId or endpoints. |
 | bond | any | no | Bond text. Required when action=revise_bond. Null to clear. |
@@ -279,6 +280,22 @@ Writes: writes_state.
 | from.identity | object | no | Contact identity locator. |
 | to.contactId | integer | no | Exact contact id. |
 | to.identity | object | no | Contact identity locator. |
+| patch.rank | integer | no | Non-negative relationship rank. |
+| patch.affinity | number | no | Affinity from 0 inclusive to 1 exclusive. |
+| patch.trust | number | no | Trust from 0 to 1. |
+| patch.cadenceDays | oneOf | no | Positive days pins cadence; null on revise restores derivation. |
+| patch.bond | oneOf | no | Bond text; null clears. |
+| patch.state | string | no | Relationship state. |
+| input.rank | integer | no | Non-negative relationship rank. |
+| input.affinity | number | no | Affinity from 0 inclusive to 1 exclusive. |
+| input.trust | number | no | Trust from 0 to 1. |
+| input.cadenceDays | oneOf | no | Positive days pins cadence; null on revise restores derivation. |
+| input.bond | oneOf | no | Bond text; null clears. |
+| input.state | string | no | Relationship state. |
+| input.kind | string | no | Link kind. |
+| input.role | string | no | Optional role. |
+| input.ifExists | string | no | Existing link behavior. |
+| input.now | oneOf | no | Optional timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 | link.linkId | integer | no | Exact link id. |
 | link.endpoints | object | no | Endpoint-based link locator. |
 | options.now | oneOf | no | Optional timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
@@ -468,6 +485,7 @@ ghostpaw-affinity event revise --event-id 1 --patch '{"summary":"Corrected"}'
 ## Workflow guides
 
 - `ghostpaw-affinity skill bootstrap-and-cold-start`: Establish a clean Affinity baseline with one owner, one verified identity, and the minimum structure needed for later evidence and review work.
+- `ghostpaw-affinity skill operate-agent-relationships`: Coach multiple agent contacts with explicit commitments, verified outcomes, and fixed relationship rhythms.
 - `ghostpaw-affinity skill identify-and-locate-contacts`: Find the right contact reliably, prefer stable natural keys when possible, and avoid creating duplicates through weak lookup discipline.
 - `ghostpaw-affinity skill import-history-without-faking-evidence`: Import pre-existing relationship state honestly, using seeded links for known history instead of inventing fake journal evidence.
 - `ghostpaw-affinity skill model-structure-orgs-and-households`: Model factual structure such as employment, membership, hierarchy, and household ties without confusing it with live relational mechanics.

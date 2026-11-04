@@ -6,6 +6,10 @@ import type { SetStructuralTieInput } from "../lib/types/set_structural_tie_inpu
 import { overrideLinkState } from "../links/override_link_state.ts";
 import { removeStructuralTie } from "../links/remove_structural_tie.ts";
 import { reviseBond } from "../links/revise_bond.ts";
+import {
+  type ReviseSocialLinkPatch,
+  reviseSocialLink,
+} from "../links/revise_social_link.ts";
 import { seedSocialLink } from "../links/seed_social_link.ts";
 import { setStructuralTie } from "../links/set_structural_tie.ts";
 import type { LinkState } from "../links/types.ts";
@@ -33,6 +37,12 @@ import type { ToolResult } from "./tool_types.ts";
 import { validateToolInput } from "./validate_tool_input.ts";
 
 export type ManageRelationshipToolInput =
+  | {
+      action: "revise";
+      link: LinkLocator;
+      patch: ReviseSocialLinkPatch;
+      options?: LinkMutationOptions;
+    }
   | {
       action: "seed_social_link";
       from: ContactLocator;
@@ -128,6 +138,15 @@ export function manageRelationshipToolHandler(
     );
   return withToolHandling<MutationToolData<LinkListItem>>(() => {
     switch (input.action) {
+      case "revise": {
+        const link = resolveLinkLocator(db, input.link, "link");
+        if (!link.ok) return link.result;
+        return mutationToolResult(
+          "revise",
+          reviseSocialLink(db, link.value.id, input.patch, input.options),
+          "relationship",
+        );
+      }
       case "seed_social_link": {
         const from = resolveContactLocator(db, input.from, "from");
         if (!from.ok) {
@@ -221,6 +240,28 @@ export function manageRelationshipToolHandler(
   }, "Relationship tool failed.");
 }
 
+const relationshipFields = {
+  rank: integerSchema("Non-negative relationship rank."),
+  affinity: {
+    type: "number" as const,
+    description: "Affinity from 0 inclusive to 1 exclusive.",
+  },
+  trust: { type: "number" as const, description: "Trust from 0 to 1." },
+  cadenceDays: {
+    oneOf: [{ type: "number" as const }, { type: "null" as const }],
+    description:
+      "Positive days pins cadence; null on revise restores derivation.",
+  },
+  bond: nullableStringSchema("Bond text; null clears."),
+  state: enumSchema("Relationship state.", [
+    "active",
+    "dormant",
+    "strained",
+    "broken",
+    "archived",
+  ]),
+};
+
 export const manageRelationshipTool = defineAffinityTool<
   TimeInputs<ManageRelationshipToolInput>,
   ManageRelationshipToolResult
@@ -255,6 +296,7 @@ export const manageRelationshipTool = defineAffinityTool<
   inputSchema: objectSchema(
     {
       action: enumSchema("Operation to perform.", [
+        "revise",
         "seed_social_link",
         "revise_bond",
         "override_state",
@@ -273,8 +315,20 @@ export const manageRelationshipTool = defineAffinityTool<
       role: stringSchema(
         "Optional role for seed_social_link or set_structural_tie. Can be passed here or inside input.",
       ),
+      patch: objectSchema(
+        relationshipFields,
+        [],
+        "Replacement link fields; cadenceDays null unpins.",
+      ),
       input: {
         type: "object" as const,
+        properties: {
+          ...relationshipFields,
+          kind: stringSchema("Link kind."),
+          role: stringSchema("Optional role."),
+          ifExists: enumSchema("Existing link behavior.", ["error", "return"]),
+          now: integerSchema("Optional timestamp."),
+        },
         description:
           "Full payload for seed_social_link or set_structural_tie. Alternative to top-level kind/role.",
       },

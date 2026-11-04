@@ -426,10 +426,12 @@ export async function runCliCommand<T>(
     if (errors.length) throw new CliUsageError(errors.join("\n"));
     const contextError = options.contextError?.(db, entry.tool, input);
     if (contextError) return fail(contextError, 3);
-    const context = await options.openContext({
-      ...(db === undefined ? {} : { db }),
-      ...(options.reportCreation ? { stderr } : {}),
-    });
+    const context =
+      (await options.preflight?.(entry.tool, input, db)) ??
+      (await options.openContext({
+        ...(db === undefined ? {} : { db }),
+        ...(options.reportCreation ? { stderr } : {}),
+      }));
     try {
       const result = await entry.tool.handler(context, input);
       const record = result as {

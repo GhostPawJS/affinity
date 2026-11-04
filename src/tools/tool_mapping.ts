@@ -158,6 +158,11 @@ export const affinityToolMappings: AffinityToolMapping[] = [
     action: "seed_social_link",
   },
   {
+    source: "reviseSocialLink",
+    tool: "manage_relationship",
+    action: "revise",
+  },
+  {
     source: "reviseBond",
     tool: manageRelationshipToolName,
     action: "revise_bond",

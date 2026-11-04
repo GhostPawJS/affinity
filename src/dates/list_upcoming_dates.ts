@@ -12,6 +12,7 @@ import type { UpcomingDateRecord } from "../lib/types/upcoming_date_record.ts";
 
 const CONTACT_KINDS = new Set<string>([
   "human",
+  "agent",
   "group",
   "company",
   "team",

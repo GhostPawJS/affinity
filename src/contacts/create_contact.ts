@@ -19,6 +19,7 @@ import { withTransaction } from "../with_transaction.ts";
 
 const KINDS = new Set([
   "human",
+  "agent",
   "group",
   "company",
   "team",

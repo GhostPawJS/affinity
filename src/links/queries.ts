@@ -7,7 +7,7 @@ export function getLinkRowById(db: AffinityDb, id: number): LinkRow | null {
   const row = db
     .prepare(
       `SELECT id, from_contact_id, to_contact_id, kind, role, is_structural,
-              rank, affinity, trust, state, cadence_days, bond,
+              rank, affinity, trust, state, cadence_days, pinned_cadence_days, bond,
               created_at, updated_at, removed_at
        FROM links
        WHERE id = ? AND removed_at IS NULL`,
@@ -50,7 +50,7 @@ export function findLiveRelationalLinkAnyDirection(
   const row = db
     .prepare(
       `SELECT id, from_contact_id, to_contact_id, kind, role, is_structural,
-              rank, affinity, trust, state, cadence_days, bond,
+              rank, affinity, trust, state, cadence_days, pinned_cadence_days, bond,
               created_at, updated_at, removed_at
        FROM links
        WHERE is_structural = 0 AND removed_at IS NULL
@@ -81,7 +81,7 @@ export function findLiveStructuralTie(
   const row = db
     .prepare(
       `SELECT id, from_contact_id, to_contact_id, kind, role, is_structural,
-              rank, affinity, trust, state, cadence_days, bond,
+              rank, affinity, trust, state, cadence_days, pinned_cadence_days, bond,
               created_at, updated_at, removed_at
        FROM links
        WHERE from_contact_id = ? AND to_contact_id = ? AND kind = ?

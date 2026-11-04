@@ -213,7 +213,7 @@ export function resolveLinkLocator(
   const rows = db
     .prepare(
       `SELECT id, from_contact_id, to_contact_id, kind, role, is_structural,
-              rank, affinity, trust, state, cadence_days, bond,
+              rank, affinity, trust, state, cadence_days, pinned_cadence_days, bond,
               created_at, updated_at, removed_at
        FROM links
        WHERE ${clauses.join(" AND ")}

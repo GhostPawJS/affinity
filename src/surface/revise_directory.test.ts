@@ -233,3 +233,65 @@ test("contact revision help accepts a positional patch without opening a databas
     assert.equal(result.err, "");
   }
 });
+
+test("invalid writes do not create missing database files or parent directories", async () => {
+  const dir = mkdtempSync(join(process.cwd(), ".invalid-write-test-"));
+  try {
+    const path = join(dir, "absent", "contacts.db");
+    for (const args of [
+      ["contact", "create", '{"name":"","kind":"human"}'],
+      ["contact", "create", '{"name":"Sam","kind":"invalid"}'],
+      [
+        "contact",
+        "create",
+        '{"name":"Sam","kind":"agent","identities":[{"type":"email","value":"bad"}]}',
+      ],
+      [
+        "call",
+        "manage_contact",
+        '{"action":"create","input":{"name":" ","kind":"human"}}',
+      ],
+      [
+        "event",
+        "record",
+        "--kind",
+        "interaction",
+        "--input",
+        '{"type":"invalid","occurredAt":1,"summary":"Test","significance":4,"participants":[]}',
+      ],
+      [
+        "commitment",
+        "record",
+        "--input",
+        '{"commitmentType":"invalid","occurredAt":1,"summary":"Test","significance":4,"participants":[]}',
+      ],
+    ]) {
+      const result = await invoke([...args, "--db", path]);
+      assert.equal(result.code, 2, `${args.join(" ")}: ${result.err}`);
+      assert.equal(existsSync(path), false);
+      assert.equal(existsSync(join(dir, "absent")), false);
+    }
+    const described = await invoke([
+      "describe",
+      "manage_relationship",
+      "--db",
+      path,
+    ]);
+    assert.equal(described.code, 0);
+    for (const field of [
+      "input.rank",
+      "input.trust",
+      "input.cadenceDays",
+      "input.bond",
+      "input.state",
+      "patch.cadenceDays",
+      "link.linkId",
+    ])
+      assert.ok(described.out.includes(`${field} |`), field);
+    assert.match(described.out, /active, dormant, strained, broken, archived/);
+    assert.match(described.out, /action \| string \| true/);
+    assert.equal(existsSync(join(dir, "absent")), false);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

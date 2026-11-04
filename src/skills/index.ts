@@ -1,3 +1,4 @@
+export { operateAgentRelationshipsSkill } from "./operate_agent_relationships.ts";
 export { bootstrapAndColdStartSkill } from "./bootstrap_and_cold_start.ts";
 export { captureTransactionsAndCommercialEventsSkill } from "./capture_transactions_and_commercial_events.ts";
 export { identifyAndLocateContactsSkill } from "./identify_and_locate_contacts.ts";

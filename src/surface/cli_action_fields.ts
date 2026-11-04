@@ -26,6 +26,7 @@ export const cliActionFields: Record<string, Record<string, string[]>> = {
   },
   manage_relationship: {
     seed_social_link: ["from", "to", "kind", "role", "input", "options"],
+    revise: ["link", "patch", "options"],
     revise_bond: ["link", "bond", "options"],
     override_state: ["link", "state", "options"],
     set_structural_tie: ["from", "to", "kind", "role", "input", "options"],

@@ -71,7 +71,7 @@ describe("skill registry", () => {
     const uniqueNames = new Set(names);
     const listed = listAffinitySkills();
 
-    strictEqual(affinitySkills.length, 11);
+    strictEqual(affinitySkills.length, 12);
     strictEqual(uniqueNames.size, affinitySkills.length);
     strictEqual(listed.length, affinitySkills.length);
     strictEqual(listed === affinitySkills, false);

@@ -80,6 +80,7 @@ export function ContactsPage() {
       input: {
         kind: createKind as
           | "human"
+          | "agent"
           | "company"
           | "group"
           | "team"
@@ -443,6 +444,7 @@ export function ContactsPage() {
               }
             >
               <option value="human">human</option>
+              <option value="agent">agent</option>
               <option value="company">company</option>
               <option value="group">group</option>
               <option value="team">team</option>

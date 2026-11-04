@@ -10,6 +10,28 @@ import { resolveAffinityDbPath } from "./resolve_affinity_db_path.ts";
 
 export const affinityCliOptions: ToolCliOptions<AffinityDb> = {
   reportCreation: true,
+  preflight: async (tool, input, dbPath) => {
+    const path = resolveAffinityDbPath(
+      dbPath === undefined ? {} : { flag: dbPath },
+    );
+    if (tool.readOnly || path === ":memory:" || existsSync(path))
+      return undefined;
+    const { openAffinityDb } = await import("./open_affinity_db.ts");
+    const { cliExitCode } = await import("../surfaces/cli_output.ts");
+    const memory = await openAffinityDb(":memory:");
+    try {
+      const result = await tool.handler(
+        memory,
+        structuredClone(input) as Record<string, unknown>,
+      );
+      if (cliExitCode(result) !== 0) return memory;
+    } catch (error) {
+      memory.close();
+      throw error;
+    }
+    memory.close();
+    return undefined;
+  },
   versionInfo: () => cliVersionInfo(affinityVersion),
   contextError: (db, tool, input) => {
     const readOnly =

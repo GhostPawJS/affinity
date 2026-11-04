@@ -55,7 +55,15 @@ export async function openAffinityDb(path: string): Promise<AffinityDb> {
   try {
     db.exec("PRAGMA busy_timeout=5000; PRAGMA journal_mode=WAL;");
     const context = db as unknown as AffinityDb;
-    withTransaction(context, () => initAffinityTables(context));
+    const foreignKeys = db.prepare("PRAGMA foreign_keys").get() as {
+      foreign_keys: number;
+    };
+    db.exec("PRAGMA foreign_keys=OFF");
+    try {
+      withTransaction(context, () => initAffinityTables(context));
+    } finally {
+      db.exec(`PRAGMA foreign_keys=${foreignKeys.foreign_keys ? "ON" : "OFF"}`);
+    }
     return context;
   } catch (error) {
     db.close();

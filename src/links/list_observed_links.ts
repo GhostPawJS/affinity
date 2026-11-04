@@ -31,7 +31,7 @@ export function listObservedLinks(
   const rows = db
     .prepare(
       `SELECT l.id, l.from_contact_id, l.to_contact_id, l.kind, l.role, l.is_structural,
-              l.rank, l.affinity, l.trust, l.state, l.cadence_days, l.bond,
+              l.rank, l.affinity, l.trust, l.state, l.cadence_days, l.pinned_cadence_days, l.bond,
               l.created_at, l.updated_at, l.removed_at
        FROM links l
        INNER JOIN contacts c_from ON c_from.id = l.from_contact_id

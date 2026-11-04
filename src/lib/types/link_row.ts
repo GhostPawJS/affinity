@@ -11,6 +11,7 @@ export interface LinkRow {
   trust: number | null;
   state: string | null;
   cadence_days: number | null;
+  pinned_cadence_days?: number | null;
   bond: string | null;
   created_at: number;
   updated_at: number;

@@ -219,6 +219,7 @@ export const searchAffinityTool = defineAffinityTool<
       query: stringSchema("Free-text or natural-key query."),
       kind: enumSchema("Optional contact kind filter.", [
         "human",
+        "agent",
         "group",
         "company",
         "team",

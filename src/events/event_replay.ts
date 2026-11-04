@@ -56,7 +56,7 @@ export function replayEventLinks(
     };
     db.prepare("DELETE FROM link_event_effects WHERE link_id=?").run(linkId);
     db.prepare(
-      "UPDATE links SET rank=?,affinity=?,trust=?,state=?,cadence_days=?,updated_at=? WHERE id=?",
+      "UPDATE links SET rank=?,affinity=?,trust=?,state=?,cadence_days=COALESCE(pinned_cadence_days,?),updated_at=? WHERE id=?",
     ).run(
       baseline.rank,
       baseline.affinity,

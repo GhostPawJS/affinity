@@ -6,6 +6,17 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ## [Unreleased]
 
+### Added
+
+- Agent contacts and the operate-agent-relationships workflow guide.
+- Pinned relationship cadence and link revision; null cadence restores derivation.
+- Nested field details in tool descriptions and generated cheat sheets.
+
+### Fixed
+
+- Invalid CLI writes leave missing database files and directories absent.
+- Profile commitments render inline with due dates and overdue status.
+
 ## [0.6.2] - 2026-11-04
 
 ### Changed

@@ -13,5 +13,6 @@ export interface LinkListItem {
   trust?: number | null;
   state?: LinkState | null;
   cadenceDays?: number | null;
+  cadencePinned?: boolean;
   bond?: string | null;
 }

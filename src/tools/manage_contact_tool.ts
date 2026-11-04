@@ -251,6 +251,7 @@ export const manageContactTool = defineAffinityTool<
           name: stringSchema("Contact name."),
           kind: enumSchema("Contact kind.", [
             "human",
+            "agent",
             "group",
             "company",
             "team",

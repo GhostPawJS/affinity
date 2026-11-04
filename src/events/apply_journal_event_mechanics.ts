@@ -39,6 +39,7 @@ function inferAutoLinkKind(
   switch (other?.kind) {
     case "human":
       return "personal";
+    case "agent":
     case "company":
     case "team":
       return "professional";

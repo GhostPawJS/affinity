@@ -6,6 +6,11 @@ import type { JsonSchema, SurfaceTool } from "./surface_types.ts";
 import { validateInput } from "./validate_input.ts";
 
 export interface ToolCliOptions<TCtx> {
+  preflight?: (
+    tool: SurfaceTool<TCtx>,
+    input: unknown,
+    db?: string,
+  ) => Promise<TCtx | undefined>;
   transformInput?: (input: unknown) => unknown;
   formatError?: (message: string) => string;
   reportCreation?: boolean;
@@ -175,14 +180,7 @@ async function runToolCliInternal<TCtx>(
   if (!tool) return fail(`Unknown tool: ${name ?? ""}`);
   if (command === "describe") {
     stdout.write(
-      `${tool.name}\n${tool.description}\nUse when: ${tool.whenToUse ?? ""}\nNot for: ${tool.whenNotToUse ?? ""}\nRead only: ${tool.readOnly ?? false}\n\nParameter | Type | Required | Description\n${Object.entries(
-        tool.inputSchema.properties ?? {},
-      )
-        .map(
-          ([key, schema]) =>
-            `${key} | ${schema.type ?? "oneOf"} | ${tool.inputSchema.required?.includes(key) ?? false} | ${schema.description ?? ""}`,
-        )
-        .join("\n")}\n\n${JSON.stringify(tool.inputSchema, null, 2)}\n`,
+      `${tool.name}\n${tool.description}\nUse when: ${tool.whenToUse ?? ""}\nNot for: ${tool.whenNotToUse ?? ""}\nRead only: ${tool.readOnly ?? false}\n\nParameter | Type | Required | Description\n${describeFields(tool.inputSchema).join("\n")}\n\n${JSON.stringify(tool.inputSchema, null, 2)}\n`,
     );
     return 0;
   }
@@ -294,9 +292,11 @@ async function runToolCliInternal<TCtx>(
   if (contextError) return fail(contextError, 3);
   let context: TCtx;
   try {
-    context = await options.openContext(
-      options.reportCreation ? { ...ctxOptions, stderr } : ctxOptions,
-    );
+    context =
+      (await options.preflight?.(tool, input, db)) ??
+      (await options.openContext(
+        options.reportCreation ? { ...ctxOptions, stderr } : ctxOptions,
+      ));
   } catch (cause) {
     return fail(
       `internal error: ${cause instanceof Error ? cause.message : String(cause)}`,
@@ -348,4 +348,12 @@ export async function runToolCli<TCtx>(
       );
     return code;
   }
+}
+
+function describeFields(schema: JsonSchema, prefix = ""): string[] {
+  return Object.entries(schema.properties ?? {}).flatMap(([key, field]) => [
+    `${prefix}${key} | ${field.type ?? (field.oneOf ?? field.anyOf)?.map((branch) => branch.type).join(" / ") ?? "any"} | ${schema.required?.includes(key) ?? false} | ${field.enum ? `${field.enum.join(", ")}. ` : ""}${field.description ?? ""}`,
+    ...describeFields(field, `${prefix}${key}.`),
+    ...(field.items ? describeFields(field.items, `${prefix}${key}[].`) : []),
+  ]);
 }

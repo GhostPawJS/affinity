@@ -339,7 +339,7 @@ export function applyEventEffectToLink(
       affinity: link.affinity ?? 0,
       trust: link.trust ?? 0,
       state: link.state ?? "active",
-      cadence_days: link.cadence_days,
+      cadence_days: link.pinned_cadence_days != null ? null : link.cadence_days,
     }),
   );
   const stateBefore = (link.state ?? "active") as LinkState;
@@ -491,6 +491,7 @@ export function applyEventEffectToLink(
       .get(params.eventId) as { occurred_on: string | null } | undefined
   )?.occurred_on;
   const cadenceAfter =
+    link.pinned_cadence_days != null ||
     commitmentResolution != null ||
     params.eventType === "promise" ||
     params.eventType === "agreement" ||

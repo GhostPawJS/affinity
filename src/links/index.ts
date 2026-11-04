@@ -58,3 +58,5 @@ export {
   assertValidLinkState,
   validateRelationalMechanics,
 } from "./validators.ts";
+
+export { reviseSocialLink } from "./revise_social_link.ts";

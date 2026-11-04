@@ -724,3 +724,23 @@ Examples and synthetic fixtures are development files, outside the npm package.
 
 `ghostpaw-affinity skill --short` prints the compact command reference without
 frontmatter or an appendix. `skill --list` lists guides; `skill <guide>` reads one.
+
+### Agent relationships
+
+Contacts also support kind `agent` for a non-human operator or bot. Use a stable
+identity type `custom:<system>-agent` with the agent id as its value.
+Read `ghostpaw-affinity skill operate-agent-relationships` for the coaching workflow:
+record each 1:1 as an interaction, track agreed changes as agent-actor promises due
+at the next slot, and resolve kept or broken at verification. Track owner decisions
+without due dates on the owner-side contact. Scheduling stays in a task tool.
+
+Pin a fixed rhythm with `manage_relationship` action `seed_social_link`,
+`input: {kind: "professional", cadenceDays: 7}`. Revise existing links with action
+`revise`, `link: {linkId}`, `patch: {cadenceDays: 7}`; `cadenceDays: null`
+unpins and restores derived cadence. Positive fractional days are accepted.
+When upgrading a database with the previous contact-kind constraint, initialize
+outside a caller transaction so SQLite can preserve foreign-key references while
+rebuilding the contacts table. CLI and MCP handle this during startup.
+Link results expose effective `cadenceDays` and `cadencePinned`.
+Contact profiles include open commitments with id (eventId), type, summary, due and
+overdue status. `describe manage_relationship` lists nested seed and revise fields.
