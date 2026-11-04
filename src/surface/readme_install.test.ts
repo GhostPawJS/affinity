@@ -4,10 +4,10 @@ import { test } from "node:test";
 
 const root = new URL("../../", import.meta.url);
 
-test("README carries every install one-liner from site/data/install.json", () => {
+test("README carries every install one-liner from docs/install.json", () => {
   const readme = readFileSync(new URL("README.md", root), "utf8");
   const { targets } = JSON.parse(
-    readFileSync(new URL("site/data/install.json", root), "utf8"),
+    readFileSync(new URL("docs/install.json", root), "utf8"),
   ) as { targets: { id: string; cmd: string }[] };
   assert.deepEqual(
     targets.map((target) => target.id),

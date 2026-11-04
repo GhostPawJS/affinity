@@ -14,8 +14,7 @@
       "glama.json",
       "mcpb/manifest.json",
       ".claude-plugin/*.json",
-      ".mcp.json",
-      "site/**"
+      ".mcp.json"
     ]
   },
   "formatter": {
@@ -29,6 +28,12 @@
       "recommended": true
     }
   },
+  "overrides": [
+    {
+      "include": ["docs/install.json"],
+      "formatter": { "enabled": false }
+    }
+  ],
   "organizeImports": {
     "enabled": true
   }

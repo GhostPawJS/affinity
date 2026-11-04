@@ -1,6 +1,6 @@
 # Interactive Demo
 
-Affinity ships a fully interactive demo app that runs entirely in the browser — no backend, no persistence, no setup required. It is hosted on GitHub Pages:
+Affinity ships a fully interactive demo app that runs entirely in the browser — no backend, no persistence, no setup required. It is published at:
 
 **[https://affinity.ghostpaw.dev/docs/](https://affinity.ghostpaw.dev/docs/)**
 
@@ -33,7 +33,7 @@ The result is a fully in-memory SQLite database in the browser that supports eve
 
 ### Preact SPA with hash routing
 
-The UI is a single-page app built with [Preact](https://preactjs.com/) (3 KB alternative to React). Routing uses a simple hash-based scheme (`#/contacts`, `#/timeline`, etc.) so it works on any static file host — including GitHub Pages — without server-side route rewrites. The entire router is about 15 lines in `app.tsx`, listening for `hashchange` events and rendering the matching page component.
+The UI is a single-page app built with [Preact](https://preactjs.com/) (3 KB alternative to React). Routing uses a simple hash-based scheme (`#/contacts`, `#/timeline`, etc.) so it works on any static file host without server-side route rewrites. The entire router is about 15 lines in `app.tsx`, listening for `hashchange` events and rendering the matching page component.
 
 Page components live in `src/demo/page_*.tsx` and shared presentational elements in `src/demo/ui.tsx`. State is managed through a Preact context that holds the `AffinityDb` instance, a revision counter for reactivity, and a toast notification dispatcher.
 
@@ -59,8 +59,6 @@ npm run demo:serve   # build + start local file server on port 4173
 npm run demo:watch   # rebuild on file changes (use with serve in another terminal)
 ```
 
-## GitHub Pages deployment
+## Deployment
 
-The demo is deployed automatically on every push to `main` via `.github/workflows/pages.yml`. The workflow builds the demo and uploads the `demo/` directory using the official `actions/deploy-pages` action.
-
-To enable this on a fresh fork, go to **Settings → Pages → Build and deployment** and set the source to **GitHub Actions**.
+The demo is built with `npm run demo:build` (output `demo/`) and published at https://affinity.ghostpaw.dev/docs/. The landing page https://affinity.ghostpaw.dev/ is maintained separately.

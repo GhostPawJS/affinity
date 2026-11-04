@@ -99,7 +99,7 @@ jobs:
         run: |
           set -euo pipefail
           target=${{ matrix.os == 'ubuntu-24.04' && 'linux-x64' || 'darwin-arm64' }}
-          cmd=$(curl -fsSL https://raw.githubusercontent.com/GhostPawJS/affinity/main/site/data/install.json | jq -r --arg t "$target" '.targets[] | select(.id == $t) | .cmd')
+          cmd=$(curl -fsSL https://raw.githubusercontent.com/GhostPawJS/affinity/main/docs/install.json | jq -r --arg t "$target" '.targets[] | select(.id == $t) | .cmd')
           test -n "$cmd"
           out=$(sh -c "$cmd")
           echo "$out"
@@ -113,7 +113,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $cmd = ((irm https://raw.githubusercontent.com/GhostPawJS/affinity/main/site/data/install.json).targets | Where-Object { $_.id -eq 'windows-x64' }).cmd
+          $cmd = ((irm https://raw.githubusercontent.com/GhostPawJS/affinity/main/docs/install.json).targets | Where-Object { $_.id -eq 'windows-x64' }).cmd
           if (-not $cmd) { throw 'Missing windows-x64 one-liner' }
           $out = Invoke-Expression $cmd
           $latest = (gh release view --json tagName --jq .tagName).TrimStart('v')

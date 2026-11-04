@@ -6,6 +6,10 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ## [Unreleased]
 
+### Changed
+
+- Remove landing page sources and the automated site deployment workflow; retain the demo build tooling. Demo fonts can be supplied through `DOCS_FONT_DIR`. Move install one-liners to `docs/install.json`.
+
 ## [0.6.1] - 2026-10-29
 
 ### Fixed
