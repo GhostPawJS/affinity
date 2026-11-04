@@ -8,6 +8,13 @@ export function validateInput(
   if (path.endsWith(".occurredAt") && input == null)
     return ["occurredAt is required (ISO, YYYY-MM-DD, epoch ms, today, +3d …)"];
   const branches = schema.oneOf ?? schema.anyOf;
+  if (input && typeof input === "object" && "kind" in input) {
+    const kind = input.kind;
+    const selected = branches?.find((branch) =>
+      branch.properties?.kind?.enum?.includes(kind as never),
+    );
+    if (selected) return validateInput(selected, input, path);
+  }
   if (
     path.endsWith(".value") &&
     branches?.some((b) => b.type === "string") &&
@@ -46,6 +53,12 @@ export function validateInput(
   ) {
     return [`${path}: expected ${String(schema.type)}`];
   }
+  if (
+    typeof input === "number" &&
+    ((schema.minimum !== undefined && input < schema.minimum) ||
+      (schema.maximum !== undefined && input > schema.maximum))
+  )
+    errors.push(`${path}: outside range ${schema.minimum}..${schema.maximum}`);
   if (
     schema.enum &&
     !schema.enum.some(

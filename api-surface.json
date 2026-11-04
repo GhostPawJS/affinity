@@ -3330,6 +3330,14 @@
         "type": "JsonSchema | undefined",
         "optional": true
       },
+      "maximum": {
+        "type": "number | undefined",
+        "optional": true
+      },
+      "minimum": {
+        "type": "number | undefined",
+        "optional": true
+      },
       "oneOf": {
         "type": "readonly JsonSchema[] | undefined",
         "optional": true
@@ -3347,7 +3355,7 @@
         "optional": true
       }
     },
-    "definition": "interface JsonSchema { type?: JsonSchemaType | undefined; description?: string | undefined; enum?: ReadonlyArray<boolean | number | string | null> | undefined; const?: boolean | number | string | null; items?: JsonSchema | undefined; properties?: Readonly<Record<string, JsonSchema>> | undefined; required?: ReadonlyArray<string> | undefined; additionalProperties?: boolean | undefined; oneOf?: ReadonlyArray<JsonSchema> | undefined; anyOf?: ReadonlyArray<JsonSchema> | undefined; }",
+    "definition": "interface JsonSchema { type?: JsonSchemaType | undefined; description?: string | undefined; enum?: ReadonlyArray<boolean | number | string | null> | undefined; minimum?: number; maximum?: number; const?: boolean | number | string | null; items?: JsonSchema | undefined; properties?: Readonly<Record<string, JsonSchema>> | undefined; required?: ReadonlyArray<string> | undefined; additionalProperties?: boolean | undefined; oneOf?: ReadonlyArray<JsonSchema> | undefined; anyOf?: ReadonlyArray<JsonSchema> | undefined; }",
     "references": {
       "JsonSchemaType": ".:public.tools.AffinityToolDefinition.types.AffinityToolDefinition.types.JsonSchema.types.JsonSchemaType"
     }
@@ -7472,6 +7480,14 @@
       },
       "items": {
         "type": "JsonSchema | undefined",
+        "optional": true
+      },
+      "maximum": {
+        "type": "number | undefined",
+        "optional": true
+      },
+      "minimum": {
+        "type": "number | undefined",
         "optional": true
       },
       "oneOf": {
@@ -20900,6 +20916,14 @@
         "type": "JsonSchema | undefined",
         "optional": true
       },
+      "maximum": {
+        "type": "number | undefined",
+        "optional": true
+      },
+      "minimum": {
+        "type": "number | undefined",
+        "optional": true
+      },
       "oneOf": {
         "type": "readonly JsonSchema[] | undefined",
         "optional": true
@@ -20917,7 +20941,7 @@
         "optional": true
       }
     },
-    "definition": "interface JsonSchema { type?: string | readonly string[] | undefined; description?: string | undefined; properties?: Record<string, JsonSchema> | undefined; required?: readonly string[] | undefined; enum?: readonly unknown[] | undefined; items?: JsonSchema | undefined; oneOf?: readonly JsonSchema[] | undefined; anyOf?: readonly JsonSchema[] | undefined; }"
+    "definition": "interface JsonSchema { minimum?: number; maximum?: number; type?: string | readonly string[] | undefined; description?: string | undefined; properties?: Record<string, JsonSchema> | undefined; required?: readonly string[] | undefined; enum?: readonly unknown[] | undefined; items?: JsonSchema | undefined; oneOf?: readonly JsonSchema[] | undefined; anyOf?: readonly JsonSchema[] | undefined; }"
   },
   "./mcp:public.MCP_LATEST_PROTOCOL_VERSION": {
     "kind": "value",

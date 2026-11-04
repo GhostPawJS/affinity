@@ -220,7 +220,10 @@ export const recordEventTool = defineAffinityTool<
             "When the event occurred, Unix timestamp in milliseconds.",
           ),
           summary: stringSchema("Event summary. Must be non-empty."),
-          significance: integerSchema("Event significance from 1 to 10."),
+          significance: integerSchema("Event significance from 1 to 10.", {
+            minimum: 1,
+            maximum: 10,
+          }),
           participants: arraySchema(
             objectSchema(
               {

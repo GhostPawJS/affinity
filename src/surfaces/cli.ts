@@ -1,7 +1,9 @@
 import { type Readable, Writable } from "node:stream";
+import { batchSchema } from "./batch_schema.ts";
 import { CliUsageError, readFileValue } from "./cli_args.ts";
-import { FILE_ARGS, runCliCommand } from "./cli_commands.ts";
+import { FILE_ARGS, cliCommands, runCliCommand } from "./cli_commands.ts";
 import { cliExitCode, humanResult, plainJson } from "./cli_output.ts";
+import { payloadSchema } from "./cli_payload.ts";
 import type { JsonSchema, SurfaceTool } from "./surface_types.ts";
 import { validateInput } from "./validate_input.ts";
 
@@ -189,6 +191,29 @@ async function runToolCliInternal<TCtx>(
   const tool = options.tools.find(
     (tool) => normalize(tool.name) === normalize(name ?? ""),
   );
+  if (!tool && command === "describe") {
+    if (name === "batch" && !args.length) {
+      stdout.write(`${JSON.stringify(batchSchema(options.tools), null, 2)}\n`);
+      return 0;
+    }
+    const parts = [name ?? "", ...args];
+    const kindIndex = parts.indexOf("--kind");
+    const kind = kindIndex >= 0 ? parts[kindIndex + 1] : undefined;
+    if (kindIndex >= 0) parts.splice(kindIndex, 2);
+    const entry = cliCommands(options.tools).find(
+      (entry) => entry.path === parts.join(" "),
+    );
+    if (entry) {
+      try {
+        stdout.write(
+          `${JSON.stringify(payloadSchema(entry.tool.inputSchema, kind), null, 2)}\n`,
+        );
+        return 0;
+      } catch (error) {
+        return fail(String(error));
+      }
+    }
+  }
   if (!tool) return fail(`Unknown tool: ${name ?? ""}`);
   if (command === "describe") {
     stdout.write(

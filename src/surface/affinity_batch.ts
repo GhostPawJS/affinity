@@ -1,6 +1,8 @@
 import { createInterface } from "node:readline";
 import type { Readable, Writable } from "node:stream";
+import { batchSchema } from "../surfaces/batch_schema.ts";
 import { CliUsageError } from "../surfaces/cli_args.ts";
+import { validateInput } from "../surfaces/validate_input.ts";
 import { affinityTools } from "../tools/tool_registry.ts";
 import { withTransaction } from "../with_transaction.ts";
 import { openAffinityDb } from "./open_affinity_db.ts";
@@ -19,7 +21,7 @@ export async function runAffinityBatch(
 ): Promise<number> {
   if (args.includes("--help")) {
     options.stdout.write(
-      'Usage: ghostpaw-affinity batch [--chunk N] [--stop-on-error] < input.jsonl\nEach line: {tool,args} or {op:"event",kind,input}. Default: one transaction for all lines. Summary: created, revised, noOp, failed; updates are revised.\n',
+      'Usage: ghostpaw-affinity batch [--chunk N] [--stop-on-error] < input.jsonl\nEach line: {tool,args} or {op:"event",kind,input}. Default: one transaction for all lines. Summary: created, revised, noOp, failed; updates are revised.\n\nPayload (--input; JSONL stdin)\n  Required: tool:string, args:object (tool schema); or op:event, kind:interaction|observation|milestone|transaction, input:object (event schema).\n  Optional: fields of the selected tool payload; see describe <command> or describe batch.\n  Example: echo \'{"tool":"manage_contact","args":{"action":"create","input":{"name":"Sam","kind":"human"}}}\' | ghostpaw-affinity batch\n',
     );
     return 0;
   }
@@ -71,6 +73,8 @@ export async function runAffinityBatch(
           }
           if (!input || typeof input !== "object")
             throw new Error("Expected {tool,args}");
+          const schemaErrors = validateInput(batchSchema(affinityTools), input);
+          if (schemaErrors.length) throw new Error(schemaErrors.join("; "));
           const name = input.op === "event" ? "record_event" : input.tool;
           const tool = affinityTools.find((t) => t.name === name);
           if (!tool || tool.readOnly)

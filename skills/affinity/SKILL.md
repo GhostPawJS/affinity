@@ -9,6 +9,8 @@ compatibility: "The release binary needs no runtime. MCP stdio or ghostpaw-affin
 
 ## CLI cheat sheet
 
+Payload fields and examples: `<command> --help`. JSON schema: `ghostpaw-affinity describe event record`, optionally `--kind interaction`; `describe <tool>` retains tool details. `describe batch` documents JSONL records.
+
 Contact kind agent represents a non-human operator or bot; see skill operate-agent-relationships.
 manage_relationship seed input: kind, role, rank, affinity, trust, cadenceDays, bond, state, ifExists, now.
 revise patch: rank, affinity, trust, cadenceDays, bond, state; cadenceDays null unpins.

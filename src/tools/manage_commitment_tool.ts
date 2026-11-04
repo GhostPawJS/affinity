@@ -196,7 +196,10 @@ export const manageCommitmentTool = defineAffinityTool<
             "When the commitment was made, Unix timestamp in milliseconds.",
           ),
           summary: stringSchema("Commitment summary. Must be non-empty."),
-          significance: integerSchema("Commitment significance from 1 to 10."),
+          significance: integerSchema("Commitment significance from 1 to 10.", {
+            minimum: 1,
+            maximum: 10,
+          }),
           dueAt: integerSchema("Optional due timestamp."),
           dueOn: stringSchema("Due calendar day."),
           participants: arraySchema(

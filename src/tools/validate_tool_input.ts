@@ -13,6 +13,14 @@ export function validateToolInput(
   if (path.endsWith(".occurredAt") && value == null)
     return "occurredAt is required (ISO, YYYY-MM-DD, epoch ms, today, +3d …)";
   const branches = schema.oneOf ?? schema.anyOf;
+  if (value && typeof value === "object" && "kind" in value) {
+    const kind = value.kind;
+    const selected = branches?.find((branch) =>
+      branch.properties?.kind?.enum?.includes(kind as never),
+    );
+    if (selected)
+      return validateToolInput(selected, value, path, injectedNow, strict);
+  }
   if (
     path.endsWith(".value") &&
     branches?.some((b) => b.type === "string") &&
@@ -23,12 +31,13 @@ export function validateToolInput(
     return `attribute values are strings or null; pass "${String(value)}" to store it as text`;
   if (schema.anyOf || schema.oneOf) {
     const choices = schema.anyOf ?? schema.oneOf ?? [];
-    return choices.some(
-      (choice) =>
-        validateToolInput(choice, value, path, injectedNow, strict) === null,
+    if (
+      !choices.some(
+        (choice) =>
+          validateToolInput(choice, value, path, injectedNow, strict) === null,
+      )
     )
-      ? null
-      : `${path}: invalid value`;
+      return `${path}: invalid value`;
   }
   if (schema.type === "object") {
     if (value === null || typeof value !== "object" || Array.isArray(value))
@@ -133,6 +142,12 @@ export function validateToolInput(
     }
     return null;
   }
+  if (
+    typeof value === "number" &&
+    ((schema.minimum !== undefined && value < schema.minimum) ||
+      (schema.maximum !== undefined && value > schema.maximum))
+  )
+    return `${path}: outside range ${schema.minimum}..${schema.maximum}`;
   if (schema.enum && !schema.enum.includes(value as string))
     return `${path}: expected ${schema.enum.join(", ")}`;
   if (schema.type === "null")

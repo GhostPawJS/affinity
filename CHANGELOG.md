@@ -8,6 +8,8 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ### Added
 
+- `--help` on commands that take `--input` lists required and optional payload fields per kind, with an example; `describe <command> [--kind K]` prints the payload JSON schema. Help and validation share one schema.
+
 - Without `--db` or `GHOSTPAW_AFFINITY_DB`, the CLI prints `using default db <path>` on stderr; `--quiet` or `GHOSTPAW_QUIET=1` suppresses it.
 
 - Contact kind `agent` and the `operate_agent_relationships` workflow guide.

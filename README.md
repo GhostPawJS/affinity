@@ -746,3 +746,9 @@ rebuilding the contacts table. CLI and MCP handle this during startup.
 Link results expose effective `cadenceDays` and `cadencePinned`.
 Contact profiles include open commitments with id (eventId), type, summary, due and
 overdue status. `describe manage_relationship` lists nested seed and revise fields.
+
+Payload fields and examples are included in each command's `--help`. Inspect the
+JSON schema with `ghostpaw-affinity describe event record` (or `describe "event record"`),
+and select a variant with `--kind interaction`. `describe <tool>` retains its tool details.
+JSON patches and other object arguments are documented in command help; batch
+accepts JSONL `{tool,args}` or `{op:"event",kind,input}` records using the same tool schemas.

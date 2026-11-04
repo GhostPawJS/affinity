@@ -18,6 +18,8 @@ export interface JsonSchema {
   type?: JsonSchemaType | undefined;
   description?: string | undefined;
   enum?: ReadonlyArray<boolean | number | string | null> | undefined;
+  minimum?: number;
+  maximum?: number;
   const?: boolean | number | string | null;
   items?: JsonSchema | undefined;
   properties?: Readonly<Record<string, JsonSchema>> | undefined;
@@ -80,6 +82,32 @@ export function defineAffinityTool<TInput, TResult extends ToolResult<unknown>>(
     },
   };
   visit(definition.inputSchema);
+  if (["record_event", "manage_commitment"].includes(definition.name)) {
+    const payload = definition.inputSchema.properties?.input;
+    if (payload)
+      payload.anyOf = [
+        { type: "object", required: ["summary"] },
+        { type: "object", required: ["content"] },
+      ];
+  }
+  if (definition.name === "record_event") {
+    const schema = definition.inputSchema;
+    const payload = schema.properties?.input;
+    schema.anyOf = schema.properties?.kind?.enum?.map((kind) => ({
+      ...schema,
+      properties: {
+        ...schema.properties,
+        kind: { type: "string", enum: [kind] },
+        input: {
+          ...payload,
+          required: [
+            ...(payload?.required ?? []),
+            ...(kind === "interaction" ? ["type"] : []),
+          ],
+        },
+      },
+    }));
+  }
   return definition;
 }
 
