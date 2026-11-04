@@ -43,6 +43,7 @@ async function invoke(
   let captured: { name: string; input: Record<string, unknown> } | undefined;
   const code = await runToolCli(args, {
     ...affinityCliOptions,
+    preflight: async () => undefined,
     stdout: sink((v) => {
       out += v;
     }, opts.tty),
@@ -680,6 +681,7 @@ test("CLI and MCP share explicit invalid-input and conflict errors", async () =>
       let output = "";
       const code = await runToolCli([...args], {
         ...affinityCliOptions,
+        preflight: async () => undefined,
         contextError: () => undefined,
         openContext: () => db,
         closeContext: () => {},
