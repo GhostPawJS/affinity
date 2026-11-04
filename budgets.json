@@ -1,42 +1,42 @@
 {
-	"size": {
-		"full": {
-			"minBytes": 248064,
-			"gzipBytes": 66368
-		},
-		"tools": {
-			"minBytes": 230656,
-			"gzipBytes": 63296
-		},
-		"read-write": {
-			"minBytes": 230592,
-			"gzipBytes": 63296
-		},
-		"mcp": {
-			"minBytes": 208832,
-			"gzipBytes": 55680
-		},
-		"cli": {
-			"minBytes": 363840,
-			"gzipBytes": 101696
-		},
-		"mcp-server": {
-			"minBytes": 220288,
-			"gzipBytes": 59648
-		}
-	},
-	"startup": {
-		"version": {
-			"medianMs": 150
-		},
-		"tools": {
-			"medianMs": 150
-		},
-		"mcp": {
-			"medianMs": 150
-		},
-		"mcp-server": {
-			"medianMs": 150
-		}
-	}
+  "size": {
+    "full": {
+      "minBytes": 248064,
+      "gzipBytes": 66368
+    },
+    "tools": {
+      "minBytes": 230656,
+      "gzipBytes": 63296
+    },
+    "read-write": {
+      "minBytes": 230592,
+      "gzipBytes": 63296
+    },
+    "mcp": {
+      "minBytes": 208832,
+      "gzipBytes": 55680
+    },
+    "cli": {
+      "minBytes": 363840,
+      "gzipBytes": 101696
+    },
+    "mcp-server": {
+      "minBytes": 220288,
+      "gzipBytes": 59648
+    }
+  },
+  "startup": {
+    "version": {
+      "medianMs": 150
+    },
+    "tools": {
+      "medianMs": 150
+    },
+    "mcp": {
+      "medianMs": 150
+    },
+    "mcp-server": {
+      "medianMs": 150
+    }
+  }
 }
