@@ -73,6 +73,13 @@ export function manageIdentityToolHandler(
       "invalid_input",
       "Invalid input.",
       inputError,
+      {
+        details: {
+          validKeys: Object.keys(
+            manageIdentityTool.inputSchema.properties?.patch?.properties ?? {},
+          ),
+        },
+      },
     );
   if (input.action !== "add" && input.identityId === undefined)
     return invalidToolInput(

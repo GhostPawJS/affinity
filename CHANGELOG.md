@@ -10,6 +10,12 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 - Remove landing page sources and the automated site deployment workflow; retain the demo build tooling. Demo fonts can be supplied through `DOCS_FONT_DIR`. Move install one-liners to `docs/install.json`.
 
+### Fixed
+
+- Revise errors for unknown patch keys carry the valid keys in `error.details.validKeys` (CLI exit 2).
+- `--help` works after positional arguments at any command depth, e.g. `contact revise '<json>' --help`.
+- A `--db` path whose parent cannot be created reports `Cannot create database directory <dir>: <reason>` and exits 2.
+
 ## [0.6.1] - 2026-10-29
 
 ### Fixed

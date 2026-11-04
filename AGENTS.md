@@ -51,7 +51,8 @@ Start the server with `npx -y @ghostpaw/affinity mcp`.
 
 Use Node 24 and the existing dependency installation. Keep runtime dependencies
 at zero; `npm run check:deps` verifies this rule.
-Run `npm run check` before review. This single gate runs types, lint, tests, build,
+Individual checks are `npm run lint`, `npm run typecheck`, `npm test`, and
+`npm run build`. Run `npm run check` before review. This single gate runs types, lint, tests, build,
 zero runtime dependencies, generated-surface drift, size and API budgets,
 packed consumer checks, startup budgets, and the ratchet.
 Budget increases require `[budget-increase-approved]`, API snapshot changes

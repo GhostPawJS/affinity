@@ -121,9 +121,14 @@ export async function runCliCommand<T>(
       args.shift();
     }
     if (!args.length) help = true;
-    const entry = tree.find((command) =>
+    const entries = tree.filter((command) =>
       command.path.split(" ").every((part, i) => args[i] === part),
     );
+    const entry = help
+      ? entries.sort(
+          (a, b) => b.path.split(" ").length - a.path.split(" ").length,
+        )[0]
+      : entries[0];
     const isRequired = (command: (typeof tree)[number], name: string) => {
       if (command.required) return command.required.includes(name);
       if (command.tool.inputSchema.required?.includes(name)) return true;
@@ -214,7 +219,7 @@ export async function runCliCommand<T>(
       const matches = tree.filter((command) =>
         command.path.startsWith(args.join(" ")),
       );
-      if (!matches.length)
+      if (!entry && !matches.length)
         throw new CliUsageError(`Unknown command: ${args.join(" ")}`);
       if (!quiet)
         stdout.write(

@@ -2,6 +2,7 @@ import { closeSync, existsSync, mkdirSync, openSync } from "node:fs";
 import { dirname } from "node:path";
 import type { AffinityDb } from "../database.ts";
 import { initAffinityTables } from "../init_affinity_tables.ts";
+import { CliUsageError } from "../surfaces/cli_args.ts";
 import { withTransaction } from "../with_transaction.ts";
 
 export async function openAffinityDb(path: string): Promise<AffinityDb> {
@@ -31,7 +32,23 @@ export async function openAffinityDb(path: string): Promise<AffinityDb> {
   }
   if (path !== ":memory:" && !path.startsWith("file:")) {
     // New databases hold private data: create the directory 0700 and the file 0600.
-    mkdirSync(dirname(path), { recursive: true, mode: 0o700 });
+    const directory = dirname(path);
+    try {
+      mkdirSync(directory, { recursive: true, mode: 0o700 });
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      const reason =
+        code === "ENOTDIR" || code === "EEXIST"
+          ? "a path component is not a directory"
+          : code === "EACCES" || code === "EPERM"
+            ? "permission denied"
+            : code === "EROFS"
+              ? "read-only file system"
+              : code;
+      throw new CliUsageError(
+        `Cannot create database directory ${directory}: ${reason}`,
+      );
+    }
     if (!existsSync(path)) closeSync(openSync(path, "wx", 0o600));
   }
   const db = new sqlite.DatabaseSync(path);

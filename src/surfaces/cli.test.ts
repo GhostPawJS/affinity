@@ -302,3 +302,40 @@ test("noun verb error results preserve JSON and conflict exit codes", async () =
     0,
   );
 });
+
+test("help after positionals resolves the longest command without execution", async () => {
+  for (const flag of ["--help", "-h"]) {
+    for (const path of [["item"], ["item", "add"]]) {
+      for (const positionals of [["claim"], ["claim", "context"]]) {
+        let output = "";
+        const sink = new Writable({
+          write(chunk, _encoding, done) {
+            output += String(chunk);
+            done();
+          },
+        });
+        const code = await runToolCli([...path, ...positionals, flag], {
+          bin: "test",
+          version: "1",
+          description: "",
+          tools: [
+            { ...tool, cli: { noun: "item", verb: "" } },
+            { ...tool, cli: { noun: "item", verb: "add" } },
+          ].map((entry) => ({
+            ...entry,
+            handler: () => assert.fail("help must not execute a handler"),
+          })),
+          openContext: () => assert.fail("help must not open context"),
+          stdout: sink,
+          stderr: sink,
+        });
+        assert.equal(code, 0, output);
+        assert.equal(
+          output.split("\n")[0],
+          `Usage: test ${path.join(" ")}  [flags]`,
+        );
+        assert.match(output, /--some-value/);
+      }
+    }
+  }
+});

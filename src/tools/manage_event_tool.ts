@@ -42,7 +42,13 @@ export function manageEventToolHandler(
     true,
   );
   if (error)
-    return toolFailure("protocol", "invalid_input", "Invalid input.", error);
+    return toolFailure("protocol", "invalid_input", "Invalid input.", error, {
+      details: {
+        validKeys: Object.keys(
+          manageEventTool.inputSchema.properties?.patch?.properties ?? {},
+        ),
+      },
+    });
   return withToolHandling(() => {
     const target = {
       ...(input.eventId === undefined ? {} : { eventId: input.eventId }),

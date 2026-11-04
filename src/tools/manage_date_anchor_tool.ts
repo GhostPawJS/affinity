@@ -135,6 +135,14 @@ export function manageDateAnchorToolHandler(
       "invalid_input",
       "Invalid input.",
       inputError,
+      {
+        details: {
+          validKeys: Object.keys(
+            manageDateAnchorTool.inputSchema.properties?.patch?.properties ??
+              {},
+          ),
+        },
+      },
     );
   if (input.action !== "add" && input.anchorEventId === undefined)
     return invalidToolInput(

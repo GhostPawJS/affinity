@@ -104,6 +104,13 @@ export function manageContactToolHandler(
       "invalid_input",
       "Invalid input.",
       inputError,
+      {
+        details: {
+          validKeys: Object.keys(
+            manageContactTool.inputSchema.properties?.patch?.properties ?? {},
+          ),
+        },
+      },
     );
   return withToolHandling<
     Extract<ManageContactToolResult, { ok: true }>["data"]
