@@ -18,6 +18,11 @@ export interface ToolCliOptions<TCtx> {
   transformInput?: (input: unknown) => unknown;
   formatError?: (message: string) => string;
   reportCreation?: boolean;
+  beforeContext?: (
+    db: string | undefined,
+    stderr: Writable,
+    quiet: boolean,
+  ) => void;
   describeDb?: (db?: string) => string;
   versionLine?: () => string;
   versionInfo?: () => object;
@@ -42,6 +47,7 @@ export interface ToolCliOptions<TCtx> {
         stdin: Readable;
         stdout: Writable;
         stderr: Writable;
+        beforeOpen?: () => void;
       },
     ) => Promise<number>;
   };
@@ -153,6 +159,7 @@ async function runToolCliInternal<TCtx>(
   if (command === "batch") {
     if (!options.commands?.batch) return fail("batch command unavailable");
     return options.commands.batch(args, {
+      beforeOpen: () => options.beforeContext?.(db, stderr, quiet),
       ...ctxOptions,
       stdin,
       stdout,
@@ -173,6 +180,7 @@ async function runToolCliInternal<TCtx>(
   }
   if (command === "mcp") {
     if (!options.commands?.mcp) return fail("mcp command unavailable");
+    options.beforeContext?.(db, stderr, quiet);
     await options.commands.mcp(ctxOptions);
     return 0;
   }
@@ -296,6 +304,7 @@ async function runToolCliInternal<TCtx>(
   if (contextError) return fail(contextError, 3);
   let context: TCtx;
   try {
+    options.beforeContext?.(db, stderr, quiet);
     context =
       (await options.preflight?.(tool, input, db)) ??
       (await options.openContext(

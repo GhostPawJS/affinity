@@ -14,6 +14,7 @@ export async function runAffinityBatch(
     stdin: Readable;
     stdout: Writable;
     stderr: Writable;
+    beforeOpen?: () => void;
   },
 ): Promise<number> {
   if (args.includes("--help")) {
@@ -32,6 +33,7 @@ export async function runAffinityBatch(
         throw new CliUsageError("--chunk must be a positive integer");
     } else throw new CliUsageError(`Unknown batch flag: ${args[i]}`);
   }
+  options.beforeOpen?.();
   const db = await openAffinityDb(
     resolveAffinityDbPath(options.db === undefined ? {} : { flag: options.db }),
   );

@@ -344,6 +344,8 @@ id, counterparty name, reasons and rounded scores; upcoming link dates omit rada
 scores. Default piped writes and `--compact` keep primary and changed ids plus
 warnings; explicit `--json` retains full mutation detail. `--compact`
 removes indentation and empty receipt arrays. `--quiet` suppresses stdout.
+When a command opens the default database, the CLI prints `using default db <path>`
+to stderr. Suppress this notice with `--quiet` or `GHOSTPAW_QUIET=1`.
 Writes list what changed in `data.changes`, and creates warn about likely
 duplicates. Kebab-case flags map to schema properties. `--` ends flags.
 A positional `-`, or piped stdin when no other arguments are given, reads a

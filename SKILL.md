@@ -23,6 +23,7 @@ export GHOSTPAW_AFFINITY_DB=/abs/path/affinity.db
 # review graph.chart --include-structural adds marked structural edges (includeStructural: true).
 # review events.timeline --since 2026-11-01 --until 2026-11-05 --limit 20 spans all contacts, newest first.
 # Batch summaries add revised for successful updates; line receipts are unchanged.
+# Default DB notice goes to stderr; --quiet or GHOSTPAW_QUIET=1 suppresses it.
 # Or --db; default ~/.ghostpaw/affinity.db. Piped output is JSON; --compact omits empty receipt arrays.
 # Version: --version includes variant; scripts should use --version --short for exact semver matching.
 # --version --json (or version --json) returns name, version, variant, target (null outside a binary).

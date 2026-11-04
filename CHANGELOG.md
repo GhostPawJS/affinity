@@ -8,6 +8,8 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ### Added
 
+- Without `--db` or `GHOSTPAW_AFFINITY_DB`, the CLI prints `using default db <path>` on stderr; `--quiet` or `GHOSTPAW_QUIET=1` suppresses it.
+
 - Contact kind `agent` and the `operate_agent_relationships` workflow guide.
 - Pinned relationship cadence (`cadenceDays`; null unpins); radar uses it and link output shows `cadencePinned`.
 - `describe` lists nested field details.

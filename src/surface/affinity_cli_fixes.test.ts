@@ -41,33 +41,40 @@ async function invoke(
   let out = "";
   let err = "";
   let captured: { name: string; input: Record<string, unknown> } | undefined;
-  const code = await runToolCli(args, {
-    ...affinityCliOptions,
-    preflight: async () => undefined,
-    stdout: sink((v) => {
-      out += v;
-    }, opts.tty),
-    stderr: sink((v) => {
-      err += v;
-    }),
-    stdin: Readable.from([stdin]),
-    ...(opts.real
-      ? {}
-      : {
-          tools: affinitySurfaceTools.map((tool) => ({
-            ...tool,
-            handler: (_db: AffinityDb, input: Record<string, unknown>) => {
-              captured = { name: tool.name, input };
-              return (
-                opts.result ?? { ok: true, outcome: "success", summary: "Done" }
-              );
-            },
-          })),
-          contextError: () => undefined,
-          openContext: () => ({}) as AffinityDb,
-          closeContext: () => {},
-        }),
-  });
+  const code = await runToolCli(
+    opts.real ? args : ["--db", ":memory:", ...args],
+    {
+      ...affinityCliOptions,
+      preflight: async () => undefined,
+      stdout: sink((v) => {
+        out += v;
+      }, opts.tty),
+      stderr: sink((v) => {
+        err += v;
+      }),
+      stdin: Readable.from([stdin]),
+      ...(opts.real
+        ? {}
+        : {
+            tools: affinitySurfaceTools.map((tool) => ({
+              ...tool,
+              handler: (_db: AffinityDb, input: Record<string, unknown>) => {
+                captured = { name: tool.name, input };
+                return (
+                  opts.result ?? {
+                    ok: true,
+                    outcome: "success",
+                    summary: "Done",
+                  }
+                );
+              },
+            })),
+            contextError: () => undefined,
+            openContext: () => ({}) as AffinityDb,
+            closeContext: () => {},
+          }),
+    },
+  );
   return { code, out, err, captured };
 }
 // Shell quoting only: commands are data, never executed through a shell.

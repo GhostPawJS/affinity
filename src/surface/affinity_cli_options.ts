@@ -12,6 +12,15 @@ import { resolveAffinityDbPath } from "./resolve_affinity_db_path.ts";
 export const affinityCliOptions: ToolCliOptions<AffinityDb> = {
   withTimeZone,
   reportCreation: true,
+  beforeContext: (db, stderr, quiet) => {
+    if (
+      db === undefined &&
+      !process.env.GHOSTPAW_AFFINITY_DB &&
+      !quiet &&
+      process.env.GHOSTPAW_QUIET !== "1"
+    )
+      stderr.write(`using default db ${resolveAffinityDbPath()}\n`);
+  },
   preflight: async (tool, input, dbPath) => {
     const path = resolveAffinityDbPath(
       dbPath === undefined ? {} : { flag: dbPath },
