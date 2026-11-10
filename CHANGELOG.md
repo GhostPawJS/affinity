@@ -6,6 +6,8 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-11-10
+
 ### Fixed
 
 - Accept compact numeric UTC offsets in date inputs, emit piped CLI usage errors as JSON, and clarify required event significance. Preserve documented missing-database exit 3; initialized empty searches succeed.
@@ -311,7 +313,8 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 - Public read and write namespaces, tool facade, skills, and relationship guidance.
 - Validation, tests, API documentation, lifecycle examples, and release workflows.
 
-[Unreleased]: https://github.com/GhostPawJS/affinity/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/GhostPawJS/affinity/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/GhostPawJS/affinity/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/GhostPawJS/affinity/compare/v0.6.2...v0.7.0
 [0.6.2]: https://github.com/GhostPawJS/affinity/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/GhostPawJS/affinity/compare/v0.6.0...v0.6.1
