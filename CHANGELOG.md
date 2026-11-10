@@ -6,6 +6,10 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ## [Unreleased]
 
+### Changed
+
+- Document writable database roots for sandboxed agent harnesses in the README and generated agent skill. Clarify which GhostPaw store owns identity, beliefs, relationships, work, procedures, and stable operational facts.
+
 - Add an audited migrate_kind action and contact migrate-kind CLI command for contact reclassification in place; preserve attached state and constrain owner kinds.
 
 - Improve owner setup guidance and creation ids; add opt-in contact outbound engagement blocks and explicit overrides.
