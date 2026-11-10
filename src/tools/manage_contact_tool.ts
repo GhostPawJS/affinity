@@ -1,9 +1,10 @@
 import { deleteContact } from "../contacts/delete_contact.ts";
 import { exportAffinity } from "../contacts/export_affinity.ts";
 import { exportContact } from "../contacts/export_contact.ts";
+import { migrateContactKind } from "../contacts/migrate_contact_kind.ts";
 import { reviseContact } from "../contacts/revise_contact.ts";
 import { setContactLifecycle } from "../contacts/set_contact_lifecycle.ts";
-import type { ContactLifecycleState } from "../contacts/types.ts";
+import type { ContactKind, ContactLifecycleState } from "../contacts/types.ts";
 import type { AffinityDb } from "../database.ts";
 import type { AddIdentityInput } from "../lib/types/add_identity_input.ts";
 import type { ContactListItem } from "../lib/types/contact_list_item.ts";
@@ -36,6 +37,7 @@ import type { ToolResult } from "./tool_types.ts";
 import { validateToolInput } from "./validate_tool_input.ts";
 
 export type ManageContactToolInput =
+  | { action: "migrate_kind"; contact: ContactLocator; kind: ContactKind }
   | { action: "export"; contact?: ContactLocator }
   | { action: "delete"; contact: ContactLocator; confirm?: boolean }
   | {
@@ -185,6 +187,14 @@ function manageContactToolHandlerInZone(
         ),
       });
     }
+    if (input.action === "migrate_kind") {
+      return mutationToolResult(
+        "migrate_kind",
+        migrateContactKind(db, contact.value.id, input.kind),
+        "contact",
+        ["kind"],
+      );
+    }
     if (input.action === "revise") {
       return mutationToolResult(
         "revise",
@@ -235,6 +245,7 @@ export const manageContactTool = defineAffinityTool<
       action: enumSchema("Operation to perform.", [
         "create",
         "revise",
+        "migrate_kind",
         "set_lifecycle",
         "export",
         "delete",
@@ -279,6 +290,19 @@ export const manageContactTool = defineAffinityTool<
         },
         ["name", "kind"],
         "New contact payload. Required when action=create.",
+      ),
+      kind: enumSchema(
+        "Replacement contact kind for migrate_kind. Owner must remain human or agent. Audited without bond mechanics.",
+        [
+          "human",
+          "agent",
+          "group",
+          "company",
+          "team",
+          "pet",
+          "service",
+          "other",
+        ],
       ),
       confirm: booleanSchema("Required true for permanent deletion."),
       contact: contactLocatorSchema(

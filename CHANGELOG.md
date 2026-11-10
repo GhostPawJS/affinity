@@ -6,6 +6,8 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ## [Unreleased]
 
+- Add an audited migrate_kind action and contact migrate-kind CLI command for contact reclassification in place; preserve attached state and constrain owner kinds.
+
 - Improve owner setup guidance and creation ids; add opt-in contact outbound engagement blocks and explicit overrides.
 
 ### Added

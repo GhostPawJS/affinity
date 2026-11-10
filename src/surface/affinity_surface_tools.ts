@@ -102,10 +102,11 @@ const mapping: Record<string, NonNullable<SurfaceTool<AffinityDb>["cli"]>> = {
     verb: "manage",
     action: {
       property: "action",
-      verbs: { set_lifecycle: "lifecycle" },
+      verbs: { set_lifecycle: "lifecycle", migrate_kind: "migrate-kind" },
       fields: {
         create: ["input"],
         revise: ["contact", "patch"],
+        migrate_kind: ["contact", "kind"],
         set_lifecycle: ["contact", "lifecycleState", "options"],
         export: ["contact"],
         delete: ["contact", "confirm"],
@@ -113,12 +114,14 @@ const mapping: Record<string, NonNullable<SurfaceTool<AffinityDb>["cli"]>> = {
       required: {
         create: ["input"],
         revise: ["contact", "patch"],
+        migrate_kind: ["contact", "kind"],
         set_lifecycle: ["contact", "lifecycleState"],
         delete: ["contact", "confirm"],
       },
       positionals: {
         create: ["input"],
         revise: ["contact"],
+        migrate_kind: ["contact"],
         set_lifecycle: ["contact", "lifecycleState"],
       },
     },

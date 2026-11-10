@@ -34,3 +34,5 @@ export type { ListDuplicateCandidatesFilters } from "../lib/types/list_duplicate
 export type { ReviseContactPatch } from "../lib/types/revise_contact_patch.ts";
 export type { SetContactLifecycleOptions } from "../lib/types/set_contact_lifecycle_options.ts";
 export { assertValidLifecycleTransition } from "./validators.ts";
+
+export { migrateContactKind } from "./migrate_contact_kind.ts";

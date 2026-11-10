@@ -777,3 +777,11 @@ one recording with input `overrideDoNotContact:true`, or the CLI
 `event record --override-do-not-contact` / `commitment record --override-do-not-contact`.
 Reads omit `doNotContact` when false to preserve existing JSON. A merge retains
 the block if either contact is blocked.
+
+Change a contact kind in place with `contact migrate-kind '{"contactId":2}' --kind agent`, or
+`manage_contact` action `migrate_kind`, `contact: {contactId: 2}, kind: "agent"` (library:
+`write.migrateContactKind(db, contactId, kind)`). Supported kinds remain human, agent, group, company,
+team, pet, service and other. IDs, identities, links and existing events stay
+attached. Each changed kind records a zero-significance correction event with
+old/new kinds and no bond mechanics; repeating the current kind is a no-op.
+Merged contacts are read-only; owners may only change between human and agent.

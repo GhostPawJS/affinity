@@ -44,3 +44,5 @@ export { deleteContact } from "./contacts/delete_contact.ts";
 export { reviseEvent, deleteEvent } from "./events/manage_event.ts";
 
 export { reviseSocialLink } from "./links/revise_social_link.ts";
+
+export { migrateContactKind } from "./contacts/migrate_contact_kind.ts";

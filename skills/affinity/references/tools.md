@@ -149,8 +149,9 @@ Writes: writes_state.
 
 | Parameter | Type | Required | Values / description |
 | --- | --- | --- | --- |
-| action | string | yes | create, revise, set_lifecycle, export, delete. Operation to perform. |
+| action | string | yes | create, revise, migrate_kind, set_lifecycle, export, delete. Operation to perform. |
 | input | object | no | New contact payload. Required when action=create. |
+| kind | string | no | human, agent, group, company, team, pet, service, other. Replacement contact kind for migrate_kind. Owner must remain human or agent. Audited without bond mechanics. |
 | confirm | boolean | no | Required true for permanent deletion. |
 | contact | object | no | Target contact. Required when action=revise or set_lifecycle. Provide contactId or identity. |
 | patch | object | no | Allowed contact patch. Required when action=revise. |

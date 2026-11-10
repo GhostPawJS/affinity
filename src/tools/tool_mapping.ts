@@ -126,6 +126,11 @@ export const affinityToolMappings: AffinityToolMapping[] = [
     view: "merges.history",
   },
   { source: "createContact", tool: manageContactToolName, action: "create" },
+  {
+    source: "migrateContactKind",
+    tool: manageContactToolName,
+    action: "migrate_kind",
+  },
   { source: "reviseContact", tool: manageContactToolName, action: "revise" },
   {
     source: "setContactLifecycle",
