@@ -357,12 +357,12 @@ as contact until their timestamp and day arrive. Commitments and their
 resolutions do not reset recency or cadence. Radar marks `drift` after a gap
 exceeds 1.5 times the expected cadence and explains its reasons in the snippet.
 
-Global flags: `--db <path>`, `--tz <IANA zone>`, `--json`, `--quiet`, `--compact`,
+Global flags: `--db <path>`, `--tz <IANA zone>`, `--json`, `-q, --quiet`, `--compact`,
 `--help`/`-h`, `--version`/`-V`/`-v`, `--no-color`.
 `NO_COLOR` is accepted. In a terminal, commands print a readable summary with
 names and dates. With `--json` or piped stdout they print the tool result as
 JSON with ISO date siblings and floats rounded to three decimals; `--compact`
-removes indentation and empty receipt arrays. `--quiet` suppresses stdout.
+removes indentation and empty receipt arrays. `-q, --quiet` suppresses stdout.
 Writes list what changed in `data.changes`, and creates warn about likely
 duplicates. Kebab-case flags map to schema properties. `--` ends flags.
 A positional `-`, or piped stdin when no other arguments are given, reads a

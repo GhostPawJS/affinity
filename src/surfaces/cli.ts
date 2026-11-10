@@ -371,9 +371,10 @@ async function runToolCliInternal<TCtx>(
 }
 
 export async function runToolCli<TCtx>(
-  argv: string[],
+  inputArgv: string[],
   options: ToolCliOptions<TCtx>,
 ): Promise<number> {
+  const argv = inputArgv.map((arg) => (arg === "-q" ? "--quiet" : arg));
   const outputArgs =
     process.env.GHOSTPAW_OUTPUT === "json" && !argv.includes("--json")
       ? [...argv, "--json"]

@@ -62,7 +62,7 @@ export async function runCliCommand<T>(
   const args = [...argv];
   const tree = cliCommands(options.tools);
   let json = argv.includes("--json");
-  let quiet = argv.includes("--quiet");
+  let quiet = argv.includes("--quiet") || argv.includes("-q");
   let compact = false;
   let help = false;
   let db: string | undefined;
@@ -102,7 +102,7 @@ export async function runCliCommand<T>(
         if (!db || db.startsWith("--"))
           throw new CliUsageError("--db requires a path");
       } else if (flag === "--json") json = true;
-      else if (flag === "--quiet") quiet = true;
+      else if (flag === "--quiet" || flag === "-q") quiet = true;
       else if (flag === "--compact") compact = true;
       else if (flag === "--help" || flag === "-h") help = true;
       else if (["--version", "-V", "-v"].includes(flag ?? "")) {
@@ -232,11 +232,11 @@ export async function runCliCommand<T>(
                   entry.path,
                   entry.fields,
                 )
-            : `${options.versionLine?.() ?? `${options.bin} ${options.version}`}\n${options.description}\n\nCommands:\n${matches.map((command) => `  ${command.path}`).join("\n")}\n  batch [--chunk N] [--stop-on-error], mcp, skill, tools [--json], describe <tool>, call <tool> [JSON|-], completions <bash|zsh|fish>, version\nGlobal flags: --db <path>, --tz <IANA zone>, --json (or GHOSTPAW_OUTPUT=json), --quiet, --compact, --help/-h, --version/-V/-v, --no-color\n`,
+            : `${options.versionLine?.() ?? `${options.bin} ${options.version}`}\n${options.description}\n\nCommands:\n${matches.map((command) => `  ${command.path}`).join("\n")}\n  batch [--chunk N] [--stop-on-error], mcp, skill, tools [--json], describe <tool>, call <tool> [JSON|-], completions <bash|zsh|fish>, version\nGlobal flags: --db <path>, --tz <IANA zone>, --json (or GHOSTPAW_OUTPUT=json), -q, --quiet, --compact, --help/-h, --version/-V/-v, --no-color\n`,
         );
       if (options.describeDb && !quiet)
         stdout.write(
-          `Database: ${options.describeDb(db)}\nDefault database notice: stderr; suppress with --quiet or GHOSTPAW_QUIET=1.\n`,
+          `Database: ${options.describeDb(db)}\nDefault database notice: stderr; suppress with -q, --quiet or GHOSTPAW_QUIET=1.\n`,
         );
       return 0;
     }

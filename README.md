@@ -334,7 +334,7 @@ as contact until their timestamp and day arrive. Commitments and their
 resolutions do not reset recency or cadence. Radar marks `drift` after a gap
 exceeds 1.5 times the expected cadence and explains its reasons in the snippet.
 
-Global flags: `--db <path>`, `--json`, `--quiet`, `--compact`,
+Global flags: `--db <path>`, `--json`, `-q, --quiet`, `--compact`,
 `--help`/`-h`, `--version`/`-V`/`-v`, `--no-color`.
 `NO_COLOR` is accepted. In a terminal, commands print a readable summary with
 names and dates. With `--json` or piped stdout they print the tool result as
@@ -343,9 +343,9 @@ keep one summary and compact `{id,name,role}` participants. Radar rows keep one 
 id, counterparty name, reasons and rounded scores; upcoming link dates omit radar
 scores. Default piped writes and `--compact` keep primary and changed ids plus
 warnings; explicit `--json` retains full mutation detail. `--compact`
-removes indentation and empty receipt arrays. `--quiet` suppresses stdout.
+removes indentation and empty receipt arrays. `-q, --quiet` suppresses stdout.
 When a command opens the default database, the CLI prints `using default db <path>`
-to stderr. Suppress this notice with `--quiet` or `GHOSTPAW_QUIET=1`.
+to stderr. Suppress this notice with `-q, --quiet` or `GHOSTPAW_QUIET=1`.
 Writes list what changed in `data.changes`, and creates warn about likely
 duplicates. Kebab-case flags map to schema properties. `--` ends flags.
 A positional `-`, or piped stdin when no other arguments are given, reads a

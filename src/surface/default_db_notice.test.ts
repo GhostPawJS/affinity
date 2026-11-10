@@ -81,6 +81,13 @@ test("default database notice stays on stderr and respects paths, quiet and data
       assert.equal(normal.stderr, notice);
       assert.equal(silent.stderr, "");
       const quiet = invoke([...args, "--quiet"]);
+      assert.equal(quiet.status, 0, quiet.stderr);
+      for (const shortArgs of [
+        ["-q", ...args],
+        [...args, "-q"],
+      ]) {
+        assert.deepEqual(invoke(shortArgs), quiet);
+      }
       assert.equal(quiet.stderr, "");
       assert.equal(quiet.stdout, "");
       assert.equal(invoke(["--db", path, ...args]).stderr, "");
@@ -101,6 +108,21 @@ test("default database notice stays on stderr and respects paths, quiet and data
       assert.equal(result.status, 0, result.stderr);
       assert.equal(result.stderr, "");
     }
+    for (const args of [
+      ["--version"],
+      ["version", "--json"],
+      ["skill", "--list"],
+      ["tools", "--json"],
+      ["batch"],
+      ["--json", "--tz=Invalid/Zone"],
+      ["search", "--unknown", "--json"],
+    ]) {
+      const quiet = invoke([...args, "--quiet"]);
+      assert.equal(quiet.stdout, "");
+      assert.deepEqual(invoke(["-q", ...args]), quiet);
+      assert.deepEqual(invoke([...args, "-q"]), quiet);
+    }
+    assert.match(invoke(["--help"]).stdout, /-q, --quiet/);
     assert.equal(invoke(["batch"]).stderr, notice);
   } finally {
     rmSync(home, { recursive: true, force: true });
