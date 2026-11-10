@@ -9,6 +9,8 @@ compatibility: "The release binary needs no runtime. MCP stdio or ghostpaw-affin
 
 ## CLI cheat sheet
 
+Event payloads require `occurredAt`, `significance` (1–10), and `participants`; each participant requires `role`.
+
 Payload fields and examples: `<command> --help`. JSON schema: `ghostpaw-affinity describe event record`, optionally `--kind interaction`; `describe <tool>` retains tool details. `describe batch` documents JSONL records.
 
 Create the owner first: contact create --bootstrap-owner (tool input.bootstrapOwner: true). Contact create JSON exposes .id (jq .id); .entities[] remains available. Set input.doNotContact or patch.doNotContact to true to block outbound/mutual engagement. Override one event with input.overrideDoNotContact: true or --override-do-not-contact.

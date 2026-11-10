@@ -73,7 +73,7 @@ export function parseCalendarTime(
     };
   }
   if (typeof value !== "string") return fail();
-  let text = value.trim();
+  let text = value.trim().replace(/([+-]\d{2})(\d{2})$/, "$1:$2");
   if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(text)) {
     text = text.replace(" ", "T");
     if (!/(?:Z|[+-]\d{2}:\d{2})$/.test(text)) text += "Z";

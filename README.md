@@ -810,3 +810,5 @@ team, pet, service and other. IDs, identities, links and existing events stay
 attached. Each changed kind records a zero-significance correction event with
 old/new kinds and no bond mechanics; repeating the current kind is a no-op.
 Merged contacts are read-only; owners may only change between human and agent.
+
+Event payloads require `occurredAt`, `significance` (1–10), and `participants`; each participant requires `role`.

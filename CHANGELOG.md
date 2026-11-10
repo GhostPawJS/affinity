@@ -6,6 +6,10 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ## [Unreleased]
 
+### Fixed
+
+- Accept compact numeric UTC offsets in date inputs, emit piped CLI usage errors as JSON, and clarify required event significance. Preserve documented missing-database exit 3; initialized empty searches succeed.
+
 ### Changed
 
 - Document writable database roots for sandboxed agent harnesses in the README and generated agent skill. Clarify which GhostPaw store owns identity, beliefs, relationships, work, procedures, and stable operational facts.

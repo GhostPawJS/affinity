@@ -68,7 +68,7 @@ export async function runCliCommand<T>(
   let db: string | undefined;
   const fail = (message: string, code: number) => {
     stderr.write(`${message}\n`);
-    if (json && !quiet)
+    if ((json || !(stdout as { isTTY?: boolean }).isTTY) && !quiet)
       stdout.write(
         `${JSON.stringify({ ok: false, error: { code: code === 2 ? "usage_error" : code === 3 ? "not_found" : "internal_error", message } })}\n`,
       );

@@ -807,3 +807,78 @@ test("high precision intake truncates and preserves the raw timestamp alongside 
     rawOccurredAt: occurredAt,
   });
 });
+
+test("compact UTC offsets share CLI and facade date parsing", async () => {
+  const { parseTimeInput } = await import("../tools/parse_time_input.ts");
+  for (const [offset, colon] of [
+    ["+0000", "+00:00"],
+    ["-0530", "-05:30"],
+    ["+0230", "+02:30"],
+  ]) {
+    for (const separator of ["T", " "]) {
+      const input = `2026-11-01${separator}23:30:00.123456${offset}`;
+      const expected = Date.parse(`2026-11-01T23:30:00.123${colon}`);
+      assert.equal(parsePlainDue(input), expected);
+      assert.equal(parseTimeInput(input, "occurredAt"), expected);
+      assert.equal(
+        (normalizeTimeInputs({ since: input }) as { since: number }).since,
+        expected,
+      );
+    }
+  }
+  assert.throws(() => parsePlainDue("2026-11-01T12:00:00+2460"));
+});
+
+test("initialized empty search succeeds in text and JSON modes", async () => {
+  for (const flags of [[], ["--json"]]) {
+    const result = await invoke(
+      ["search", "nobody", "--db", ":memory:", ...flags],
+      "",
+      { real: true, tty: true },
+    );
+    assert.equal(result.code, 0, result.err);
+    if (flags.length) {
+      const value = JSON.parse(result.out);
+      assert.equal(value.ok, true);
+      assert.deepEqual(value.data.items, []);
+    } else assert.ok(result.out.length > 0);
+  }
+});
+
+test("event record validation errors honor explicit, piped and environment JSON", async () => {
+  const previous = process.env.GHOSTPAW_OUTPUT;
+  try {
+    for (const mode of ["explicit", "pipe", "environment"]) {
+      if (mode === "environment") process.env.GHOSTPAW_OUTPUT = "json";
+      else Reflect.deleteProperty(process.env, "GHOSTPAW_OUTPUT");
+      for (const input of [
+        "{",
+        '{"type":"conversation","occurredAt":"bad","participants":[]}',
+        '{"type":"conversation","occurredAt":1,"participants":[]}',
+      ]) {
+        const result = await invoke(
+          [
+            "event",
+            "record",
+            "--kind",
+            "interaction",
+            "--input",
+            input,
+            ...(mode === "explicit" ? ["--json"] : []),
+          ],
+          "",
+          { tty: mode !== "pipe" },
+        );
+        assert.equal(result.code, 2, result.err);
+        const value = JSON.parse(result.out);
+        assert.equal(value.ok, false);
+        assert.equal(value.error.code, "usage_error");
+        assert.ok(value.error.message.length > 0);
+      }
+    }
+  } finally {
+    if (previous === undefined)
+      Reflect.deleteProperty(process.env, "GHOSTPAW_OUTPUT");
+    else process.env.GHOSTPAW_OUTPUT = previous;
+  }
+});
