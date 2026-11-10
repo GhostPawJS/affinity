@@ -12,12 +12,14 @@ export function exportRows(
     .map((row) => {
       const result: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(row)) {
+        if (key === "do_not_contact" && value === 0) continue;
         const name = key.replace(/_([a-z])/g, (_, letter: string) =>
           letter.toUpperCase(),
         );
         result[name] = [
           "affects_bond",
           "is_owner",
+          "do_not_contact",
           "is_structural",
           "verified",
           "counts_for_recency",

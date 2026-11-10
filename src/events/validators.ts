@@ -136,3 +136,39 @@ export function validateAnchorCalendar(
     );
   }
 }
+
+/** Incoming and observed evidence remains recordable; outbound or mutual engagement is blocked. */
+export function assertOutboundContactAllowed(
+  db: AffinityDb,
+  input: SocialEventInput,
+): void {
+  if (
+    input.overrideDoNotContact !== undefined &&
+    typeof input.overrideDoNotContact !== "boolean"
+  )
+    throw new AffinityValidationError("overrideDoNotContact must be a boolean");
+  if (input.overrideDoNotContact === true) return;
+  const ownerId = (
+    db
+      .prepare(
+        "SELECT id FROM contacts WHERE is_owner=1 AND deleted_at IS NULL",
+      )
+      .get() as { id: number } | undefined
+  )?.id;
+  if (!input.participants.some((p) => p.contactId === ownerId)) return;
+  for (const participant of input.participants) {
+    if (
+      participant.contactId === ownerId ||
+      participant.directionality === "other_initiated" ||
+      participant.directionality === "observed" ||
+      participant.role === "observer" ||
+      participant.role === "mentioned"
+    )
+      continue;
+    const row = getContactRowById(db, participant.contactId);
+    if (row?.do_not_contact === 1)
+      throw new AffinityStateError(
+        `Contact #${row.id} ${row.name} has doNotContact set; outbound engagement refused. Pass overrideDoNotContact: true (CLI: --override-do-not-contact) to override explicitly.`,
+      );
+  }
+}

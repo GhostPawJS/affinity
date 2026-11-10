@@ -8,7 +8,7 @@ export function getContactRowById(
 ): ContactRow | null {
   const row = db
     .prepare(
-      `SELECT id, name, kind, lifecycle_state, is_owner, merged_into_contact_id,
+      `SELECT id, name, kind, lifecycle_state, is_owner, do_not_contact, merged_into_contact_id,
               created_at, updated_at, deleted_at
        FROM contacts
        WHERE id = ? AND deleted_at IS NULL`,
@@ -36,7 +36,9 @@ export function findOwnerContactId(db: AffinityDb): number | null {
 export function requireOwnerContactId(db: AffinityDb): number {
   const ownerId = findOwnerContactId(db);
   if (ownerId === null) {
-    throw new AffinityInvariantError("owner contact not found");
+    throw new AffinityInvariantError(
+      "owner contact not found; create the owner contact first with contact create --bootstrap-owner (tool: manage_contact action=create, input.bootstrapOwner: true)",
+    );
   }
   return ownerId;
 }

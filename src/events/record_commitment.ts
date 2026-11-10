@@ -5,6 +5,7 @@ import { insertJournalEvent } from "../events/persistence.ts";
 import { buildEventMutationReceipt } from "../events/receipts.ts";
 import {
   assertFiniteTimestamp,
+  assertOutboundContactAllowed,
   assertOwnerParticipates,
   assertParticipantContactsLive,
   validateSocialEventInput,
@@ -41,6 +42,7 @@ export function recordCommitment(
     const ids = input.participants.map((p) => p.contactId);
     assertParticipantContactsLive(db, ids);
     assertOwnerParticipates(ownerId, ids);
+    assertOutboundContactAllowed(db, input);
     const now = resolveNow(input.now);
     const eventId = insertJournalEvent(db, {
       ...input,

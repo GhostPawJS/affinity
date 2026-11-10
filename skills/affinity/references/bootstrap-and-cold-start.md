@@ -19,7 +19,7 @@ When not to use:
 
 Step-by-step sequence:
 1. Assume the schema is already initialized and the database is live before using any tool.
-2. Use `manage_contact` with `action: "create"` and `bootstrapOwner: true` exactly once for the operator.
+2. Use `manage_contact` with `action: "create"` and `bootstrapOwner: true` exactly once for the operator, BEFORE recording any events. Use kind `agent` for bots and non-human operators, kind `human` for people. CLI: `contact create --bootstrap-owner`. Creation results expose top-level `id` (CLI JSON: `jq .id`); the tool field is `input.bootstrapOwner`.
 3. Immediately attach at least one routing identity with `manage_identity` so future lookups can use a stable natural key.
 4. Use `inspect_affinity_item` with `kind: "owner_profile"` to confirm that the owner profile exists and reads back cleanly.
 5. Use `review_affinity` with `view: "contacts.list"` to confirm that the portfolio is still minimal and no duplicate owner-like records were created during setup.

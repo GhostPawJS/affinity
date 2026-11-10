@@ -13,6 +13,9 @@ export const externalRefSchema = objectSchema(
   ["source", "id"],
 );
 export const eventMetadataSchema = {
+  overrideDoNotContact: booleanSchema(
+    "Explicitly override a contact doNotContact block for this event.",
+  ),
   affectsBond: booleanSchema(
     "Whether evidence affects the relationship; defaults false for like/follow/repost labels and observations with significance <=2; explicit true opts in.",
   ),

@@ -9,6 +9,7 @@ function mapContactRowBase(row: ContactRow): {
   kind: ContactKind;
   lifecycleState: ContactLifecycleState;
   isOwner: boolean;
+  doNotContact?: boolean;
 } {
   return {
     id: row.id,
@@ -16,6 +17,7 @@ function mapContactRowBase(row: ContactRow): {
     kind: row.kind as ContactKind,
     lifecycleState: row.lifecycle_state as ContactLifecycleState,
     isOwner: row.is_owner === 1,
+    ...(row.do_not_contact === 1 ? { doNotContact: true } : {}),
   };
 }
 

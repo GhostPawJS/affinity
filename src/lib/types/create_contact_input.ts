@@ -2,6 +2,8 @@ import type { ContactKind } from "../../contacts/types.ts";
 
 /** Arguments for `write.createContact`. */
 export interface CreateContactInput {
+  /** Opt-in outbound engagement block; defaults false. */
+  doNotContact?: boolean;
   name: string;
   kind: ContactKind;
   now?: number;

@@ -13,7 +13,10 @@ export function createContactToolResult(
 ) {
   return withTransaction(db, () => {
     const receipt = createContact(db, input);
-    const result = mutationToolResult("create", receipt, "contact");
+    const result = Object.assign(
+      mutationToolResult("create", receipt, "contact"),
+      { id: receipt.primary.id },
+    );
     if (result.ok && receipt.outcome === "no_op") {
       result.outcome = "no_op";
       Object.assign(result.data, {

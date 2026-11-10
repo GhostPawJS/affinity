@@ -84,6 +84,8 @@ export interface ToolNextStepHint {
 }
 
 export interface ToolBaseResult {
+  /** Contact id for contact creation results. */
+  id?: number;
   ok: boolean;
   outcome: ToolOutcomeKind;
   summary: string;

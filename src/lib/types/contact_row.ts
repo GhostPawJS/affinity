@@ -5,6 +5,7 @@ export interface ContactRow {
   kind: string;
   lifecycle_state: string;
   is_owner: number;
+  do_not_contact?: number;
   merged_into_contact_id: number | null;
   created_at: number;
   updated_at: number;

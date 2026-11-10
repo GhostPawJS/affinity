@@ -218,6 +218,9 @@ export function mergeContacts(
     for (const row of liveWinnerLinks) {
       refreshLinkRollup(db, row.id, now);
     }
+    db.prepare(
+      "UPDATE contacts SET do_not_contact = MAX(do_not_contact, (SELECT do_not_contact FROM contacts WHERE id=?)) WHERE id=?",
+    ).run(loserId, winnerId);
     refreshContactRollup(db, winnerId, now);
     refreshContactRollup(db, loserId, now);
     refreshAllBridgeScores(db, now);

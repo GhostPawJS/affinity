@@ -191,6 +191,31 @@ export async function runCliCommand<T>(
           ...(command.path === "contact create"
             ? [
                 {
+                  name: "bootstrap-owner",
+                  type: "boolean" as const,
+                  description:
+                    "Create the sole owner first (input.bootstrapOwner).",
+                },
+                {
+                  name: "do-not-contact",
+                  type: "boolean" as const,
+                  description: "Block outbound engagement.",
+                },
+              ]
+            : []),
+          ...(["event record", "commitment record"].includes(command.path)
+            ? [
+                {
+                  name: "override-do-not-contact",
+                  type: "boolean" as const,
+                  description:
+                    "Explicitly override a contact's outbound engagement block.",
+                },
+              ]
+            : []),
+          ...(command.path === "contact create"
+            ? [
+                {
                   name: "if-exists",
                   type: "string" as const,
                   enum: ["error", "return"],
@@ -310,6 +335,22 @@ export async function runCliCommand<T>(
       );
     }
     const rest = args.slice(entry.path.split(" ").length);
+    const payloadFlags: Record<string, boolean> = {};
+    const allowedPayloadFlags =
+      entry.path === "contact create"
+        ? ["bootstrap-owner", "do-not-contact"]
+        : ["event record", "commitment record"].includes(entry.path)
+          ? ["override-do-not-contact"]
+          : [];
+    for (const name of allowedPayloadFlags) {
+      const index = rest.indexOf(`--${name}`);
+      if (index >= 0) {
+        payloadFlags[
+          name.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase())
+        ] = true;
+        rest.splice(index, 1);
+      }
+    }
     let ifExists: string | undefined;
     if (entry.path === "contact create") {
       const index = rest.findIndex(
@@ -418,6 +459,8 @@ export async function runCliCommand<T>(
       ...parseCliArgs(rest, spec),
       ...entry.fixed,
     };
+    if (Object.keys(payloadFlags).length)
+      input.input = { ...(input.input as object), ...payloadFlags };
     if (ifExists !== undefined)
       input.input = { ...(input.input as object), ifExists };
     for (const [key, schema] of Object.entries(

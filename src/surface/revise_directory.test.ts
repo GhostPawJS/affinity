@@ -36,7 +36,12 @@ test("every revision patch rejects unknown fields through CLI and facade", async
   const db = await openAffinityDb(":memory:");
   try {
     for (const [name, command, target, keys] of [
-      ["manage_contact", "contact", { contact: { contactId: 1 } }, ["name"]],
+      [
+        "manage_contact",
+        "contact",
+        { contact: { contactId: 1 } },
+        ["name", "doNotContact"],
+      ],
       [
         "manage_identity",
         "identity",

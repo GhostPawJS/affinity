@@ -10,4 +10,6 @@ export interface ContactCore {
   kind: ContactKind;
   lifecycleState: ContactLifecycleState;
   isOwner: boolean;
+  /** Omitted when false to preserve existing output. */
+  doNotContact?: boolean;
 }

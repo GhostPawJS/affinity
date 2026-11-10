@@ -258,6 +258,9 @@ export const manageContactTool = defineAffinityTool<
             "Identity collision policy; return attaches nothing.",
             ["error", "return"],
           ),
+          doNotContact: booleanSchema(
+            "Block outbound engagement unless explicitly overridden.",
+          ),
           name: stringSchema("Contact name."),
           kind: enumSchema("Contact kind.", [
             "human",
@@ -284,6 +287,9 @@ export const manageContactTool = defineAffinityTool<
       patch: objectSchema(
         {
           name: stringSchema("Optional replacement name."),
+          doNotContact: booleanSchema(
+            "Block outbound engagement unless explicitly overridden.",
+          ),
         },
         [],
         "Allowed contact patch. Required when action=revise.",

@@ -11,6 +11,8 @@ compatibility: "The release binary needs no runtime. MCP stdio or ghostpaw-affin
 
 Payload fields and examples: `<command> --help`. JSON schema: `ghostpaw-affinity describe event record`, optionally `--kind interaction`; `describe <tool>` retains tool details. `describe batch` documents JSONL records.
 
+Create the owner first: contact create --bootstrap-owner (tool input.bootstrapOwner: true). Contact create JSON exposes .id (jq .id); .entities[] remains available. Set input.doNotContact or patch.doNotContact to true to block outbound/mutual engagement. Override one event with input.overrideDoNotContact: true or --override-do-not-contact.
+
 Contact kind agent represents a non-human operator or bot; see skill operate-agent-relationships.
 manage_relationship seed input: kind, role, rank, affinity, trust, cadenceDays, bond, state, ifExists, now.
 revise patch: rank, affinity, trust, cadenceDays, bond, state; cadenceDays null unpins.

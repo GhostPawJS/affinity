@@ -40,7 +40,7 @@ export function listContacts(
   const where = clauses.join(" AND ");
   const rows = db
     .prepare(
-      `SELECT id, name, kind, lifecycle_state, is_owner, merged_into_contact_id,
+      `SELECT id, name, kind, lifecycle_state, is_owner, do_not_contact, merged_into_contact_id,
               created_at, updated_at, deleted_at,
               (
                 SELECT value

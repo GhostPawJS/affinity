@@ -23,6 +23,13 @@ export function initContactsTables(db: AffinityDb): void {
       FOREIGN KEY (merged_into_contact_id) REFERENCES contacts (id)
     )
   `);
+  const columns = db.prepare("PRAGMA table_info(contacts)").all() as {
+    name: string;
+  }[];
+  if (!columns.some((column) => column.name === "do_not_contact"))
+    db.exec(
+      "ALTER TABLE contacts ADD COLUMN do_not_contact INTEGER NOT NULL DEFAULT 0 CHECK (do_not_contact IN (0, 1))",
+    );
   db.exec(
     "CREATE UNIQUE INDEX IF NOT EXISTS idx_contacts_one_live_owner ON contacts(is_owner) WHERE is_owner = 1 AND deleted_at IS NULL",
   );

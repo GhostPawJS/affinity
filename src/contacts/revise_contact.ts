@@ -24,12 +24,17 @@ export function reviseContact(
     if (row.lifecycle_state === "merged") {
       throw new AffinityStateError("merged contact is read-only");
     }
-    if (patch.name === undefined) {
+    if (
+      patch.doNotContact !== undefined &&
+      typeof patch.doNotContact !== "boolean"
+    )
+      throw new AffinityValidationError("doNotContact must be a boolean");
+    if (patch.name === undefined && patch.doNotContact === undefined) {
       return buildContactMutationReceipt(mapContactRowToContactListItem(row), {
         updated: [],
       });
     }
-    const name = patch.name.trim();
+    const name = patch.name === undefined ? row.name : patch.name.trim();
     if (name.length === 0) {
       throw new AffinityValidationError("name must be non-empty");
     }
@@ -39,6 +44,11 @@ export function reviseContact(
       now,
       contactId,
     );
+    if (patch.doNotContact !== undefined)
+      db.prepare("UPDATE contacts SET do_not_contact=? WHERE id=?").run(
+        patch.doNotContact ? 1 : 0,
+        contactId,
+      );
     refreshContactRollup(db, contactId, now);
     const next = getContactRowById(db, contactId);
     if (!next) {

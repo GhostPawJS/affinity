@@ -11,6 +11,8 @@ export interface ContactListItem {
   kind: ContactKind;
   lifecycleState: ContactLifecycleState;
   isOwner: boolean;
+  /** Omitted when false to preserve existing output. */
+  doNotContact?: boolean;
   primaryIdentity?: string | null;
   lastMeaningfulEventAt?: number | null;
 }

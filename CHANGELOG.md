@@ -6,6 +6,8 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ## [Unreleased]
 
+- Improve owner setup guidance and creation ids; add opt-in contact outbound engagement blocks and explicit overrides.
+
 ### Added
 
 - `-q` short alias for `--quiet`.

@@ -33,6 +33,11 @@ export function createContact(
   input: CreateContactInput,
 ): ContactMutationReceipt {
   return withTransaction(db, () => {
+    if (
+      input.doNotContact !== undefined &&
+      typeof input.doNotContact !== "boolean"
+    )
+      throw new AffinityValidationError("doNotContact must be a boolean");
     const name = input.name.trim();
     if (name.length === 0) {
       throw new AffinityValidationError("name must be non-empty");
@@ -101,6 +106,8 @@ export function createContact(
       )
       .run(name, input.kind, isOwner, now, now);
     const id = Number(result.lastInsertRowid);
+    if (input.doNotContact === true)
+      db.prepare("UPDATE contacts SET do_not_contact=1 WHERE id=?").run(id);
     const row = getContactRowById(db, id);
     if (!row) {
       throw new AffinityInvariantError("inserted contact row not found");

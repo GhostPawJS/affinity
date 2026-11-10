@@ -14,6 +14,8 @@ export interface SocialEventParticipantInput {
 
 /** Evidence intake shape shared by interaction-style writes — CONCEPT.md. */
 export interface SocialEventInput {
+  /** Explicit permission to record outbound engagement with a blocked contact. */
+  overrideDoNotContact?: boolean;
   occurredAt: number;
   occurredOn?: string;
   summary?: string;

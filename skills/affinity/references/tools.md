@@ -159,6 +159,7 @@ Writes: writes_state.
 | tz | string | no | IANA time zone for due days and local calendar calculations; defaults to TZ or the process local zone. |
 | input.identities | array | no | Optional identities to attach. An identity owned by another live contact causes a conflict, or returns that contact when ifExists=return. |
 | input.ifExists | string | no | Identity collision policy; return attaches nothing. |
+| input.doNotContact | boolean | no | Block outbound engagement unless explicitly overridden. |
 | input.name | string | yes | Contact name. |
 | input.kind | string | yes | Contact kind. |
 | input.now | oneOf | no | Optional timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
@@ -166,6 +167,7 @@ Writes: writes_state.
 | contact.contactId | integer | no | Exact contact id. |
 | contact.identity | object | no | Contact identity locator. |
 | patch.name | string | no | Optional replacement name. |
+| patch.doNotContact | boolean | no | Block outbound engagement unless explicitly overridden. |
 | options.now | oneOf | no | Optional timestamp. Accepts epoch milliseconds integer, ISO 8601 date-time with Z/offset, YYYY-MM-DD, DD.MM.YYYY, today, tomorrow, yesterday, +3d or -2d. UTC midnight for dates; dueAt uses UTC end of day. |
 
 ```sh
@@ -329,6 +331,7 @@ Writes: writes_state.
 | input | object | yes | Event payload. Always required. Interaction events also require `type`. |
 | tz | string | no | IANA time zone for due days and local calendar calculations; defaults to TZ or the process local zone. |
 | input.type | string | no | Interaction subtype. Required when kind=interaction, omit otherwise. |
+| input.overrideDoNotContact | boolean | no | Explicitly override a contact doNotContact block for this event. |
 | input.affectsBond | boolean | no | Whether evidence affects the relationship; defaults false for like/follow/repost labels and observations with significance <=2; explicit true opts in. |
 | input.content | string | no | Verbatim text, including empty text; at most 1 MB UTF-8. Summary may be omitted when content is supplied. |
 | input.externalRef | object | no |  |
@@ -368,6 +371,7 @@ Writes: writes_state.
 | options | object | no | Optional metadata. |
 | tz | string | no | IANA time zone for due days and local calendar calculations; defaults to TZ or the process local zone. |
 | input.commitmentType | string | yes | Promise or agreement. |
+| input.overrideDoNotContact | boolean | no | Explicitly override a contact doNotContact block for this event. |
 | input.affectsBond | boolean | no | Whether evidence affects the relationship; defaults false for like/follow/repost labels and observations with significance <=2; explicit true opts in. |
 | input.content | string | no | Verbatim text, including empty text; at most 1 MB UTF-8. Summary may be omitted when content is supplied. |
 | input.externalRef | object | no |  |

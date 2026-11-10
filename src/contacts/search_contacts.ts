@@ -58,7 +58,7 @@ export function searchContacts(
   const contacts = (
     db
       .prepare(
-        `SELECT id, name, kind, lifecycle_state, is_owner, (SELECT value FROM identities i WHERE i.contact_id = contacts.id AND i.removed_at IS NULL ORDER BY i.id LIMIT 1) AS primary_identity FROM contacts WHERE ${clauses.join(" AND ")}`,
+        `SELECT id, name, kind, lifecycle_state, is_owner, do_not_contact, (SELECT value FROM identities i WHERE i.contact_id = contacts.id AND i.removed_at IS NULL ORDER BY i.id LIMIT 1) AS primary_identity FROM contacts WHERE ${clauses.join(" AND ")}`,
       )
       .all(...params) as (ContactRow & { primary_identity: string | null })[]
   ).map((row) => ({

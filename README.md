@@ -62,7 +62,8 @@ curl -fsSL -O "$U/$F" -O "$U/SHA256SUMS" &&
 Then:
 
 ```sh
-ghostpaw-affinity contact create '{"name":"Sam","kind":"human"}'
+ghostpaw-affinity contact create '{"name":"Owner","kind":"agent"}' --bootstrap-owner
+ghostpaw-affinity contact create '{"name":"Sam","kind":"human"}' --json | jq .id
 ghostpaw-affinity search sam
 ghostpaw-affinity skill            # cheat sheet and tool reference
 ```
@@ -752,3 +753,27 @@ JSON schema with `ghostpaw-affinity describe event record` (or `describe "event 
 and select a variant with `--kind interaction`. `describe <tool>` retains its tool details.
 JSON patches and other object arguments are documented in command help; batch
 accepts JSONL `{tool,args}` or `{op:"event",kind,input}` records using the same tool schemas.
+
+### Owner bootstrap and contact safety
+
+Create the owner **before recording events**. For a bot use kind `agent`:
+
+```sh
+ghostpaw-affinity contact create '{"name":"Desk bot","kind":"agent"}' --bootstrap-owner --json | jq .id
+ghostpaw-affinity contact create '{"name":"Sam","kind":"human","doNotContact":true}' --json | jq .id
+ghostpaw-affinity contact revise '{"contactId":2}' --patch '{"doNotContact":false}'
+```
+
+The tool equivalent is `manage_contact` with
+`{action:"create", input:{name:"Desk bot", kind:"agent", bootstrapOwner:true}}`.
+Create results expose `.id` at the top level; `.entities[]` remains available
+(`jq '.entities[] | select(.kind == "contact") | .id'`).
+
+`doNotContact` defaults to false. Set it on create or revise. True refuses
+outbound and mutual interactions, transactions, commitments and milestones
+with that contact (unspecified direction is treated as outbound). Incoming
+`other_initiated` and observed evidence remain recordable. Explicitly override
+one recording with input `overrideDoNotContact:true`, or the CLI
+`event record --override-do-not-contact` / `commitment record --override-do-not-contact`.
+Reads omit `doNotContact` when false to preserve existing JSON. A merge retains
+the block if either contact is blocked.
