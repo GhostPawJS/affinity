@@ -4,8 +4,11 @@ name: Release binaries
 # smoke-tests it, and on a v* tag attaches the archives, SHA256SUMS (archives
 # and server.mcpb) and build provenance attestations to the GitHub Release
 # that publish.yml creates.
-# Branch pushes, pull requests and manual runs only build and test; nothing
-# is uploaded outside the run's own artifacts.
+# Branch pushes, pull requests and a plain manual run only build and test.
+# workflow_dispatch with attach_to_tag checks out that existing tag (the tag
+# is not moved) and attaches archives plus SHA256SUMS to its GitHub Release,
+# using this workflow ref's smoke test so a smoke-only fix can ship binaries
+# without a new version.
 
 on:
   push:
@@ -18,6 +21,11 @@ on:
       - "package-lock.json"
       - ".github/workflows/release-binaries.yml"
   workflow_dispatch:
+    inputs:
+      attach_to_tag:
+        description: Existing v* tag to attach archives and SHA256SUMS to. Builds that tag's source with this workflow's smoke test. Does not move the tag.
+        required: false
+        type: string
 
 concurrency:
   group: binaries-${{ github.ref }}
@@ -48,6 +56,15 @@ jobs:
           - { target: windows-x64, runner: windows-2025, experimental: false }
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.inputs.attach_to_tag || github.ref }}
+
+      # A smoke-only fix lives on the workflow ref; the tag's tree is unchanged.
+      - name: Use the smoke test from this workflow ref
+        if: github.event.inputs.attach_to_tag != ''
+        run: |
+          git fetch --depth 1 origin ${{ github.sha }}
+          git checkout ${{ github.sha }} -- scripts/sea/smoke.mjs
 
       - uses: actions/setup-node@v7
         with:
@@ -104,8 +121,10 @@ jobs:
   release:
     name: Checksums · Attest · Upload
     needs: build
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.attach_to_tag != ''
     runs-on: ubuntu-24.04
+    env:
+      RELEASE_TAG: ${{ github.event.inputs.attach_to_tag || github.ref_name }}
     permissions:
       contents: write
       id-token: write
@@ -125,12 +144,12 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           for _ in $(seq 1 120); do
-            if gh release download "$GITHUB_REF_NAME" -p server.mcpb -D upload --clobber >/dev/null 2>&1; then
+            if gh release download "$RELEASE_TAG" -p server.mcpb -D upload --clobber >/dev/null 2>&1; then
               exit 0
             fi
             sleep 15
           done
-          echo "::error::Release $GITHUB_REF_NAME with server.mcpb did not appear within 30 minutes"
+          echo "::error::Release $RELEASE_TAG with server.mcpb did not appear within 30 minutes"
           exit 1
 
       - name: SHA256SUMS
@@ -152,4 +171,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: gh release upload "$GITHUB_REF_NAME" upload/ghostpaw-affinity-* upload/SHA256SUMS --clobber
+        run: gh release upload "$RELEASE_TAG" upload/ghostpaw-affinity-* upload/SHA256SUMS --clobber

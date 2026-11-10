@@ -64,12 +64,16 @@ const found = JSON.parse(
 if (found.data?.items?.length !== 1)
   fail(`read failed: ${JSON.stringify(found)}`);
 
+// tools/list can exceed a 64 KiB pipe chunk (0.7.1 is 65_600 bytes). Parse
+// only complete newline-terminated JSON-RPC lines so a partial "id":2 payload
+// cannot throw before the rest of the line arrives.
 const tools = await new Promise((done) => {
   const child = spawn(binary, ["mcp", "--db", db], {
     stdio: ["pipe", "pipe", "pipe"],
   });
   let out = "";
   let err = "";
+  let settled = false;
   child.stderr.on("data", (chunk) => {
     err += String(chunk);
   });
@@ -77,18 +81,32 @@ const tools = await new Promise((done) => {
     () => fail("mcp did not answer within 10 s"),
     10_000,
   );
-  child.stdout.setEncoding("utf8");
-  child.stdout.on("data", (chunk) => {
-    out += chunk;
-    const line = out.split("\n").find((l) => l.includes('"id":2'));
-    if (!line) return;
+  const finish = (listed) => {
+    if (settled) return;
+    settled = true;
     clearTimeout(timer);
-    const listed = JSON.parse(line).result?.tools ?? [];
     child.once("exit", (code) => {
       if (code !== 0 || err) fail(`mcp exited ${code}: ${err}`);
       done(listed);
     });
     child.stdin.end();
+  };
+  child.stdout.setEncoding("utf8");
+  child.stdout.on("data", (chunk) => {
+    out += chunk;
+    const lines = out.split("\n");
+    out = lines.pop() ?? "";
+    for (const line of lines) {
+      if (!line.includes('"id":2')) continue;
+      let listed;
+      try {
+        listed = JSON.parse(line).result?.tools ?? [];
+      } catch (error) {
+        fail(`mcp tools/list was not valid JSON: ${error}`);
+      }
+      finish(listed);
+      return;
+    }
   });
   const send = (msg) =>
     child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", ...msg })}\n`);
