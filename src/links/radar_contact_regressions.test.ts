@@ -48,6 +48,7 @@ test("radar explains overdue promises and drift; commitments and resolutions pre
           commitmentType: "promise",
           occurredAt: now,
           dueAt: Date.parse("2026-10-15T23:59:59.999Z"),
+          dueOn: "2026-10-15",
           summary: `Proposal for ${c.name}`,
           significance: 5,
           participants: participants(c.id),
