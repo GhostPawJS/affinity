@@ -2,8 +2,9 @@ import { type Readable, Writable } from "node:stream";
 import { batchSchema } from "./batch_schema.ts";
 import { CliUsageError, readFileValue } from "./cli_args.ts";
 import { FILE_ARGS, cliCommands, runCliCommand } from "./cli_commands.ts";
-import { cliExitCode, humanResult, plainJson } from "./cli_output.ts";
+import { cliExitCode, renderCliResult } from "./cli_output.ts";
 import { payloadSchema } from "./cli_payload.ts";
+import { readStdin } from "./read_stdin.ts";
 import type { JsonSchema, SurfaceTool } from "./surface_types.ts";
 import { validateInput } from "./validate_input.ts";
 
@@ -239,17 +240,12 @@ async function runToolCliInternal<TCtx>(
   }
   let input: unknown = {};
   try {
-    const readStdin = async () => {
-      let text = "";
-      for await (const chunk of stdin) text += String(chunk);
-      return text;
-    };
     if (command === "call") {
       if (args.length > 1) return fail("Expected a single JSON argument");
       const raw = args[0];
       input = JSON.parse(
         raw === "-" || (raw === undefined && !stdin.isTTY)
-          ? await readStdin()
+          ? await readStdin(stdin)
           : raw === undefined
             ? "{}"
             : readFileValue(raw, "call input"),
@@ -276,10 +272,6 @@ async function runToolCliInternal<TCtx>(
               return value;
             throw new Error("Expected JSON");
           }
-          if (
-            branches.some((branch) => !validateInput(branch, converted).length)
-          )
-            return converted;
           return converted;
         }
         return value;
@@ -310,7 +302,7 @@ async function runToolCliInternal<TCtx>(
             schema.oneOf ||
             schema.anyOf)
         )
-          raw = await readStdin();
+          raw = await readStdin(stdin);
         else if (FILE_ARGS.has(property)) raw = readFileValue(raw, property);
         if (schema.type === "array") {
           const prior = values[property];
@@ -364,9 +356,13 @@ async function runToolCliInternal<TCtx>(
       input as Record<string, unknown>,
     );
     stdout.write(
-      explicitJson || !(stdout as { isTTY?: boolean }).isTTY
-        ? `${JSON.stringify(plainJson(result, compact || (!explicitJson && !(stdout as { isTTY?: boolean }).isTTY), options.formatError), null, compact ? undefined : 2)}\n`
-        : humanResult(result),
+      renderCliResult(
+        result,
+        explicitJson,
+        compact,
+        stdout,
+        options.formatError,
+      ),
     );
     const code = cliExitCode(result);
     if (code) {

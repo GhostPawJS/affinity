@@ -1,17 +1,6 @@
 import type { AffinityDb } from "../database.ts";
-import { AffinityInvariantError } from "../lib/errors/affinity_invariant_error.ts";
+import { requireOwnerContactId } from "./queries.ts";
 
 export function getOwnerContactId(db: AffinityDb): number {
-  const row = db
-    .prepare(
-      `SELECT id FROM contacts
-       WHERE is_owner = 1 AND deleted_at IS NULL`,
-    )
-    .get();
-  if (row === undefined) {
-    throw new AffinityInvariantError(
-      "owner contact not found; create the owner contact first with contact create --bootstrap-owner (tool: manage_contact action=create, input.bootstrapOwner: true)",
-    );
-  }
-  return Number((row as { id: number }).id);
+  return requireOwnerContactId(db);
 }

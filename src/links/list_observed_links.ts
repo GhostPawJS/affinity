@@ -5,6 +5,7 @@ import type { LinkListItem } from "../lib/types/link_list_item.ts";
 import type { LinkListReadFilters } from "../lib/types/link_list_read_filters.ts";
 import type { LinkRow } from "../lib/types/link_row.ts";
 import type { AffinityListReadOptions } from "../lib/types/read_list_options.ts";
+import { linkColumns } from "./columns.ts";
 import { mapLinkRowToLinkListItem } from "./mappers.ts";
 
 export function listObservedLinks(
@@ -30,9 +31,7 @@ export function listObservedLinks(
   const where = clauses.join(" AND ");
   const rows = db
     .prepare(
-      `SELECT l.id, l.from_contact_id, l.to_contact_id, l.kind, l.role, l.is_structural,
-              l.rank, l.affinity, l.trust, l.state, l.cadence_days, l.pinned_cadence_days, l.bond,
-              l.created_at, l.updated_at, l.removed_at
+      `SELECT ${linkColumns("l")}
        FROM links l
        INNER JOIN contacts c_from ON c_from.id = l.from_contact_id
          AND c_from.deleted_at IS NULL AND c_from.lifecycle_state != 'merged'

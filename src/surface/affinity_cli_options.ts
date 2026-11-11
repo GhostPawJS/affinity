@@ -7,6 +7,7 @@ import { affinityCliError } from "./affinity_cli_errors.ts";
 import { affinitySurfaceTools } from "./affinity_surface_tools.ts";
 import { cliVersion, cliVersionInfo } from "./cli_version.ts";
 import { normalizeTimeInputs } from "./plain_dates.ts";
+import { readOnlyTool } from "./read_only_tool.ts";
 import { resolveAffinityDbPath } from "./resolve_affinity_db_path.ts";
 
 export const affinityCliOptions: ToolCliOptions<AffinityDb> = {
@@ -26,11 +27,7 @@ export const affinityCliOptions: ToolCliOptions<AffinityDb> = {
       dbPath === undefined ? {} : { flag: dbPath },
     );
     const { openAffinityDb } = await import("./open_affinity_db.ts");
-    if (
-      tool.readOnly ||
-      (tool.name === "manage_contact" &&
-        (input as { action?: string }).action === "export")
-    )
+    if (readOnlyTool(tool, input))
       return openAffinityDb(path, { readOnly: true });
     if (path === ":memory:" || existsSync(path)) return undefined;
     const { cliExitCode } = await import("../surfaces/cli_output.ts");
@@ -50,10 +47,7 @@ export const affinityCliOptions: ToolCliOptions<AffinityDb> = {
   },
   versionInfo: () => cliVersionInfo(affinityVersion),
   contextError: (db, tool, input) => {
-    const readOnly =
-      tool.readOnly ||
-      (tool.name === "manage_contact" &&
-        (input as { action?: string }).action === "export");
+    const readOnly = readOnlyTool(tool, input);
     const path = resolveAffinityDbPath(db === undefined ? {} : { flag: db });
     return readOnly && path !== ":memory:" && !existsSync(path)
       ? `Database not found: ${path} (it is created by the first write)`

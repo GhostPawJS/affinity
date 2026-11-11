@@ -11,6 +11,8 @@ import type { LinkDetailRecord } from "../lib/types/link_detail_record.ts";
 import type { ExternalRef } from "../lib/types/social_event_input.ts";
 import { getLinkDetail } from "../links/get_link_detail.ts";
 import { externalRefSchema } from "./event_metadata_schema.ts";
+import { linkLocatorSchema } from "./locator_schema.ts";
+import { contactLocatorSchema } from "./locator_schema.ts";
 import type { TimeInputs } from "./parse_time_input.ts";
 import {
   defineAffinityTool,
@@ -57,42 +59,6 @@ export type InspectAffinityItemToolData =
 
 export type InspectAffinityItemToolResult =
   ToolResult<InspectAffinityItemToolData>;
-
-function contactLocatorSchema(description: string) {
-  return {
-    type: "object" as const,
-    properties: {
-      contactId: integerSchema("Exact contact id."),
-      identity: objectSchema(
-        {
-          type: stringSchema("Identity type."),
-          value: stringSchema("Identity value."),
-        },
-        ["type", "value"],
-        "Contact identity locator.",
-      ),
-    },
-    description,
-  };
-}
-
-function linkLocatorSchema(description: string) {
-  return {
-    type: "object" as const,
-    properties: {
-      linkId: integerSchema("Exact link id."),
-      endpoints: objectSchema(
-        {
-          fromContactId: integerSchema("From contact id."),
-          toContactId: integerSchema("To contact id."),
-        },
-        ["fromContactId", "toContactId"],
-        "Endpoint-based link locator.",
-      ),
-    },
-    description,
-  };
-}
 
 export function inspectAffinityItemToolHandler(
   db: AffinityDb,

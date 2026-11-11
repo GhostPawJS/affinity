@@ -274,3 +274,17 @@ export function humanResult(value: unknown): string {
   }
   return `${r.summary ?? ""}\n`;
 }
+
+/** Format command results consistently for terminals and pipes. */
+export function renderCliResult(
+  result: unknown,
+  json: boolean,
+  compact: boolean,
+  stdout: object,
+  formatError?: (message: string) => string,
+): string {
+  const piped = !(stdout as { isTTY?: boolean }).isTTY;
+  return json || piped
+    ? `${JSON.stringify(plainJson(result, compact || (!json && piped), formatError), null, compact ? undefined : 2)}\n`
+    : humanResult(result);
+}

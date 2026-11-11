@@ -4,6 +4,7 @@ import { schemaUpgradeHint } from "./affinity_cli_errors.ts";
 import { affinityMcpOptions } from "./affinity_mcp_options.ts";
 import { affinityMcpSurfaceTools } from "./affinity_surface_tools.ts";
 import { openAffinityDb } from "./open_affinity_db.ts";
+import { readOnlyTool } from "./read_only_tool.ts";
 import { resolveAffinityDbPath } from "./resolve_affinity_db_path.ts";
 
 export function affinityOwnedMcpServer(options: {
@@ -21,9 +22,7 @@ export function affinityOwnedMcpServer(options: {
         const db =
           options.db ??
           (await openAffinityDb(path, {
-            readOnly:
-              tool.readOnly ||
-              (tool.name === "manage_contact" && input.action === "export"),
+            readOnly: readOnlyTool(tool, input),
           }));
         try {
           const result = await tool.handler(db, input);

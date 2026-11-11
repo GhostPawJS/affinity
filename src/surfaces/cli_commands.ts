@@ -6,13 +6,9 @@ import {
   parseCliArgs,
   renderCliHelp,
 } from "./cli_args.ts";
-import {
-  cliExitCode,
-  humanResult,
-  plainJson,
-  suggestCommand,
-} from "./cli_output.ts";
+import { cliExitCode, renderCliResult, suggestCommand } from "./cli_output.ts";
 import { payloadHelp } from "./cli_payload.ts";
+import { readStdin } from "./read_stdin.ts";
 import type { JsonSchema, SurfaceTool } from "./surface_types.ts";
 import { validateInput } from "./validate_input.ts";
 
@@ -327,8 +323,6 @@ export async function runCliCommand<T>(
         );
       else if (shell === "fish")
         stdout.write(`complete -c ${options.bin} -f -a '${words.join(" ")}'\n`);
-      else
-        throw new CliUsageError("Expected completion shell: bash, zsh or fish");
       return 0;
     }
     // Diagnose flags before command matching, including flags before a command.
@@ -405,8 +399,7 @@ export async function runCliCommand<T>(
     // harnesses often spawn with an open, never-closed stdin pipe.
     if (stdinIndex !== undefined || (!rest.length && !stdin.isTTY)) {
       if (stdinIndex !== undefined) rest.splice(stdinIndex, 1);
-      let raw = "";
-      for await (const chunk of stdin) raw += String(chunk);
+      const raw = await readStdin(stdin);
       try {
         base = raw.trim() ? JSON.parse(raw) : {};
       } catch {
@@ -448,8 +441,7 @@ export async function runCliCommand<T>(
       if (!schema || !flag || flag.type === "boolean") continue;
       const raw = equal < 0 ? rest[i + 1] : token.slice(equal + 1);
       if (raw === "-" && (flag.type === "json" || flag.type === "array")) {
-        let text = "";
-        for await (const chunk of stdin) text += String(chunk);
+        const text = await readStdin(stdin);
         if (equal < 0) rest[i + 1] = text;
         else rest[i] = `${token.slice(0, equal + 1)}${text}`;
       }
@@ -516,9 +508,7 @@ export async function runCliCommand<T>(
         );
       if (!quiet)
         stdout.write(
-          json || !(stdout as { isTTY?: boolean }).isTTY
-            ? `${JSON.stringify(plainJson(result, compact || (!json && !(stdout as { isTTY?: boolean }).isTTY), options.formatError), null, compact ? undefined : 2)}\n`
-            : humanResult(result),
+          renderCliResult(result, json, compact, stdout, options.formatError),
         );
       return code;
     } finally {

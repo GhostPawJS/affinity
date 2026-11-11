@@ -13,6 +13,8 @@ import {
 import { seedSocialLink } from "../links/seed_social_link.ts";
 import { setStructuralTie } from "../links/set_structural_tie.ts";
 import type { LinkState } from "../links/types.ts";
+import { discriminatedLinkLocatorSchema } from "./locator_schema.ts";
+import { contactLocatorSchema } from "./locator_schema.ts";
 import type { TimeInputs } from "./parse_time_input.ts";
 import {
   booleanSchema,
@@ -81,45 +83,6 @@ export type ManageRelationshipToolInput =
 export type ManageRelationshipToolResult = ToolResult<
   MutationToolData<LinkListItem>
 >;
-
-function contactLocatorSchema(description: string) {
-  return {
-    type: "object" as const,
-    properties: {
-      contactId: integerSchema("Exact contact id."),
-      identity: objectSchema(
-        {
-          type: stringSchema("Identity type."),
-          value: stringSchema("Identity value."),
-        },
-        ["type", "value"],
-        "Contact identity locator.",
-      ),
-    },
-    description,
-  };
-}
-
-function linkLocatorSchema(description: string) {
-  return {
-    type: "object" as const,
-    properties: {
-      linkId: integerSchema("Exact link id."),
-      endpoints: objectSchema(
-        {
-          fromContactId: integerSchema("From contact id."),
-          toContactId: integerSchema("To contact id."),
-          kind: stringSchema("Optional link kind."),
-          role: stringSchema("Optional link role."),
-          isStructural: booleanSchema("Optional structural discriminator."),
-        },
-        ["fromContactId", "toContactId"],
-        "Endpoint-based link locator.",
-      ),
-    },
-    description,
-  };
-}
 
 export function manageRelationshipToolHandler(
   db: AffinityDb,
@@ -342,7 +305,7 @@ export const manageRelationshipTool = defineAffinityTool<
         description:
           "Full payload for seed_social_link or set_structural_tie. Alternative to top-level kind/role.",
       },
-      link: linkLocatorSchema(
+      link: discriminatedLinkLocatorSchema(
         "Target link. Required when action=revise_bond, override_state, or remove_structural_tie. Provide linkId or endpoints.",
       ),
       bond: nullableStringSchema(

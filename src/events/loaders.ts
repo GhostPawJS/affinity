@@ -82,37 +82,7 @@ export function batchLoadEventRecords(
        FROM events e LEFT JOIN open_commitments oc ON oc.event_id = e.id WHERE e.id IN (${ph}) AND e.deleted_at IS NULL`,
     )
     .all(...eventIds) as unknown as EventRow[];
-  const partRows = db
-    .prepare(
-      `SELECT event_id, contact_id, role, directionality
-       FROM event_participants WHERE event_id IN (${ph})`,
-    )
-    .all(...eventIds) as {
-    event_id: number;
-    contact_id: number;
-    role: string;
-    directionality:
-      | "owner_initiated"
-      | "other_initiated"
-      | "mutual"
-      | "observed"
-      | null;
-  }[];
-  const partsByEvent = new Map<number, EventParticipantView[]>();
-  for (const p of partRows) {
-    let arr = partsByEvent.get(p.event_id);
-    if (!arr) {
-      arr = [];
-      partsByEvent.set(p.event_id, arr);
-    }
-    arr.push({
-      contactId: p.contact_id,
-      role: p.role as EventParticipantRole,
-      ...(p.directionality === null
-        ? {}
-        : { directionality: p.directionality }),
-    });
-  }
+  const partsByEvent = batchLoadEventParticipantViews(db, eventIds);
   const rowById = new Map(eventRows.map((r) => [r.id, r]));
   const out: EventRecord[] = [];
   for (const id of eventIds) {

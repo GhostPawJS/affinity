@@ -2,13 +2,12 @@ import type { AffinityDb } from "../database.ts";
 import { AffinityInvariantError } from "../lib/errors/affinity_invariant_error.ts";
 import { AffinityNotFoundError } from "../lib/errors/affinity_not_found_error.ts";
 import type { LinkRow } from "../lib/types/link_row.ts";
+import { linkColumns } from "./columns.ts";
 
 export function getLinkRowById(db: AffinityDb, id: number): LinkRow | null {
   const row = db
     .prepare(
-      `SELECT id, from_contact_id, to_contact_id, kind, role, is_structural,
-              rank, affinity, trust, state, cadence_days, pinned_cadence_days, bond,
-              created_at, updated_at, removed_at
+      `SELECT ${linkColumns()}
        FROM links
        WHERE id = ? AND removed_at IS NULL`,
     )
@@ -49,9 +48,7 @@ export function findLiveRelationalLinkAnyDirection(
 ): LinkRow | null {
   const row = db
     .prepare(
-      `SELECT id, from_contact_id, to_contact_id, kind, role, is_structural,
-              rank, affinity, trust, state, cadence_days, pinned_cadence_days, bond,
-              created_at, updated_at, removed_at
+      `SELECT ${linkColumns()}
        FROM links
        WHERE is_structural = 0 AND removed_at IS NULL
          AND (
@@ -80,9 +77,7 @@ export function findLiveStructuralTie(
   const roleKey = roleNormalized === null ? "" : roleNormalized;
   const row = db
     .prepare(
-      `SELECT id, from_contact_id, to_contact_id, kind, role, is_structural,
-              rank, affinity, trust, state, cadence_days, pinned_cadence_days, bond,
-              created_at, updated_at, removed_at
+      `SELECT ${linkColumns()}
        FROM links
        WHERE from_contact_id = ? AND to_contact_id = ? AND kind = ?
          AND is_structural = 1 AND removed_at IS NULL

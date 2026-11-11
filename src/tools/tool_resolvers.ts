@@ -8,6 +8,7 @@ import type { AffinityError } from "../lib/errors/affinity_error.ts";
 import { isAffinityError } from "../lib/errors/is_affinity_error.ts";
 import type { ContactRow } from "../lib/types/contact_row.ts";
 import type { LinkRow } from "../lib/types/link_row.ts";
+import { linkColumns } from "../links/columns.ts";
 import { getLinkRowById } from "../links/queries.ts";
 import { toContactEntityRef, toLinkEntityRef } from "./tool_ref.ts";
 import {
@@ -135,18 +136,7 @@ export function resolveContactLocator(
     };
   }
   const matchedContact = row[0];
-  if (matchedContact === undefined) {
-    return {
-      ok: false,
-      result: toolFailure(
-        "system",
-        "system_error",
-        "Contact resolution failed.",
-        "Expected one contact match but none could be loaded.",
-      ),
-    };
-  }
-  return { ok: true, value: matchedContact };
+  return { ok: true, value: matchedContact as ContactRow };
 }
 
 export function resolveLinkLocator(
@@ -212,9 +202,7 @@ export function resolveLinkLocator(
   }
   const rows = db
     .prepare(
-      `SELECT id, from_contact_id, to_contact_id, kind, role, is_structural,
-              rank, affinity, trust, state, cadence_days, pinned_cadence_days, bond,
-              created_at, updated_at, removed_at
+      `SELECT ${linkColumns()}
        FROM links
        WHERE ${clauses.join(" AND ")}
        ORDER BY id ASC
@@ -250,18 +238,7 @@ export function resolveLinkLocator(
     };
   }
   const matchedLink = rows[0];
-  if (matchedLink === undefined) {
-    return {
-      ok: false,
-      result: toolFailure(
-        "system",
-        "system_error",
-        "Link resolution failed.",
-        "Expected one link match but none could be loaded.",
-      ),
-    };
-  }
-  return { ok: true, value: matchedLink };
+  return { ok: true, value: matchedLink as LinkRow };
 }
 
 export function mapErrorToToolFailure(

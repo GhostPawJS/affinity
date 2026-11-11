@@ -2,6 +2,7 @@ import { searchContacts } from "../contacts/search_contacts.ts";
 import type { ContactKind, ContactLifecycleState } from "../contacts/types.ts";
 import type { AffinityDb } from "../database.ts";
 import { searchEvents } from "../events/event_discovery.ts";
+import { definedOptions } from "../lib/defined_options.ts";
 import type { TimeInputs } from "./parse_time_input.ts";
 import {
   arraySchema,
@@ -132,35 +133,25 @@ function searchPage(
         { entities: items },
       );
     }
-    const options = {
-      ...(input.limit === undefined ? {} : { limit: input.limit }),
-      ...(input.offset === undefined ? {} : { offset: input.offset }),
-    };
+    const options = definedOptions({
+      limit: input.limit,
+      offset: input.offset,
+    });
     const rows =
       input.scope === "events"
         ? []
         : searchContacts(
             db,
             input.query,
-            {
-              ...(input.attribute === undefined
-                ? {}
-                : { attribute: input.attribute }),
-              ...(input.tag === undefined ? {} : { tag: input.tag }),
-              ...(input.includeLost === undefined
-                ? {}
-                : { includeLost: input.includeLost }),
-              ...(input.kind === undefined ? {} : { kind: input.kind }),
-              ...(input.lifecycleState === undefined
-                ? {}
-                : { lifecycleState: input.lifecycleState }),
-              ...(input.includeOwner === undefined
-                ? {}
-                : { includeOwner: input.includeOwner }),
-              ...(input.includeDormant === undefined
-                ? {}
-                : { includeDormant: input.includeDormant }),
-            },
+            definedOptions({
+              attribute: input.attribute,
+              tag: input.tag,
+              includeLost: input.includeLost,
+              kind: input.kind,
+              lifecycleState: input.lifecycleState,
+              includeOwner: input.includeOwner,
+              includeDormant: input.includeDormant,
+            }),
             options,
           );
     const items = [

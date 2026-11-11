@@ -1,6 +1,7 @@
 import type { AffinityDb } from "../database.ts";
 import type { LinkListItem } from "../lib/types/link_list_item.ts";
 import type { LinkRow } from "../lib/types/link_row.ts";
+import { linkColumns } from "./columns.ts";
 import { mapLinkRowToLinkListItem } from "./mappers.ts";
 
 /**
@@ -14,9 +15,7 @@ export function getLinksBetween(
 ): LinkListItem[] {
   const rows = db
     .prepare(
-      `SELECT id, from_contact_id, to_contact_id, kind, role, is_structural,
-              rank, affinity, trust, state, cadence_days, pinned_cadence_days, bond,
-              created_at, updated_at, removed_at
+      `SELECT ${linkColumns()}
        FROM links
        WHERE removed_at IS NULL
          AND (

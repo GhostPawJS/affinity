@@ -2,6 +2,7 @@ import type { AffinityDb } from "../database.ts";
 import type { DismissedPairRef } from "../lib/types/dismissed_pair_ref.ts";
 import { dismissDuplicate } from "../merges/dismiss_duplicate.ts";
 import { undismissDuplicate } from "../merges/undismiss_duplicate.ts";
+import { contactLocatorSchema } from "./locator_schema.ts";
 import type { TimeInputs } from "./parse_time_input.ts";
 import {
   defineAffinityTool,
@@ -43,24 +44,6 @@ export type DismissalToolData = Omit<
 };
 
 export type ManageDuplicateDismissalToolResult = ToolResult<DismissalToolData>;
-
-function contactLocatorSchema(description: string) {
-  return {
-    type: "object" as const,
-    properties: {
-      contactId: integerSchema("Exact contact id."),
-      identity: objectSchema(
-        {
-          type: stringSchema("Identity type."),
-          value: stringSchema("Identity value."),
-        },
-        ["type", "value"],
-        "Contact identity locator.",
-      ),
-    },
-    description,
-  };
-}
 
 export function manageDuplicateDismissalToolHandler(
   db: AffinityDb,

@@ -5,6 +5,7 @@ import type { AttributeEntry } from "../lib/types/attribute_entry.ts";
 import type { ContactProfileRecord } from "../lib/types/contact_profile_record.ts";
 import type { IdentityRow } from "../lib/types/identity_row.ts";
 import type { LinkRow } from "../lib/types/link_row.ts";
+import { linkColumns } from "../links/columns.ts";
 import { mapLinkRowToLinkListItem } from "../links/mappers.ts";
 import { mapContactRowToContactCore } from "./mappers.ts";
 import { getContactRowById } from "./queries.ts";
@@ -41,9 +42,7 @@ export function loadContactProfileRecord(
   }));
   const linkRows = db
     .prepare(
-      `SELECT l.id, l.from_contact_id, l.to_contact_id, l.kind, l.role, l.is_structural,
-              rank, affinity, trust, state, cadence_days, pinned_cadence_days, bond,
-              created_at, l.updated_at, removed_at
+      `SELECT ${linkColumns("l")}
        FROM links l
        LEFT JOIN link_rollups lr ON lr.link_id = l.id
        WHERE l.is_structural = 0 AND l.removed_at IS NULL

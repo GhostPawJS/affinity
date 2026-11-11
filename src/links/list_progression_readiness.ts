@@ -5,6 +5,7 @@ import { resolveListLimitOffset } from "../lib/read/resolve_list_limit_offset.ts
 import type { LinkListItem } from "../lib/types/link_list_item.ts";
 import type { LinkRow } from "../lib/types/link_row.ts";
 import type { AffinityListReadOptions } from "../lib/types/read_list_options.ts";
+import { linkColumns } from "./columns.ts";
 import { mapLinkRowToLinkListItem } from "./mappers.ts";
 import type { LinkKind } from "./types.ts";
 
@@ -33,9 +34,7 @@ export function listProgressionReadiness(
   const where = clauses.join(" AND ");
   const orderedRows = db
     .prepare(
-      `SELECT l.id, l.from_contact_id, l.to_contact_id, l.kind, l.role, l.is_structural,
-              l.rank, l.affinity, l.trust, l.state, l.cadence_days, l.pinned_cadence_days, l.bond,
-              l.created_at, l.updated_at, l.removed_at
+      `SELECT ${linkColumns("l")}
        FROM links l
        LEFT JOIN link_rollups lr ON lr.link_id = l.id
        WHERE ${where}

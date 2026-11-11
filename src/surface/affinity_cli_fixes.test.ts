@@ -1,5 +1,11 @@
 import assert from "node:assert/strict";
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { Readable, Writable } from "node:stream";
@@ -320,6 +326,13 @@ test("embedded guides, help, list and suggestions are accessible without a datab
   assert.ok(Buffer.byteLength(skill) < 16000);
   assert.doesNotMatch(skill, /\| input\.name \|/);
   const toolsGuide = affinitySkillCommand(["tools"]);
+  assert.equal(
+    toolsGuide,
+    readFileSync(
+      new URL("../../skills/affinity/references/tools.md", import.meta.url),
+      "utf8",
+    ),
+  );
   assert.match(toolsGuide, /"name"/);
   assert.match(toolsGuide, /ghostpaw-affinity contact create/);
   assert.match(list, /tools\tTool parameters/);

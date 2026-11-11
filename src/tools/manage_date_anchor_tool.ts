@@ -9,6 +9,8 @@ import type {
 import type { EventRecord } from "../lib/types/event_record.ts";
 import type { ReviseDateAnchorOptions } from "../lib/types/revise_date_anchor_options.ts";
 import type { ReviseDateAnchorPatch } from "../lib/types/revise_date_anchor_patch.ts";
+import { discriminatedLinkLocatorSchema } from "./locator_schema.ts";
+import { contactLocatorSchema } from "./locator_schema.ts";
 import type { TimeInputs } from "./parse_time_input.ts";
 import {
   booleanSchema,
@@ -58,45 +60,6 @@ export type ManageDateAnchorToolInput =
 export type ManageDateAnchorToolResult = ToolResult<
   MutationToolData<EventRecord>
 >;
-
-function contactLocatorSchema(description: string) {
-  return {
-    type: "object" as const,
-    properties: {
-      contactId: integerSchema("Exact contact id."),
-      identity: objectSchema(
-        {
-          type: stringSchema("Identity type."),
-          value: stringSchema("Identity value."),
-        },
-        ["type", "value"],
-        "Contact identity locator.",
-      ),
-    },
-    description,
-  };
-}
-
-function linkLocatorSchema(description: string) {
-  return {
-    type: "object" as const,
-    properties: {
-      linkId: integerSchema("Exact link id."),
-      endpoints: objectSchema(
-        {
-          fromContactId: integerSchema("From contact id."),
-          toContactId: integerSchema("To contact id."),
-          kind: stringSchema("Optional link kind."),
-          role: stringSchema("Optional link role."),
-          isStructural: booleanSchema("Optional structural discriminator."),
-        },
-        ["fromContactId", "toContactId"],
-        "Endpoint-based link locator.",
-      ),
-    },
-    description,
-  };
-}
 
 function resolveDateAnchorTarget(
   db: AffinityDb,
@@ -232,7 +195,7 @@ export const manageDateAnchorTool = defineAffinityTool<
               contact: contactLocatorSchema(
                 "Contact locator. Required when kind=contact. Provide contactId or identity.",
               ),
-              link: linkLocatorSchema(
+              link: discriminatedLinkLocatorSchema(
                 "Link locator. Required when kind=link. Provide linkId or endpoints.",
               ),
             },

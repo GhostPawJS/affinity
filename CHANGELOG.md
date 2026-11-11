@@ -8,6 +8,7 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ### Fixed
 
+- Shrink the CLI bundle from 401 KB to 356 KB minified (114 KB to 106 KB gzip) by sharing event recording, locator schemas, read options, SQL projections and CLI rendering; the embedded tools guide is rendered from its spec with unchanged content.
 - Open CLI and MCP reads read-only without initialization or migration; keep missing databases absent, offer explicit `migrate`, and report schema upgrades on stderr.
 - Suggest valid subcommands for unknown command help, including `contact revise` for `contact update`.
 

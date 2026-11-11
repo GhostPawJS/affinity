@@ -13,6 +13,7 @@ import type { MutationReceipt } from "../lib/types/mutation_receipt.ts";
 import type { ReviseContactPatch } from "../lib/types/revise_contact_patch.ts";
 import type { SetContactLifecycleOptions } from "../lib/types/set_contact_lifecycle_options.ts";
 import { createContactToolResult } from "./create_contact_tool_result.ts";
+import { contactLocatorSchema } from "./locator_schema.ts";
 import type { TimeInputs } from "./parse_time_input.ts";
 import {
   arraySchema,
@@ -66,24 +67,6 @@ export type ManageContactToolResult = ToolResult<
       changes: { entity: string; id: number; action: string }[];
     }
 >;
-
-function contactLocatorSchema(description: string) {
-  return {
-    type: "object" as const,
-    properties: {
-      contactId: integerSchema("Exact contact id."),
-      identity: objectSchema(
-        {
-          type: stringSchema("Identity type."),
-          value: stringSchema("Identity value."),
-        },
-        ["type", "value"],
-        "Contact identity locator.",
-      ),
-    },
-    description,
-  };
-}
 
 export function manageContactToolHandler(
   db: AffinityDb,
