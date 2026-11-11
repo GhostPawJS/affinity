@@ -233,7 +233,7 @@ Pin a fixed rhythm with `manage_relationship` action `seed_social_link`,
 unpins and restores derived cadence. Positive fractional days are accepted.
 When upgrading a database with the previous contact-kind constraint, initialize
 outside a caller transaction so SQLite can preserve foreign-key references while
-rebuilding the contacts table. CLI and MCP handle this during startup.
+rebuilding the contacts table. CLI and MCP write commands handle this when opening the database and report schema upgrades on stderr. Read commands open read-only; use `ghostpaw-affinity migrate` to upgrade explicitly.
 Link results expose effective `cadenceDays` and `cadencePinned`.
 Contact profiles include open commitments with id (eventId), type, summary, due and
 overdue status. `describe manage_relationship` lists nested seed and revise fields.

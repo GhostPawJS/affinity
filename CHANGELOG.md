@@ -6,6 +6,11 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ## [Unreleased]
 
+### Fixed
+
+- Open CLI and MCP reads read-only without initialization or migration; keep missing databases absent, offer explicit `migrate`, and report schema upgrades on stderr.
+- Suggest valid subcommands for unknown command help, including `contact revise` for `contact update`.
+
 ## [0.7.1] - 2026-11-10
 
 ### Fixed

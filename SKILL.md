@@ -35,7 +35,7 @@ export GHOSTPAW_AFFINITY_DB=/abs/path/affinity.db
 # Or --db; default ~/.ghostpaw/affinity.db. Piped output is JSON; --compact omits empty receipt arrays.
 # Version: --version includes variant; scripts should use --version --short for exact semver matching.
 # --version --json (or version --json) returns name, version, variant, target (null outside a binary).
-# Missing DB reads exit 3 and create nothing; the first write creates it. MCP creates on startup.
+# CLI/MCP reads are read-only; missing DB exit 3. Writes upgrade with stderr notice; ghostpaw-affinity migrate upgrades explicitly.
 # JSON: --input - reads stdin; @existing-file loads a value, @@x escapes @x. Use stdin/@file for E2BIG.
 # Arrays accept JSON, comma lists or repeats. Tag filters accept gastro-radar or tag:gastro-radar. Use per-command --help for action flags.
 # Exit: 0 ok/no_op, 1 tool error, 2 usage/invalid input, 3 not found/clarification, 4 conflict, 70 internal.

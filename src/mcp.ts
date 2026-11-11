@@ -1,8 +1,5 @@
 import type { AffinityDb } from "./database.ts";
-import { affinityMcpOptions } from "./surface/affinity_mcp_options.ts";
-import { openAffinityDb } from "./surface/open_affinity_db.ts";
-import { resolveAffinityDbPath } from "./surface/resolve_affinity_db_path.ts";
-import { createMcpServer } from "./surfaces/mcp_server.ts";
+import { affinityOwnedMcpServer } from "./surface/affinity_owned_mcp_server.ts";
 
 export { affinityMcpInstructions } from "./surface/affinity_mcp_instructions.ts";
 export { serveAffinityMcp } from "./surface/serve_affinity_mcp.ts";
@@ -18,15 +15,5 @@ export type * from "./surfaces/surface_types.ts";
 export function createAffinityMcpServer(
   options: { db?: AffinityDb; dbPath?: string } = {},
 ) {
-  return createMcpServer(
-    affinityMcpOptions(
-      () =>
-        options.db ??
-        openAffinityDb(
-          resolveAffinityDbPath(
-            options.dbPath === undefined ? {} : { flag: options.dbPath },
-          ),
-        ),
-    ),
-  );
+  return affinityOwnedMcpServer(options);
 }

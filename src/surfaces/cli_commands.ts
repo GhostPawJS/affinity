@@ -74,7 +74,15 @@ export async function runCliCommand<T>(
       );
     return code;
   };
-  const legacy = ["tools", "describe", "call", "mcp", "skill", "batch"];
+  const legacy = [
+    "tools",
+    "describe",
+    "call",
+    "mcp",
+    "skill",
+    "batch",
+    "migrate",
+  ];
   let first: string | undefined;
   for (let i = 0; i < argv.length; i++) {
     const token = argv[i] as string;
@@ -241,12 +249,41 @@ export async function runCliCommand<T>(
         ],
       };
     };
-    if (help) {
-      const matches = tree.filter((command) =>
-        command.path.startsWith(args.join(" ")),
+    const unknownCommand = () => {
+      const path = args
+        .filter((x) => !x.startsWith("--"))
+        .slice(0, 2)
+        .join(" ");
+      const aliases = new Map(
+        tree.map((command) => [command.path, command.path]),
       );
-      if (!entry && !matches.length)
-        throw new CliUsageError(`Unknown command: ${args.join(" ")}`);
+      for (const command of tree) {
+        if (!Object.keys(command.fixed).length)
+          aliases.set(command.tool.name, command.path);
+        if (command.path === "review")
+          for (const view of command.tool.inputSchema.properties?.view?.enum ??
+            []) {
+            aliases.set(String(view).replaceAll(".", " "), `review ${view}`);
+            aliases.set(`review ${view}`, `review ${view}`);
+          }
+      }
+      const suggested =
+        path === "contact update"
+          ? "contact revise"
+          : suggestCommand(path, [...aliases.keys()]);
+      const suggestion = suggested ? aliases.get(suggested) : undefined;
+      return new CliUsageError(
+        `Unknown command: ${path}.${suggestion ? ` Did you mean ${suggestion}?` : ""}`,
+      );
+    };
+    if (help) {
+      const matches = tree.filter(
+        (command) =>
+          !args.length ||
+          command.path === args.join(" ") ||
+          command.path.startsWith(`${args.join(" ")} `),
+      );
+      if (!entry && !matches.length) throw unknownCommand();
       if (!quiet)
         stdout.write(
           entry
@@ -257,7 +294,7 @@ export async function runCliCommand<T>(
                   entry.path,
                   entry.fields,
                 )
-            : `${options.versionLine?.() ?? `${options.bin} ${options.version}`}\n${options.description}\n\nCommands:\n${matches.map((command) => `  ${command.path}`).join("\n")}\n  batch [--chunk N] [--stop-on-error], mcp, skill, tools [--json], describe <tool>, call <tool> [JSON|-], completions <bash|zsh|fish>, version\nGlobal flags: --db <path>, --tz <IANA zone>, --json (or GHOSTPAW_OUTPUT=json), -q, --quiet, --compact, --help/-h, --version/-V/-v, --no-color\n`,
+            : `${options.versionLine?.() ?? `${options.bin} ${options.version}`}\n${options.description}\n\nCommands:\n${matches.map((command) => `  ${command.path}`).join("\n")}\n  migrate, batch [--chunk N] [--stop-on-error], mcp, skill, tools [--json], describe <tool>, call <tool> [JSON|-], completions <bash|zsh|fish>, version\nGlobal flags: --db <path>, --tz <IANA zone>, --json (or GHOSTPAW_OUTPUT=json), -q, --quiet, --compact, --help/-h, --version/-V/-v, --no-color\n`,
         );
       if (options.describeDb && !quiet)
         stdout.write(
@@ -274,6 +311,7 @@ export async function runCliCommand<T>(
         ...new Set(tree.flatMap((command) => command.path.split(" "))),
       ].concat([
         "mcp",
+        "migrate",
         "skill",
         "tools",
         "describe",
@@ -310,30 +348,7 @@ export async function runCliCommand<T>(
         `Unknown flag: ${flag}${suggestion ? `; did you mean ${suggestion}?` : ""}`,
       );
     }
-    if (!entry) {
-      const path = args
-        .filter((x) => !x.startsWith("--"))
-        .slice(0, 2)
-        .join(" ");
-      const aliases = new Map(
-        tree.map((command) => [command.path, command.path]),
-      );
-      for (const command of tree) {
-        if (!Object.keys(command.fixed).length)
-          aliases.set(command.tool.name, command.path);
-        if (command.path === "review")
-          for (const view of command.tool.inputSchema.properties?.view?.enum ??
-            []) {
-            aliases.set(String(view).replaceAll(".", " "), `review ${view}`);
-            aliases.set(`review ${view}`, `review ${view}`);
-          }
-      }
-      const suggested = suggestCommand(path, [...aliases.keys()]);
-      const suggestion = suggested ? aliases.get(suggested) : undefined;
-      throw new CliUsageError(
-        `Unknown command: ${path}.${suggestion ? ` Did you mean ${suggestion}?` : ""}`,
-      );
-    }
+    if (!entry) throw unknownCommand();
     const rest = args.slice(entry.path.split(" ").length);
     const payloadFlags: Record<string, boolean> = {};
     const allowedPayloadFlags =

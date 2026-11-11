@@ -40,6 +40,10 @@ export interface ToolCliOptions<TCtx> {
   openContext(opts: { db?: string; stderr?: Writable }): TCtx | Promise<TCtx>;
   closeContext?: (ctx: TCtx) => void | Promise<void>;
   commands?: {
+    migrate?: (opts: {
+      db?: string;
+      stderr?: Writable;
+    }) => unknown | Promise<unknown>;
     mcp?: (opts: { db?: string }) => unknown | Promise<unknown>;
     skill?: (args?: string[]) => string | Promise<string>;
     batch?: (
@@ -178,6 +182,18 @@ async function runToolCliInternal<TCtx>(
         error instanceof CliUsageError ? 2 : 70,
       );
     }
+    return 0;
+  }
+  if (command === "migrate") {
+    if (!options.commands?.migrate) return fail("migrate command unavailable");
+    if (args.includes("--help") || args.includes("-h")) {
+      stdout.write(
+        `Usage: ${options.bin} [--db path] migrate\nCreate or upgrade the database schema. Schema upgrades are reported on stderr.\n`,
+      );
+      return 0;
+    }
+    if (args.length) return fail("migrate accepts no arguments");
+    await options.commands.migrate({ ...ctxOptions, stderr });
     return 0;
   }
   if (command === "mcp") {
@@ -332,9 +348,10 @@ async function runToolCliInternal<TCtx>(
     options.beforeContext?.(db, stderr, quiet);
     context =
       (await options.preflight?.(tool, input, db)) ??
-      (await options.openContext(
-        options.reportCreation ? { ...ctxOptions, stderr } : ctxOptions,
-      ));
+      (await options.openContext({
+        ...ctxOptions,
+        ...(options.reportCreation ? { stderr } : {}),
+      }));
   } catch (cause) {
     return fail(
       `internal error: ${cause instanceof Error ? cause.message : String(cause)}`,

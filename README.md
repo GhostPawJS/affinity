@@ -402,13 +402,21 @@ Read commands (search, show, review and contact export, including direct tool
 calls) exit 3 on a missing database without creating files:
 `Database not found: <path> (it is created by the first write)`.
 The first write creates the database and reports `created <path>` on stderr.
-The MCP server continues to create its database on startup.
+Read commands open SQLite read-only: they never initialize or migrate the schema
+or switch journal mode. Explicit `:memory:` stores retain transient initialization
+and then enable query-only mode. This also applies to read-only facade tools over MCP.
+Writes upgrade older schemas and print `Affinity database schema upgraded.` to
+stderr when the schema changes. Run `ghostpaw-affinity migrate --db <path>` to
+upgrade explicitly. Reads that require a newer schema suggest this command.
+MCP opens the database per tool call; its first write creates the database.
 
 String-valued flags such as `--value Hamburg`, `--bond 'Warm lead'` and
 `--reason 'Different people'` accept plain strings or JSON strings/null.
 Object and array flags still require JSON. Tag filters accept both
 `--tag gastro-radar` and `--tag tag:gastro-radar`.
-Per-command `--help` lists the fields used by that action.
+Per-command `--help` lists the fields used by that action. Unknown subcommands
+suggest a valid command, including with `--help`: `contact update` suggests
+`contact revise`, which accepts contact patches such as `doNotContact`.
 
 Legacy `tools [--json]`, `describe <tool>`,
 `call <tool> [JSON|-]` and `<tool_name> --parameter value` remain available.

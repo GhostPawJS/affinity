@@ -25,9 +25,14 @@ export const affinityCliOptions: ToolCliOptions<AffinityDb> = {
     const path = resolveAffinityDbPath(
       dbPath === undefined ? {} : { flag: dbPath },
     );
-    if (tool.readOnly || path === ":memory:" || existsSync(path))
-      return undefined;
     const { openAffinityDb } = await import("./open_affinity_db.ts");
+    if (
+      tool.readOnly ||
+      (tool.name === "manage_contact" &&
+        (input as { action?: string }).action === "export")
+    )
+      return openAffinityDb(path, { readOnly: true });
+    if (path === ":memory:" || existsSync(path)) return undefined;
     const { cliExitCode } = await import("../surfaces/cli_output.ts");
     const memory = await openAffinityDb(":memory:");
     try {
@@ -69,12 +74,16 @@ export const affinityCliOptions: ToolCliOptions<AffinityDb> = {
       options.db === undefined ? {} : { flag: options.db },
     );
     const created = path !== ":memory:" && !existsSync(path);
-    const db = await openAffinityDb(path);
+    const db = await openAffinityDb(path, { stderr: options.stderr });
     if (created) (options.stderr ?? process.stderr).write(`created ${path}\n`);
     return db;
   },
   closeContext: (db) => db.close(),
   commands: {
+    migrate: async (options) => {
+      const db = await affinityCliOptions.openContext(options);
+      db.close();
+    },
     batch: async (args, options) => {
       const { runAffinityBatch } = await import("./affinity_batch.ts");
       return runAffinityBatch(args, options);
