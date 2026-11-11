@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import {
+  existsSync,
   mkdtempSync,
   readFileSync,
   readdirSync,
@@ -217,7 +218,10 @@ try {
       binNames.includes(packageName.replace(/^@[^/]+\//, "")),
     `npx ${packageName} cannot pick an executable from bins: ${binNames.join(", ")}`,
   );
-  const npx = join(dirname(process.execPath), "npx");
+  // Prefer the npx beside the running Node; fall back to PATH when Node resolves
+  // through a symlink into a directory without npm's executables.
+  const siblingNpx = join(dirname(process.execPath), "npx");
+  const npx = existsSync(siblingNpx) ? siblingNpx : "npx";
   assert.equal(
     run(npx, ["--no-install", packageName, "--version"], { cwd: temp }).trim(),
     `affinity ${pkg.version} (npm)`,
