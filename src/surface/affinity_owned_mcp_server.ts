@@ -1,7 +1,7 @@
 import type { AffinityDb } from "../database.ts";
 import { createMcpServer } from "../surfaces/mcp_server.ts";
-import { affinityMcpOptions } from "./affinity_mcp_options.ts";
 import { schemaUpgradeHint } from "./affinity_cli_errors.ts";
+import { affinityMcpOptions } from "./affinity_mcp_options.ts";
 import { affinityMcpSurfaceTools } from "./affinity_surface_tools.ts";
 import { openAffinityDb } from "./open_affinity_db.ts";
 import { resolveAffinityDbPath } from "./resolve_affinity_db_path.ts";

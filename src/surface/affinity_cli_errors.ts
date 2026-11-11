@@ -10,12 +10,11 @@ export function affinityCliError(message: string): string {
   return schemaUpgradeHint(result);
 }
 
-export function schemaUpgradeHint(result: string): string {
+export function schemaUpgradeHint(message: string): string {
   if (
-    /no such (?:table|column)|has no column named/i.test(result) &&
-    !result.includes("affinity migrate")
+    /no such (?:table|column)|has no column named/i.test(message) &&
+    !message.includes("affinity migrate")
   )
-    result +=
-      "; database schema needs an upgrade; run ghostpaw-affinity migrate (affinity migrate).";
-  return result;
+    return `${message}; database schema needs an upgrade; run ghostpaw-affinity migrate (affinity migrate).`;
+  return message;
 }

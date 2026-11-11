@@ -5,11 +5,11 @@ import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { Readable, Writable } from "node:stream";
 import { test } from "node:test";
+import { createAffinityMcpServer } from "../mcp.ts";
 import { runToolCli } from "../surfaces/cli.ts";
+import { serveMcpStdio } from "../surfaces/mcp_stdio.ts";
 import { affinityCliOptions } from "./affinity_cli_options.ts";
 import { openAffinityDb } from "./open_affinity_db.ts";
-import { createAffinityMcpServer } from "../mcp.ts";
-import { serveMcpStdio } from "../surfaces/mcp_stdio.ts";
 
 async function invoke(path: string, args: string[]) {
   let out = "";
@@ -158,7 +158,7 @@ test("MCP reads preserve files and missing paths while writes upgrade", async ()
     let output = "";
     await serveMcpStdio(createAffinityMcpServer({ dbPath: path }), {
       input: Readable.from([
-        messages.map((message) => JSON.stringify(message)).join("\n") + "\n",
+        `${messages.map((message) => JSON.stringify(message)).join("\n")}\n`,
       ]),
       output: new Writable({
         write(chunk, _encoding, done) {
