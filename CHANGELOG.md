@@ -6,6 +6,8 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-11-12
+
 ### Fixed
 
 - Shrink the CLI bundle from 401 KB to 356 KB minified (114 KB to 106 KB gzip) by sharing event recording, locator schemas, read options, SQL projections and CLI rendering; the embedded tools guide is rendered from its spec with unchanged content.
@@ -319,7 +321,8 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 - Public read and write namespaces, tool facade, skills, and relationship guidance.
 - Validation, tests, API documentation, lifecycle examples, and release workflows.
 
-[Unreleased]: https://github.com/GhostPawJS/affinity/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/GhostPawJS/affinity/compare/v0.7.2...HEAD
+[0.7.2]: https://github.com/GhostPawJS/affinity/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/GhostPawJS/affinity/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/GhostPawJS/affinity/compare/v0.6.2...v0.7.0
 [0.6.2]: https://github.com/GhostPawJS/affinity/compare/v0.6.1...v0.6.2
