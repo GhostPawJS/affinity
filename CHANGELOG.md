@@ -6,6 +6,8 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.7.3] - 2026-11-25
+
 ### Added
 
 - Add `read.checkContactable` and the `check_contactable` tool to check a contact’s native do-not-contact flag and flags inherited through active outgoing `works_at` and `member_of` ties. The CLI command `check contactable` exits 1 when blocked.
@@ -325,7 +327,8 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 - Public read and write namespaces, tool facade, skills, and relationship guidance.
 - Validation, tests, API documentation, lifecycle examples, and release workflows.
 
-[Unreleased]: https://github.com/GhostPawJS/affinity/compare/v0.7.2...HEAD
+[Unreleased]: https://github.com/GhostPawJS/affinity/compare/v0.7.3...HEAD
+[0.7.3]: https://github.com/GhostPawJS/affinity/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/GhostPawJS/affinity/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/GhostPawJS/affinity/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/GhostPawJS/affinity/compare/v0.6.2...v0.7.0
