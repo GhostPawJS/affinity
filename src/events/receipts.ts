@@ -16,15 +16,9 @@ export function buildEventMutationReceipt(
     derivedEffects?: DerivedLinkEffect[];
   },
 ): EventMutationReceipt {
-  const normalized = normalizeMutationReceiptPartial(partial);
   return {
     primary,
     ...(partial?.warnings ? { warnings: partial.warnings } : {}),
-    created: normalized.created,
-    updated: normalized.updated,
-    archived: normalized.archived,
-    removed: normalized.removed,
-    affectedLinks: normalized.affectedLinks,
-    derivedEffects: normalized.derivedEffects,
+    ...normalizeMutationReceiptPartial(partial),
   };
 }

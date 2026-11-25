@@ -85,6 +85,7 @@ the public direct surface into a smaller set of intent-shaped tools with:
 
 The current `tools` namespace exports exactly these 11 tools:
 
+- `check_contactable` — before outreach, check the contact and all outgoing active `works_at` and `member_of` paths. Proceed only when `data.contactable` is true.
 - `search_affinity`
 - `review_affinity`
 - `inspect_affinity_item`

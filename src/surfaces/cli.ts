@@ -9,6 +9,7 @@ import type { JsonSchema, SurfaceTool } from "./surface_types.ts";
 import { validateInput } from "./validate_input.ts";
 
 export interface ToolCliOptions<TCtx> {
+  successExitCode?: (toolName: string, result: unknown) => number;
   withTimeZone?: (
     zone: string,
     operation: () => Promise<number>,
@@ -372,7 +373,7 @@ async function runToolCliInternal<TCtx>(
         `${code === 70 ? "internal error: " : ""}${options.formatError?.(message) ?? message}\n`,
       );
     }
-    return code;
+    return code || options.successExitCode?.(tool.name, result) || 0;
   } catch (cause) {
     return fail(
       `internal error: ${cause instanceof Error ? cause.message : String(cause)}`,

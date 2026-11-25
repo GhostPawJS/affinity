@@ -9,3 +9,13 @@
 4. Set `doNotContact:true` on create/revise for contacts who must not be engaged.
    Outbound recording requires the explicit `overrideDoNotContact:true` field
    (CLI `--override-do-not-contact`) when blocked.
+
+## Hard do-not-contact
+
+Set the native `doNotContact` flag on the person or organisation. Run the check before every outbound action and proceed only on exit 0. Active outgoing `works_at` and `member_of` ties propagate the flag transitively. A blocked contact exits 1.
+
+```sh
+ghostpaw-affinity check contactable --contact '{"contactId":8}' --json
+```
+
+For older databases using a `do_not_contact` attribute, set the native flag with `contact revise '{"contactId":8}' --patch '{"doNotContact":true}'` on each flagged contact.

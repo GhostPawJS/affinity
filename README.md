@@ -562,6 +562,7 @@ Twelve tools shaped around operator intent, not raw storage operations:
 
 | Tool | What it does |
 |---|---|
+| `check_contactable` | Check direct and inherited do-not-contact flags before outreach (CLI: `check contactable`) |
 | `search_affinity` | Search contacts by natural key or name |
 | `review_affinity` | Dashboard-style list and graph review views |
 | `inspect_affinity_item` | Open one exact profile or link detail |
@@ -801,6 +802,8 @@ The tool equivalent is `manage_contact` with
 `{action:"create", input:{name:"Desk bot", kind:"agent", bootstrapOwner:true}}`.
 Create results expose `.id` at the top level; `.entities[]` remains available
 (`jq '.entities[] | select(.kind == "contact") | .id'`).
+
+Before outbound actions, run `ghostpaw-affinity check contactable --contact '{"contactId":8}'`. Exit 0 permits outreach. Exit 1 reports a direct or inherited block through active outgoing `works_at` and `member_of` ties.
 
 `doNotContact` defaults to false. Set it on create or revise. True refuses
 outbound and mutual interactions, transactions, commitments and milestones

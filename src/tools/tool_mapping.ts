@@ -37,6 +37,7 @@ export const affinityToolMappings: AffinityToolMapping[] = [
     tool: reviewAffinityToolName,
     view: "events.thread",
   },
+  { source: "checkContactable", tool: "check_contactable" },
   { source: "searchEvents", tool: searchAffinityToolName },
   { source: "reviseEvent", tool: "manage_event", action: "revise" },
   { source: "deleteEvent", tool: "manage_event", action: "delete" },

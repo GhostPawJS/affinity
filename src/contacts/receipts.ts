@@ -19,15 +19,9 @@ export function buildContactMutationReceipt(
     derivedEffects?: DerivedLinkEffect[];
   },
 ): ContactMutationReceipt {
-  const normalized = normalizeMutationReceiptPartial(partial);
   return {
     primary,
-    created: normalized.created,
-    updated: normalized.updated,
-    archived: normalized.archived,
-    removed: normalized.removed,
-    affectedLinks: normalized.affectedLinks,
-    derivedEffects: normalized.derivedEffects,
+    ...normalizeMutationReceiptPartial(partial),
   };
 }
 
@@ -42,14 +36,8 @@ export function buildMergeMutationReceipt(
     derivedEffects?: DerivedLinkEffect[];
   },
 ): MergeReceipt {
-  const normalized = normalizeMutationReceiptPartial(partial);
   return {
     primary,
-    created: normalized.created,
-    updated: normalized.updated,
-    archived: normalized.archived,
-    removed: normalized.removed,
-    affectedLinks: normalized.affectedLinks,
-    derivedEffects: normalized.derivedEffects,
+    ...normalizeMutationReceiptPartial(partial),
   };
 }

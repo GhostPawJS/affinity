@@ -5,6 +5,8 @@ import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { Readable, Writable } from "node:stream";
 import { test } from "node:test";
+import { checkContactable } from "../contacts/check_contactable.ts";
+import { createContact } from "../contacts/create_contact.ts";
 import { createAffinityMcpServer } from "../mcp.ts";
 import { runToolCli } from "../surfaces/cli.ts";
 import { serveMcpStdio } from "../surfaces/mcp_stdio.ts";
@@ -40,6 +42,13 @@ test("read-only opener preserves DELETE journal and bytes and rejects writes", a
   try {
     const writable = await openAffinityDb(path);
     writable.exec("PRAGMA journal_mode=DELETE");
+    const allowed = createContact(writable, { name: "Allowed", kind: "human" })
+      .primary.id;
+    const blocked = createContact(writable, {
+      name: "Blocked",
+      kind: "company",
+      doNotContact: true,
+    }).primary.id;
     writable.close();
     const before = readFileSync(path);
     const reader = await openAffinityDb(path, { readOnly: true });
@@ -52,7 +61,35 @@ test("read-only opener preserves DELETE journal and bytes and rejects writes", a
       () => reader.exec("CREATE TABLE forbidden (id INTEGER)"),
       /readonly/,
     );
+    assert.equal(checkContactable(reader, blocked).contactable, false);
     reader.close();
+    for (const [id, code] of [
+      [allowed, 0],
+      [blocked, 1],
+      [999, 3],
+    ] as const) {
+      const result = await invoke(path, [
+        "check",
+        "contactable",
+        "--contact",
+        JSON.stringify({ contactId: id }),
+        "--json",
+      ]);
+      assert.equal(result.code, code, result.err);
+      const json = JSON.parse(result.out);
+      assert.equal(json.ok, code !== 3);
+      if (code !== 3) {
+        assert.equal(json.data.contactable, code === 0);
+        assert.equal(json.data.blockedBy.length, code);
+        assert.equal(
+          json.summary,
+          code === 0
+            ? `Contact #${id} Allowed is contactable.`
+            : `Contact #${id} Blocked is blocked (do not contact) via Blocked.`,
+        );
+      }
+      assert.deepEqual(readFileSync(path), before);
+    }
     for (const args of [
       ["search", "Sam"],
       ["call", "search_affinity", '{"query":"Sam"}'],
@@ -180,6 +217,11 @@ test("MCP reads preserve files and missing paths while writes upgrade", async ()
     );
     assert.equal(existsSync(path), false);
     const db = await openAffinityDb(path);
+    const blocked = createContact(db, {
+      name: "Blocked",
+      kind: "company",
+      doNotContact: true,
+    }).primary.id;
     db.exec("PRAGMA journal_mode=DELETE");
     db.close();
     const before = readFileSync(path);
@@ -191,6 +233,12 @@ test("MCP reads preserve files and missing paths while writes upgrade", async ()
       (await call("manage_contact", { action: "export" })).result.isError,
       false,
     );
+    assert.deepEqual(readFileSync(path), before);
+    const decision = await call("check_contactable", {
+      contact: { contactId: blocked },
+    });
+    assert.equal(decision.result.isError, false);
+    assert.match(JSON.stringify(decision.result), /blocked \(do not contact\)/);
     assert.deepEqual(readFileSync(path), before);
     const old = new DatabaseSync(path);
     old.exec("ALTER TABLE contacts DROP COLUMN do_not_contact");

@@ -12,6 +12,11 @@ import { resolveAffinityDbPath } from "./resolve_affinity_db_path.ts";
 
 export const affinityCliOptions: ToolCliOptions<AffinityDb> = {
   withTimeZone,
+  successExitCode: (name, result) =>
+    name === "check_contactable" &&
+    (result as { data?: { contactable?: boolean } }).data?.contactable !== true
+      ? 1
+      : 0,
   reportCreation: true,
   beforeContext: (db, stderr, quiet) => {
     if (

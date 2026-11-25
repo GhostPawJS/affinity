@@ -13,7 +13,7 @@ Event payloads require `occurredAt`, `significance` (1–10), and `participants`
 
 Payload fields and examples: `<command> --help`. JSON schema: `ghostpaw-affinity describe event record`, optionally `--kind interaction`; `describe <tool>` retains tool details. `describe batch` documents JSONL records.
 
-Create the owner first: contact create --bootstrap-owner (tool input.bootstrapOwner: true). Contact create JSON exposes .id (jq .id); .entities[] remains available. Set input.doNotContact or patch.doNotContact to true to block outbound/mutual engagement. Override one event with input.overrideDoNotContact: true or --override-do-not-contact.
+Create the owner first: contact create --bootstrap-owner (tool input.bootstrapOwner: true). Contact create JSON exposes .id (jq .id); .entities[] remains available. Set input.doNotContact or patch.doNotContact to true to block outbound/mutual engagement. Run `check contactable` before outbound actions to check inherited flags (exit 1 when blocked). Override one event with input.overrideDoNotContact: true or --override-do-not-contact.
 
 Use manage_contact action migrate_kind with contact and kind (CLI: contact migrate-kind --contact '{"contactId":2}' --kind agent); each changed kind records a correction audit with no bond mechanics and preserves ids, identities, links and events. Owners must remain human or agent; merged contacts are read-only. Repeating the kind is a no-op.
 
@@ -134,11 +134,11 @@ Inspect schemas with `ghostpaw-affinity describe <tool>`. Use `--db <path>` to s
 ### Tool index
 
 - **search_affinity**: Search contacts by name, identity, attributes, link roles, bonds and event text.
-- **review_affinity**: Review one affinity surface such as contacts, journals, link queues, commitments, dates, graph state, or merge history..
-- **inspect_affinity_item**: Inspect one exact affinity item such as the owner profile, a contact profile, or one link detail..
+- **review_affinity**: Review one affinity surface such as contacts, journals, link queues, commitments, dates, graph state, or merge history.
+- **inspect_affinity_item**: Inspect one exact affinity item such as the owner profile, a contact profile, or one link detail.
 - **manage_contact**: Create, revise, export or permanently delete a contact (confirm: true required; owner cannot be deleted).
-- **merge_contacts**: Merge one loser contact into one winner contact using explicit contact locators..
-- **manage_duplicate_dismissal**: Dismiss or un-dismiss a duplicate candidate pair so it does not resurface in review_affinity contacts.duplicates..
+- **merge_contacts**: Merge one loser contact into one winner contact using explicit contact locators.
+- **manage_duplicate_dismissal**: Dismiss or un-dismiss a duplicate candidate pair so it does not resurface in review_affinity contacts.duplicates.
 - **manage_identity**: Add, revise, verify, or remove one routing identity on a contact.
 - **manage_relationship**: Seed social links, revise bond and state, and manage structural ties.
 - **record_event**: Record one social event such as an interaction, observation, milestone, or transaction.
@@ -146,6 +146,7 @@ Inspect schemas with `ghostpaw-affinity describe <tool>`. Use `--db <path>` to s
 - **manage_date_anchor**: Add, revise, or remove recurring date anchors on contacts or links.
 - **manage_attribute**: Set, unset, or replace custom metadata attributes on contacts, links and events.
 - **manage_event**: Revise or delete one event by eventId or external reference.
+- **check_contactable**: Check do-not-contact flags through works_at and member_of ties.
 
 Parameter details and examples: `ghostpaw-affinity skill tools` or `ghostpaw-affinity describe <tool>`.
 

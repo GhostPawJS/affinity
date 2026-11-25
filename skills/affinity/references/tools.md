@@ -539,6 +539,27 @@ Writes: writes_state.
 ghostpaw-affinity event revise --event-id 1 --patch '{"summary":"Corrected"}'
 ```
 
+## check_contactable
+
+Check do-not-contact flags through works_at and member_of ties.
+
+Use when:
+
+Not for:
+
+Read-only.
+
+| Parameter | Type | Required | Values / description |
+| --- | --- | --- | --- |
+| contact | object | yes | Contact to check. |
+| tz | string | no | IANA time zone for due days and local calendar calculations; defaults to TZ or the process local zone. |
+| contact.contactId | integer | no | Exact contact id. |
+| contact.identity | object | no | Contact identity locator. |
+
+```sh
+ghostpaw-affinity check contactable --contact '{"contactId":8}'
+```
+
 ## Workflow guides
 
 - `ghostpaw-affinity skill bootstrap-and-cold-start`: Establish a clean Affinity baseline with one owner, one verified identity, and the minimum structure needed for later evidence and review work.

@@ -1,3 +1,4 @@
+export { checkContactable } from "./contacts/check_contactable.ts";
 export {
   getContactProfile,
   getOwnerProfile,

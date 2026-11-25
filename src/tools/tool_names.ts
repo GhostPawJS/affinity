@@ -1,3 +1,4 @@
+export const checkContactableToolName = "check_contactable";
 export const searchAffinityToolName = "search_affinity";
 export const reviewAffinityToolName = "review_affinity";
 export const inspectAffinityItemToolName = "inspect_affinity_item";

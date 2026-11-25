@@ -61,13 +61,6 @@ function searchAffinityToolHandlerInZone(
   db: AffinityDb,
   rawInput: TimeInputs<SearchAffinityToolInput>,
 ): SearchAffinityToolResult {
-  return searchPage(db, rawInput, false);
-}
-function searchPage(
-  db: AffinityDb,
-  rawInput: TimeInputs<SearchAffinityToolInput>,
-  pageOnly: boolean,
-): SearchAffinityToolResult {
   const input = structuredClone(rawInput) as SearchAffinityToolInput;
   const inputError = validateToolInput(searchAffinityTool.inputSchema, input);
   if (inputError)
@@ -78,88 +71,51 @@ function searchPage(
       inputError,
     );
   return withToolHandling<SearchAffinityToolData>(() => {
-    if (!pageOnly) {
-      const limit = input.limit ?? 50;
-      const offset = input.offset ?? 0;
-      if (
-        !Number.isInteger(limit) ||
-        limit < 1 ||
-        limit > 250 ||
-        !Number.isInteger(offset) ||
-        offset < 0
-      )
-        return invalidToolInput(
-          "protocol",
-          "invalid_input",
-          "Invalid pagination.",
-          "limit must be 1..250; offset must be non-negative",
-        );
-      const all: SearchAffinityToolData["items"] = [];
-      const scopes =
-        input.scope === "all"
-          ? (["contacts", "events"] as const)
-          : [input.scope ?? "contacts"];
-      for (const scope of scopes) {
-        let page: SearchAffinityToolResult;
-        let nextOffset = 0;
-        do {
-          page = searchPage(
-            db,
-            { ...input, scope, limit: 250, offset: nextOffset },
-            true,
-          );
-          if (!page.ok) return page;
-          all.push(...page.data.items);
-          nextOffset += page.data.count;
-        } while (page.data.count === 250);
-      }
-      const items = all.slice(offset, offset + limit);
-      return toolSuccess(
-        summarizeCount(
-          items.length,
-          input.scope === "events"
-            ? "event"
-            : input.scope === "all"
-              ? "item"
-              : "contact",
-        ),
-        {
-          query: input.query,
-          items,
-          count: items.length,
-          total: all.length,
-          hasMore: offset + items.length < all.length,
-        },
-        { entities: items },
+    const limit = input.limit ?? 50;
+    const offset = input.offset ?? 0;
+    if (
+      !Number.isInteger(limit) ||
+      limit < 1 ||
+      limit > 250 ||
+      !Number.isInteger(offset) ||
+      offset < 0
+    )
+      return invalidToolInput(
+        "protocol",
+        "invalid_input",
+        "Invalid pagination.",
+        "limit must be 1..250; offset must be non-negative",
       );
-    }
-    const options = definedOptions({
-      limit: input.limit,
-      offset: input.offset,
+    const all: SearchAffinityToolData["items"] = [];
+    const scopes =
+      input.scope === "all"
+        ? (["contacts", "events"] as const)
+        : [input.scope ?? "contacts"];
+    const filters = definedOptions({
+      attribute: input.attribute,
+      tag: input.tag,
+      includeLost: input.includeLost,
+      kind: input.kind,
+      lifecycleState: input.lifecycleState,
+      includeOwner: input.includeOwner,
+      includeDormant: input.includeDormant,
     });
-    const rows =
-      input.scope === "events"
-        ? []
-        : searchContacts(
-            db,
-            input.query,
-            definedOptions({
-              attribute: input.attribute,
-              tag: input.tag,
-              includeLost: input.includeLost,
-              kind: input.kind,
-              lifecycleState: input.lifecycleState,
-              includeOwner: input.includeOwner,
-              includeDormant: input.includeDormant,
-            }),
-            options,
-          );
-    const items = [
-      ...rows.map(toContactListToolItem),
-      ...(input.scope === "events" || input.scope === "all"
-        ? searchEvents(db, input.query, options)
-        : []),
-    ];
+    for (const scope of scopes) {
+      let nextOffset = 0;
+      let page: SearchAffinityToolData["items"];
+      do {
+        const options = { limit: 250, offset: nextOffset };
+        page =
+          scope === "events"
+            ? searchEvents(db, input.query, options)
+            : searchContacts(db, input.query, filters, options).map(
+                toContactListToolItem,
+              );
+        all.push(...page);
+        nextOffset += page.length;
+      } while (page.length === 250);
+    }
+    const items = all.slice(offset, offset + limit);
     return toolSuccess(
       summarizeCount(
         items.length,
@@ -173,10 +129,10 @@ function searchPage(
         query: input.query,
         items,
         count: items.length,
+        total: all.length,
+        hasMore: offset + items.length < all.length,
       },
-      {
-        entities: items,
-      },
+      { entities: items },
     );
   }, "Search failed.");
 }

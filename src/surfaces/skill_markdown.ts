@@ -68,7 +68,8 @@ export function renderSkillMarkdown<TCtx>(
       "## Tool index",
       "",
       ...spec.tools.map(
-        (tool) => `- **${tool.name}**: ${tool.description.split(". ")[0]}.`,
+        (tool) =>
+          `- **${tool.name}**: ${tool.description.replace(/\.( .*)?$/s, "")}.`,
       ),
       "",
       `Parameter details and examples: \`${spec.bin} skill tools\` or \`${spec.bin} describe <tool>\`.`,

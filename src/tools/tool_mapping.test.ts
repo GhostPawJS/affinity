@@ -17,7 +17,7 @@ describe("tool_mapping", () => {
     deepStrictEqual([...uniqueNames].sort(), exportedNames);
   });
 
-  it("keeps the total direct-surface reconciliation at 57 operations", () => {
-    strictEqual(affinityToolMappings.length, 57);
+  it("keeps the total direct-surface reconciliation at 58 operations", () => {
+    strictEqual(affinityToolMappings.length, 58);
   });
 });

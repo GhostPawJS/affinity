@@ -421,3 +421,5 @@ a terminal. Other values leave output selection unchanged.
 
 Batch JSONL summaries retain `done`, `created`, `noOp`, and `failed` and add
 `revised`. Successful updates count as revised; per-line receipts are unchanged.
+
+Before outreach, call `read.checkContactable(db, contactId)`. Each entry in `blockedBy` gives the flagged contact and its shortest path through outgoing active `works_at` or `member_of` ties. The contact’s own flag uses `via: "self"`.

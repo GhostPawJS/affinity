@@ -71,6 +71,9 @@ async function invoke(
                     ok: true,
                     outcome: "success",
                     summary: "Done",
+                    ...(tool.name === "check_contactable" && {
+                      data: { contactable: true },
+                    }),
                   }
                 );
               },

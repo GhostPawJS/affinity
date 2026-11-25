@@ -94,6 +94,10 @@ const affinitySurfaceTools: readonly SurfaceTool<AffinityDb>[] =
   }));
 
 const mapping: Record<string, NonNullable<SurfaceTool<AffinityDb>["cli"]>> = {
+  check_contactable: {
+    noun: "check",
+    verb: "contactable",
+  },
   search_affinity: { verb: "search", positionals: ["query"] },
   review_affinity: { verb: "review", positionals: ["view"] },
   inspect_affinity_item: { verb: "show", positionals: ["kind"] },

@@ -4,6 +4,7 @@ import { validateInput } from "../surfaces/validate_input.ts";
 import { affinitySurfaceTools } from "./affinity_surface_tools.ts";
 
 const inputs: Record<string, Record<string, unknown>> = {
+  check_contactable: { contact: { contactId: 1 } },
   search_affinity: { query: "Sam" },
   review_affinity: { view: "contacts.list" },
   inspect_affinity_item: { kind: "owner_profile" },

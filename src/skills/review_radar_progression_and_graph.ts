@@ -1,3 +1,4 @@
+import { calendarGuidance } from "./calendar_guidance.ts";
 import { defineAffinitySkill } from "./skill_types.ts";
 
 export const reviewRadarProgressionAndGraphSkill = defineAffinitySkill({
@@ -11,13 +12,7 @@ total and hasMore; continue paging while hasMore is true. Event type array flags
 accept JSON arrays, comma lists, or repeated --event-types flags; invalid types
 report allowed values with exit 2. Use skill --short for a compact CLI reference.
 
-CLI and MCP share epoch ms, ISO with Z/offset, YYYY-MM-DD, DD.MM.YYYY,
-today/yesterday/tomorrow and signed day offsets (+3d/-2d).
-Date-only values keep their day with UTC boundaries; keywords use the process
-local date. Read occurredOn/dueOn and review occursOn for calendar dates;
-*Iso fields stay UTC. Future events warn and count as contact only when their
-time and day arrive. Commitments and resolutions never reset recency/cadence.
-Radar explains overdue promises and drift (gap > 1.5 times cadence).
+${calendarGuidance}
 
 Review events.timeline spans all contacts, newest first; --since/--until accept
 ISO dates, datetimes, or epoch ms (inclusive); --limit controls page size.

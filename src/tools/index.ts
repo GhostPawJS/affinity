@@ -1,4 +1,9 @@
 export {
+  checkContactableTool,
+  checkContactableToolHandler,
+} from "./check_contactable_tool.ts";
+export { checkContactableToolName } from "./tool_names.ts";
+export {
   inspectAffinityItemTool,
   inspectAffinityItemToolHandler,
 } from "./inspect_affinity_item_tool.ts";

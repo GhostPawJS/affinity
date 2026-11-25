@@ -118,6 +118,10 @@
     {
       "name": "manage_event",
       "description": "Revise or delete one event by eventId or external reference. Delete requires confirm=true and recomputes affected relationships."
+    },
+    {
+      "name": "check_contactable",
+      "description": "Check do-not-contact flags through works_at and member_of ties."
     }
   ],
   "compatibility": {

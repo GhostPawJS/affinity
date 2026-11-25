@@ -1,3 +1,4 @@
+import { checkContactableTool } from "./check_contactable_tool.ts";
 import { inspectAffinityItemTool } from "./inspect_affinity_item_tool.ts";
 import { manageAttributeTool } from "./manage_attribute_tool.ts";
 import { manageCommitmentTool } from "./manage_commitment_tool.ts";
@@ -27,6 +28,7 @@ export const affinityTools = [
   manageDateAnchorTool,
   manageAttributeTool,
   manageEventTool,
+  checkContactableTool,
 ] satisfies ToolDefinitionRegistry;
 
 export function listAffinityToolDefinitions() {

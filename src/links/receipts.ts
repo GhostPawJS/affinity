@@ -15,14 +15,8 @@ export function buildLinkMutationReceipt(
     derivedEffects?: DerivedLinkEffect[];
   },
 ): LinkMutationReceipt {
-  const normalized = normalizeMutationReceiptPartial(partial);
   return {
     primary,
-    created: normalized.created,
-    updated: normalized.updated,
-    archived: normalized.archived,
-    removed: normalized.removed,
-    affectedLinks: normalized.affectedLinks,
-    derivedEffects: normalized.derivedEffects,
+    ...normalizeMutationReceiptPartial(partial),
   };
 }

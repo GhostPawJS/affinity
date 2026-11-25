@@ -6,6 +6,10 @@ The format follows Keep a Changelog 1.1.0 and Semantic Versioning.
 
 ## [Unreleased]
 
+### Added
+
+- Add `read.checkContactable` and the `check_contactable` tool to check a contact’s native do-not-contact flag and flags inherited through active outgoing `works_at` and `member_of` ties. The CLI command `check contactable` exits 1 when blocked.
+
 ## [0.7.2] - 2026-11-12
 
 ### Fixed

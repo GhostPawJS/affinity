@@ -510,7 +510,7 @@ export async function runCliCommand<T>(
         stdout.write(
           renderCliResult(result, json, compact, stdout, options.formatError),
         );
-      return code;
+      return code || options.successExitCode?.(entry.tool.name, result) || 0;
     } finally {
       await options.closeContext?.(context);
     }
