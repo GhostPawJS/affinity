@@ -1695,7 +1695,7 @@ strongest relationships are with Sarah (rank 3) and Mike Chen (rank 2)."
 
 ### What the System Proves
 
-The 11 tools cover 100% of the system's functionality. Natural-key identity
+The 14 tools cover 100% of the system's functionality. Natural-key identity
 resolution means the AI never needs to remember integer IDs — it can work with
 emails and names. Structured outcomes make error handling deterministic. The
 `needs_clarification` flow handles ambiguity without crashing.

@@ -558,7 +558,7 @@ and skills.
 
 ## Tools
 
-Twelve tools shaped around operator intent, not raw storage operations:
+Fourteen tools shaped around operator intent, not raw storage operations:
 
 | Tool | What it does |
 |---|---|
@@ -572,6 +572,7 @@ Twelve tools shaped around operator intent, not raw storage operations:
 | `manage_identity` | Add, revise, verify, or remove identities |
 | `manage_relationship` | Seed social links, revise bond/state, manage structural ties |
 | `record_event` | Record direct evidence, observations, milestones, or transactions |
+| `manage_event` | Revise or delete one recorded event; delete needs `confirm` and recomputes affected links |
 | `manage_commitment` | Record or resolve obligations |
 | `manage_date_anchor` | Add, revise, or remove recurring important dates |
 | `manage_attribute` | Set, unset, or replace contact/link metadata |

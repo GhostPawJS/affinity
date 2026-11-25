@@ -83,7 +83,7 @@ the public direct surface into a smaller set of intent-shaped tools with:
 - structured machine-readable outcomes
 - clarification paths for ambiguous targets
 
-The current `tools` namespace exports exactly these 11 tools:
+The current `tools` namespace exports exactly these 14 tools:
 
 - `check_contactable` — before outreach, check the contact and all outgoing active `works_at` and `member_of` paths. Proceed only when `data.contactable` is true.
 - `search_affinity`
@@ -91,9 +91,11 @@ The current `tools` namespace exports exactly these 11 tools:
 - `inspect_affinity_item`
 - `manage_contact`
 - `merge_contacts`
+- `manage_duplicate_dismissal`
 - `manage_identity`
 - `manage_relationship`
 - `record_event`
+- `manage_event`
 - `manage_commitment`
 - `manage_date_anchor`
 - `manage_attribute`
